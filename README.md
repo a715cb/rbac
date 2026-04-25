@@ -80,11 +80,9 @@ d:/AI/RBAC/
 │   └── architecture/         # 架构文档
 │       └── OVERVIEW.md      # 项目概览
 ├── frontend/                  # 前端项目
-│   └── rbac-admin/           # 前端源码
 ├── backend/                   # 后端项目
-│   └── rbac-api/             # 后端源码
 └── database/                  # 数据库文件
-    └── init.sql              # 初始化SQL
+    └── init.sql              # 初始化 SQL
 ```
 
 ## 📦 交付物清单

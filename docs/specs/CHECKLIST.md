@@ -7,19 +7,19 @@
 **负责人**: 开发团队
 
 #### 前端项目结构 ✅/❌
-- [ ] `frontend/rbac-admin/` 目录存在
+- [ ] `frontend/` 目录存在
 - [ ] `package.json` 配置完整
-- [ ] TypeScript配置（tsconfig.json）完整
-- [ ] Vite配置（vite.config.ts）完整
-- [ ] ESLint + Prettier配置完整
-- [ ] 目录结构符合规范（src/api、src/components、src/router等）
+- [ ] TypeScript 配置（tsconfig.json）完整
+- [ ] Vite 配置（vite.config.ts）完整
+- [ ] ESLint + Prettier 配置完整
+- [ ] 目录结构符合规范（src/api、src/components、src/router 等）
 
 #### 后端项目结构 ✅/❌
-- [ ] `backend/rbac-api/` 目录存在
+- [ ] `backend/` 目录存在
 - [ ] ThinkPHP 8.0+ 安装完整
-- [ ] Composer依赖安装完整
+- [ ] Composer 依赖安装完整
 - [ ] `.env` 配置文件存在
-- [ ] 目录结构符合规范（app/admin、app/api等）
+- [ ] 目录结构符合规范（app/admin、app/api 等）
 
 #### 数据库结构 ✅/❌
 - [ ] 数据库创建完成

@@ -462,7 +462,7 @@ CREATE TABLE `sys_config` (
 
 ### 4.1 完整目录树
 ```
-frontend/rbac-admin/
+frontend/
 ├── public/                      # 静态公共资源
 │   ├── favicon.ico             # 网站图标
 │   └── index.html              # HTML模板
@@ -610,7 +610,7 @@ frontend/rbac-admin/
 
 ### 5.1 完整目录树
 ```
-backend/rbac-api/
+backend/
 ├── app/
 │   ├── common.php          # 公共函数库
 │   ├── Event.php           # 事件类
