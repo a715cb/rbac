@@ -1,16 +1,37 @@
-# 企业级RBAC权限系统
+# 企业级 RBAC 权限系统
+
+> 通用可复用企业级 RBAC 权限底座系统，统一支撑自动化办公、企业网站、微信公众号、微信小程序等多项目权限鉴权。
 
 ## 📚 项目文档
 
-本项目已完成系统架构设计和开发规划，完整规范文档位于 `docs/` 目录下：
+本项目已完成系统架构设计和开发规划，完整技术规格文档位于 `.trae/specs/` 目录下，符合 **TRAE CN SOLO Coder** 规范：
 
-### 核心规范文档
-- **[SPEC.md](docs/specs/SPEC.md)** - 系统规范文档（架构、数据库、API规范等）
-- **[TASKS.md](docs/specs/TASKS.md)** - 开发任务清单（31个开发任务）
-- **[CHECKLIST.md](docs/specs/CHECKLIST.md)** - 验收检查清单（200+检查项）
+### 核心规范文档（SOLO Coder）
+- **[spec.md](.trae/specs/rbac-system/spec.md)** - 完整技术规格文档（架构、数据库 SQL、API 规范等）
+- **[tasks.md](.trae/specs/rbac-system/tasks.md)** - 开发任务清单（23 个开发任务，带状态跟踪）
+- **[checklist.md](.trae/specs/rbac-system/checklist.md)** - 验收检查清单（200+ 检查项）
 
 ### 架构文档
 - **[OVERVIEW.md](docs/architecture/OVERVIEW.md)** - 项目概览（快速了解项目）
+
+### 🤖 SOLO Coder 使用说明
+本项目完全符合 TRAE CN IDE 的 SOLO Coder 规范，支持自动化开发：
+
+```bash
+# 在 TRAE IDE 中，输入以下命令启动 Spec 模式
+/spec
+
+# SOLO Coder 会自动读取 .trae/specs/rbac-system/ 目录
+# 并按照 tasks.md 中的任务列表自动执行开发
+```
+
+**SOLO Coder 工作流程：**
+1. 分析需求 → 生成 spec.md 大纲
+2. 任务拆解 → 生成 tasks.md 任务列表
+3. 验收标准 → 生成 checklist.md 检查清单
+4. 等待确认 → 用户确认文档
+5. 自动执行 → 按任务列表逐项完成开发
+6. 状态更新 → 自动更新任务状态
 
 ## 🎯 项目概述
 
@@ -72,17 +93,19 @@
 
 ```
 d:/AI/RBAC/
-├── docs/                       # 项目文档
-│   ├── specs/                 # 规范文档
-│   │   ├── SPEC.md           # 系统规范
-│   │   ├── TASKS.md         # 开发任务
-│   │   └── CHECKLIST.md     # 验收清单
-│   └── architecture/         # 架构文档
-│       └── OVERVIEW.md      # 项目概览
-├── frontend/                  # 前端项目
-├── backend/                   # 后端项目
-└── database/                  # 数据库文件
-    └── init.sql              # 初始化 SQL
+├── .trae/                     # TRAE IDE 配置
+│   └── specs/                 # SOLO Coder 规范文档
+│       └── rbac-system/       # RBAC 系统任务
+│           ├── spec.md        # 技术规格文档
+│           ├── tasks.md       # 开发任务列表
+│           └── checklist.md   # 验收检查清单
+├── docs/                      # 项目文档
+│   └── architecture/          # 架构文档
+│       └── OVERVIEW.md        # 项目概览
+├── frontend/                  # 前端项目（待开发）
+├── backend/                   # 后端项目（待开发）
+└── database/                  # 数据库文件（待创建）
+    └── init.sql               # 初始化 SQL（待创建）
 ```
 
 ## 📦 交付物清单
@@ -95,11 +118,12 @@ d:/AI/RBAC/
 - ✅ 默认管理员账号
 
 ### 文档交付
-- ✅ 系统架构设计文档
-- ✅ 开发任务清单
-- ✅ 验收检查清单
-- ✅ 接口文档（Swagger）
-- ✅ 部署文档
+- ✅ 系统架构设计文档（spec.md）
+- ✅ 开发任务清单（tasks.md）
+- ✅ 验收检查清单（checklist.md）
+- ✅ 项目概览文档（OVERVIEW.md）
+- ✅ 接口文档（Swagger，待开发）
+- ✅ 部署文档（待编写）
 
 ## ⏱️ 开发周期预估
 
@@ -141,12 +165,27 @@ d:/AI/RBAC/
 
 ### 架构设计阶段 ✅ 已完成
 - [x] 系统架构设计
-- [x] 数据库设计（14张表）
-- [x] 开发任务清单
-- [x] 验收标准
-- [x] 完整规范文档
+- [x] 数据库设计（14 张表）
+- [x] 开发任务清单（23 个任务）
+- [x] 验收标准（200+ 检查项）
+- [x] 完整技术规格文档
+- [x] SOLO Coder 规范配置
 
 ### 开发实施阶段 ⏸️ 等待确认
+
+#### 方式一：使用 SOLO Coder（推荐）⭐
+```bash
+# 在 TRAE IDE 中，输入以下命令启动 Spec 模式
+/spec
+
+# SOLO Coder 会自动：
+# 1. 读取 .trae/specs/rbac-system/ 目录
+# 2. 按照 tasks.md 执行 23 个开发任务
+# 3. 自动更新任务状态
+# 4. 完成所有开发工作
+```
+
+#### 方式二：手动开发
 - [ ] 前端项目初始化
 - [ ] 后端项目初始化
 - [ ] 核心模块开发
@@ -155,7 +194,7 @@ d:/AI/RBAC/
 
 ---
 
-**📌 当前状态**：所有架构设计已完成，等待用户确认后启动开发
+**📌 当前状态**：所有架构设计已完成，可以使用 SOLO Coder 启动自动化开发
 
 ---
 
