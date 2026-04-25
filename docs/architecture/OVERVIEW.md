@@ -116,7 +116,7 @@
 
 ### 前端目录结构（通用底座）
 ```
-frontend/rbac-admin/
+frontend/
 ├── public/                      # 公共资源目录
 │   ├── favicon.ico             # 网站图标
 │   └── index.html              # 入口 HTML
@@ -255,7 +255,7 @@ frontend/rbac-admin/
 
 ### 后端目录结构（通用底座）
 ```
-backend/rbac-api/
+backend/
 ├── app/
 │   ├── common/                 # 公共模块
 │   │   ├── controller/         # 基础控制器
