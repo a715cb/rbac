@@ -1,0 +1,22 @@
+@import './variables.less';
+
+.sidebar-panel() {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100%;
+}
+
+.sidebar-scroll() {
+  overflow: auto;
+  overflow-x: hidden;
+}
+
+.sidebar-panel-dark() {
+  background: @layout-sidebar-dark-bg;
+}
+
+.sidebar-panel-light() {
+  background: @layout-sidebar-light-bg;
+  border-right: 1px solid @layout-sidebar-light-border;
+}

@@ -1,0 +1,537 @@
+<template>
+  <div class="login-container">
+    <div class="login-left">
+      <div class="login-banner">
+        <h1>RBAC 权限管理系统</h1>
+        <p>高效、灵活、安全的企业级权限管理解决方案</p>
+        <div class="feature-list">
+          <div class="feature-item">
+            <CheckCircleOutlined class="feature-icon" />
+            <span>基于 RBAC 模型的精细化权限控制</span>
+          </div>
+          <div class="feature-item">
+            <CheckCircleOutlined class="feature-icon" />
+            <span>支持菜单、按钮、接口三级权限</span>
+          </div>
+          <div class="feature-item">
+            <CheckCircleOutlined class="feature-icon" />
+            <span>JWT Token 无状态认证</span>
+          </div>
+          <div class="feature-item">
+            <CheckCircleOutlined class="feature-icon" />
+            <span>前后端分离架构</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="login-right">
+      <div class="login-box">
+        <div class="login-header">
+          <div class="logo">
+            <SettingOutlined class="logo-icon" />
+          </div>
+          <h1>欢迎登录</h1>
+          <p>请输入您的账号信息</p>
+        </div>
+
+        <a-form
+          :model="formState"
+          :rules="rules"
+          layout="vertical"
+          @finish="handleLogin"
+          @finish-failed="handleLoginFailed"
+        >
+          <a-form-item
+            label="用户名"
+            name="username"
+            html-for="login-username"
+            class="login-form-item"
+          >
+            <a-input
+              id="login-username"
+              v-model:value="formState.username"
+              name="username"
+              placeholder="用户名 / 手机号 / 邮箱"
+              size="large"
+            >
+              <template #prefix>
+                <UserOutlined />
+              </template>
+            </a-input>
+          </a-form-item>
+
+          <a-form-item
+            label="密码"
+            name="password"
+            html-for="login-password"
+            class="login-form-item"
+          >
+            <a-input-password
+              id="login-password"
+              v-model:value="formState.password"
+              name="password"
+              placeholder="请输入密码"
+              size="large"
+            >
+              <template #prefix>
+                <LockOutlined />
+              </template>
+            </a-input-password>
+          </a-form-item>
+
+          <a-form-item
+            label="验证码"
+            name="captcha"
+            html-for="login-captcha"
+            class="login-form-item"
+          >
+            <Captcha ref="captchaRef" v-model:captcha="formState.captcha" />
+          </a-form-item>
+
+          <a-form-item class="login-form-item-no-label">
+            <div class="form-options">
+              <a-checkbox id="login-remember" v-model:checked="formState.remember" name="remember">
+                记住密码
+              </a-checkbox>
+              <a class="forgot-link" @click.prevent="handleForgotPassword">忘记密码？</a>
+            </div>
+          </a-form-item>
+
+          <a-form-item>
+            <a-button
+              type="primary"
+              html-type="submit"
+              size="large"
+              :loading="loading"
+              :disabled="isSubmitting"
+              block
+              class="login-button"
+            >
+              <span v-if="!loading">登 录</span>
+            </a-button>
+          </a-form-item>
+        </a-form>
+
+        <div class="login-footer">
+          <span>还没有账号？</span>
+          <a class="register-link" @click.prevent="handleRegister">立即注册</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { reactive, ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import {
+  UserOutlined,
+  LockOutlined,
+  SettingOutlined,
+  CheckCircleOutlined
+} from '@ant-design/icons-vue'
+import { message } from 'ant-design-vue'
+import { useUserStore } from '@/stores/user'
+import { login } from '@/api/auth'
+import { Captcha } from '@/components'
+import { AppConfig } from '@/config/app'
+import { StorageManager } from '@/utils/storage'
+
+const router = useRouter()
+const userStore = useUserStore()
+
+const captchaRef = ref<InstanceType<typeof Captcha> | null>(null)
+const loading = ref(false)
+const isSubmitting = ref(false)
+
+const formState = reactive({
+  username: '',
+  password: '',
+  captcha: '',
+  remember: false
+})
+
+const rules = {
+  username: [
+    { required: true, message: '请输入用户名', trigger: 'blur' },
+    { min: 3, max: 20, message: '用户名长度为 3-20 个字符', trigger: 'blur' }
+  ],
+  password: [
+    { required: true, message: '请输入密码', trigger: 'blur' },
+    { min: 6, message: '密码长度至少为 6 位', trigger: 'blur' }
+  ],
+  captcha: [
+    { required: true, message: '请输入验证码', trigger: 'blur' },
+    { len: 4, message: '验证码长度为 4 位', trigger: 'blur' }
+  ]
+}
+
+const handleLogin = async () => {
+  if (captchaRef.value && !captchaRef.value.validate()) {
+    message.error('验证码不正确，请重新输入')
+    captchaRef.value.refresh()
+    return
+  }
+
+  if (formState.captcha.length !== 4) {
+    message.error('请输入 4 位验证码')
+    return
+  }
+
+  loading.value = true
+  isSubmitting.value = true
+
+  try {
+    const response = await login({
+      username: formState.username,
+      password: formState.password
+    })
+
+    const { access_token, refresh_token, expires_in, user_info } = response.data
+
+    userStore.setTokenWithExpiry(access_token, refresh_token, expires_in)
+    userStore.setUserInfo({
+      ...user_info,
+      roles: [],
+      permissions: []
+    })
+
+    message.success('登录成功')
+
+    if (formState.remember) {
+      StorageManager.setItem('local', AppConfig.rememberUsernameKey, formState.username)
+    } else {
+      StorageManager.removeItem('local', AppConfig.rememberUsernameKey)
+    }
+
+    const redirect = (router.currentRoute.value.query.redirect as string) || '/dashboard'
+    router.push(redirect)
+  } catch (error: unknown) {
+    const err = error as { message?: string }
+    const errorMessage = err.message || '登录失败，请检查账号信息'
+
+    if (errorMessage.includes('用户名或密码错误')) {
+      message.error('用户名或密码错误，请重新输入')
+    } else if (errorMessage.includes('账户已被禁用')) {
+      message.error('账户已被禁用，请联系管理员')
+    } else if (errorMessage.includes('账户已锁定') || errorMessage.includes('锁定')) {
+      message.error(errorMessage)
+    } else if (
+      errorMessage.includes('网络') ||
+      errorMessage.includes('超时') ||
+      errorMessage.includes('连接')
+    ) {
+      message.error('网络连接异常，请检查网络后重试')
+    } else if (errorMessage.includes('服务器') || errorMessage.includes('500')) {
+      message.error('服务器繁忙，请稍后重试')
+    } else {
+      message.error(errorMessage)
+    }
+
+    captchaRef.value?.refresh()
+  } finally {
+    loading.value = false
+    isSubmitting.value = false
+  }
+}
+
+const handleLoginFailed = () => {
+  message.warning('请检查表单填写是否正确')
+}
+
+const handleForgotPassword = () => {
+  message.info('忘记密码功能即将上线')
+}
+
+const handleRegister = () => {
+  message.info('注册功能即将上线')
+}
+
+const loadRememberedUsername = () => {
+  const remembered = StorageManager.getItem('local', AppConfig.rememberUsernameKey)
+  if (remembered) {
+    formState.username = remembered
+    formState.remember = true
+  }
+}
+
+onMounted(() => {
+  loadRememberedUsername()
+})
+</script>
+
+<style lang="less" scoped>
+.login-container {
+  height: 100vh;
+  display: flex;
+  background: #fff;
+}
+
+.login-left {
+  flex: 1;
+  background: linear-gradient(135deg, #4073fa 0%, #3360d8 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 60px;
+
+  @media (max-width: 768px) {
+    display: none;
+  }
+}
+
+.login-banner {
+  max-width: 480px;
+  color: #fff;
+
+  h1 {
+    font-size: 42px;
+    font-weight: 700;
+    margin-bottom: 16px;
+    line-height: 1.3;
+    letter-spacing: 1px;
+  }
+
+  > p {
+    font-size: 18px;
+    opacity: 0.9;
+    margin-bottom: 48px;
+    line-height: 1.6;
+  }
+}
+
+.feature-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.feature-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 16px;
+
+  .feature-icon {
+    font-size: 20px;
+    color: #52c41a;
+  }
+}
+
+.login-right {
+  width: 480px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 40px;
+  background: #fff;
+
+  @media (max-width: 768px) {
+    width: 100%;
+    padding: 40px 24px;
+  }
+}
+
+.login-box {
+  width: 100%;
+  max-width: 360px;
+}
+
+.login-header {
+  text-align: center;
+  margin-bottom: 40px;
+
+  .logo {
+    width: 64px;
+    height: 64px;
+    background: linear-gradient(135deg, #4073fa 0%, #3360d8 100%);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 24px;
+    box-shadow: 0 4px 12px rgba(64, 115, 250, 0.3);
+
+    .logo-icon {
+      font-size: 32px;
+      color: #fff;
+    }
+  }
+
+  h1 {
+    font-size: 28px;
+    font-weight: 600;
+    color: @text-color;
+    margin-bottom: 8px;
+  }
+
+  p {
+    color: @text-color-secondary;
+    font-size: 14px;
+  }
+}
+
+.form-options {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.login-form-item {
+  :deep(.ant-form-item-label) {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  :deep(.ant-form-item-control) {
+    flex: 1;
+    max-width: 100%;
+  }
+}
+
+.login-form-item-no-label {
+  :deep(.ant-form-item-label) {
+    display: none;
+  }
+}
+
+.login-footer {
+  margin-top: 24px;
+  text-align: center;
+  color: @text-color-secondary;
+  font-size: 14px;
+
+  .register-link {
+    color: @primary-color;
+    margin-left: 4px;
+    transition: color 0.3s;
+
+    &:hover {
+      color: @primary-color-hover;
+    }
+  }
+}
+
+/* 输入框外层容器样式 - 保持边框和布局，去除背景 */
+:deep(.ant-input-affix-wrapper) {
+  border-radius: @border-radius-base;
+  padding: 8px 12px;
+  background: none; /* 完全去除背景 */
+  border: 1px solid #d9d9d9;
+
+  &:hover {
+    border-color: @primary-color-hover;
+  }
+
+  &:focus,
+  &.ant-input-affix-wrapper-focused {
+    border-color: @primary-color;
+    box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+  }
+
+  .ant-input-prefix {
+    margin-right: 8px;
+    color: @text-color-secondary;
+  }
+
+  /* 输入框本身 - 完全透明背景 */
+  .ant-input {
+    background: transparent; /* 透明背景 */
+    background-color: transparent; /* 兼容不同浏览器 */
+    background-image: none; /* 去除可能的背景图片 */
+  }
+}
+
+/* 覆盖浏览器自动填充时的默认背景色 - 兼容Chrome、Edge、Safari */
+:deep(.ant-input-affix-wrapper) .ant-input:-webkit-autofill,
+:deep(.ant-input-affix-wrapper) .ant-input:-webkit-autofill:hover,
+:deep(.ant-input-affix-wrapper) .ant-input:-webkit-autofill:focus,
+:deep(.ant-input-affix-wrapper) .ant-input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px transparent inset !important;
+  box-shadow: 0 0 0 1000px transparent inset !important;
+  -webkit-text-fill-color: @text-color !important;
+  caret-color: @text-color !important; /* 确保光标颜色一致 */
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+/* Edge浏览器特殊处理 - 使用appearance属性覆盖自动填充样式 */
+:deep(.ant-input-affix-wrapper) .ant-input:autofill,
+:deep(.ant-input-affix-wrapper) .ant-input:autofill:hover,
+:deep(.ant-input-affix-wrapper) .ant-input:autofill:focus,
+:deep(.ant-input-affix-wrapper) .ant-input:autofill:active {
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+  -webkit-text-fill-color: @text-color !important;
+  caret-color: @text-color !important;
+}
+
+/* 密码输入框特殊处理 - 确保内部输入框背景透明 */
+:deep(.ant-input-password) {
+  background: none; /* 外层容器无背景 */
+
+  .ant-input {
+    background: transparent;
+    background-color: transparent;
+    background-image: none;
+  }
+}
+
+/* 密码输入框自动填充背景覆盖 - WebKit内核浏览器 */
+:deep(.ant-input-password) .ant-input:-webkit-autofill,
+:deep(.ant-input-password) .ant-input:-webkit-autofill:hover,
+:deep(.ant-input-password) .ant-input:-webkit-autofill:focus,
+:deep(.ant-input-password) .ant-input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px transparent inset !important;
+  box-shadow: 0 0 0 1000px transparent inset !important;
+  -webkit-text-fill-color: @text-color !important;
+  caret-color: @text-color !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+/* Edge浏览器密码输入框自动填充特殊处理 */
+:deep(.ant-input-password) .ant-input:autofill,
+:deep(.ant-input-password) .ant-input:autofill:hover,
+:deep(.ant-input-password) .ant-input:autofill:focus,
+:deep(.ant-input-password) .ant-input:autofill:active {
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+  -webkit-text-fill-color: @text-color !important;
+  caret-color: @text-color !important;
+}
+
+.login-button {
+  height: 44px;
+  font-size: 16px;
+  border-radius: @border-radius-base;
+  box-shadow: 0 2px 8px rgba(24, 144, 255, 0.3);
+
+  &:hover {
+    box-shadow: 0 4px 12px rgba(24, 144, 255, 0.4);
+  }
+}
+
+.forgot-link {
+  color: @text-color-secondary;
+  transition: color 0.3s;
+  cursor: pointer;
+
+  &:hover {
+    color: @primary-color;
+  }
+}
+</style>

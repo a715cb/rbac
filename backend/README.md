@@ -76,6 +76,7 @@ cp .env.example .env
 | `CACHE_DRIVER` | 缓存驱动 | file |
 | `WX_MINIAPP_APPID` | 微信小程序 AppID | - |
 | `WX_MINIAPP_SECRET` | 微信小程序 Secret | - |
+| `MEMORY_FILE_PATH` | 知识图谱记忆文件路径 | runtime/data/knowledge_graph_memory.json |
 
 > **安全提示**：生产环境必须通过环境变量 `JWT_SECRET` 设置强随机密钥（至少 64 字符），可使用 `php -r "echo bin2hex(random_bytes(32));"` 生成。
 
@@ -86,8 +87,11 @@ cp .env.example .env
 ```bash
 mysql -u root -p < database/migrations/001_init_schema.sql
 mysql -u root -p < database/migrations/002_init_data.sql
+# (可选) 微信小程序表
 mysql -u root -p < database/migrations/004_wx_tables.sql
 ```
+
+> **注意**：`003_add_user_unique_indexes.sql` 中的唯一索引已在 `001_init_schema.sql` 中定义，无需单独执行。
 
 默认管理员账号：`admin` / `123456`
 
@@ -151,6 +155,7 @@ backend/
 │   ├── model/                    # 数据模型
 │   │   ├── Api                   # 接口模型
 │   │   ├── Business              # 业务模型
+│   │   ├── BusinessInteraction   # 业务交互模型
 │   │   ├── Department            # 部门模型
 │   │   ├── DictData              # 字典数据模型
 │   │   ├── DictType              # 字典类型模型
@@ -177,9 +182,10 @@ backend/
 │   ├── auth.php                  # 认证配置
 │   └── route.php                 # 路由配置
 ├── database/
-│   └── migrations/               # 数据库迁移脚本
+│   ├── migrations/               # 数据库迁移脚本
 │       ├── 001_init_schema.sql   # 表结构初始化
 │       ├── 002_init_data.sql     # 初始数据
+│       ├── 003_add_user_unique_indexes.sql # 用户唯一索引（已包含在001中）
 │       └── 004_wx_tables.sql     # 微信相关表
 ├── public/
 │   └── index.php                 # 应用入口
@@ -203,6 +209,7 @@ backend/
 | POST | `/admin/logout` | 管理员登出 |
 | POST | `/admin/refresh-token` | 刷新 Token |
 | GET | `/admin/profile` | 获取当前用户信息 |
+| PUT | `/admin/password` | 修改密码 |
 
 ### 用户管理
 
@@ -285,11 +292,14 @@ backend/
 | GET | `/admin/dict/types/:id` | 字典类型详情 |
 | PUT | `/admin/dict/types/:id` | 更新字典类型 |
 | DELETE | `/admin/dict/types/:id` | 删除字典类型 |
+| PUT | `/admin/dict/types/:id/status` | 切换字典类型状态 |
 | GET | `/admin/dict/data` | 字典数据列表 |
 | POST | `/admin/dict/data` | 创建字典数据 |
 | GET | `/admin/dict/data/:id` | 字典数据详情 |
 | PUT | `/admin/dict/data/:id` | 更新字典数据 |
 | DELETE | `/admin/dict/data/:id` | 删除字典数据 |
+| PUT | `/admin/dict/data/:id/status` | 切换字典数据状态 |
+| POST | `/admin/dict/data/sort` | 字典数据排序 |
 | GET | `/admin/dict/code/:code` | 按编码获取字典 |
 
 ### 日志管理
@@ -299,15 +309,28 @@ backend/
 | GET | `/admin/login-logs` | 登录日志列表 |
 | GET | `/admin/login-logs/stats` | 登录日志统计 |
 | POST | `/admin/login-logs/clean` | 清理登录日志 |
+| POST | `/admin/login-logs/clear` | 清空登录日志（超管） |
+| POST | `/admin/login-logs/delete` | 批量删除登录日志 |
 | GET | `/admin/operation-logs` | 操作日志列表 |
 | GET | `/admin/operation-logs/stats` | 操作日志统计 |
 | POST | `/admin/operation-logs/clean` | 清理操作日志 |
+| POST | `/admin/operation-logs/clear` | 清空操作日志（超管） |
+| POST | `/admin/operation-logs/delete` | 批量删除操作日志 |
 
 ### 仪表盘
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
 | GET | `/admin/dashboard/statistics` | 统计数据 |
+
+### 个人中心
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| GET | `/admin/profile` | 获取个人信息 |
+| PUT | `/admin/profile` | 更新个人信息 |
+| POST | `/admin/profile/avatar` | 上传头像 |
+| PUT | `/admin/profile/password` | 修改密码 |
 
 ### 微信小程序接口
 

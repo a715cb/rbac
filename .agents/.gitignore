@@ -1,0 +1,7 @@
+tools/playwright/test-screenshots/
+tools/playwright/test-reports/
+tools/playwright/temp/
+tools/playwright/logs/
+tools/playwright/node_modules/
+__pycache__/
+*.pyc

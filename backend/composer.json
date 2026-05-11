@@ -1,0 +1,31 @@
+{
+    "name": "rbac/backend",
+    "description": "RBAC Permission System Backend",
+    "type": "project",
+    "require": {
+        "php": ">=8.0",
+        "topthink/framework": "^8.0",
+        "topthink/think-helper": "^3.1",
+        "topthink/think-orm": "^4.0",
+        "firebase/php-jwt": "^7.0",
+        "predis/predis": "^3.4",
+        "w7corp/easywechat": "^6.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "app\\": "app/"
+        },
+        "files": [
+            "app/common.php"
+        ]
+    },
+    "config": {
+        "preferred-install": "dist",
+        "sort-packages": true
+    },
+    "scripts": {
+        "post-autoload-dump": [
+            "@php think service:discover"
+        ]
+    }
+}

@@ -1,0 +1,121 @@
+:root {
+  --spe-sider-bg-color: #001529;
+  --spe-info-color: #2962ff;
+  --spe-success-color: #67c23a;
+  --spe-danger-color: #f62d51;
+  --spe-warning-color: #ffbc34;
+  --spe-layout-border-color: #e2e8f0;
+  --spe-layout-bg-color: #f1f3f6;
+  --spe-dark-layout-bg-color: #000000;
+  --spe-dark-menu-item-bg: rgb(20 20 20);
+  --spe-dark-menu-sub-item-bg: rgb(36 37 37);
+  --spe-dark-menu-sub-menu-bg: rgb(36 37 37);
+
+  --text-color: rgba(0, 0, 0, 0.85);
+  --text-color-secondary: rgba(0, 0, 0, 0.45);
+  --background-color: #f1f3f6;
+  --primary-color: #4073fa;
+  --primary-color-hover: #5c8afc;
+
+  --ant-color-bg-container: #ffffff;
+  --ant-color-bg-layout: #f1f3f6;
+
+  --spe-layout-sidebar-light-bg: #fff;
+  --spe-layout-sidebar-light-text: rgba(0, 0, 0, 0.65);
+  --spe-layout-sidebar-light-border: #f0f0f0;
+  --spe-layout-sidebar-dark-bg: #001529;
+  --spe-layout-sidebar-dark-text: rgba(255, 255, 255, 0.65);
+
+  --spe-layout-left-nav-dark-bg: #0c131b;
+  --spe-layout-left-nav-light-bg: #fff;
+  --spe-layout-left-nav-item-text: #fff;
+  --spe-layout-left-nav-item-hover: rgba(255, 255, 255, 0.1);
+  --spe-layout-left-nav-item-light-text: #606266;
+
+  --spe-layout-header-light-bg: #fff;
+  --spe-layout-header-dark-bg: #001529;
+  --spe-layout-header-account-text: #808696;
+  --spe-layout-header-dark-breadcrumb-text: #dadbdd;
+
+  --spe-layout-tab-close-hover-bg: #c0c4cc;
+  --spe-layout-tab-close-hover-color: #fff;
+  --spe-layout-smooth-tab-default-bg: #fff;
+  --spe-layout-smooth-tab-hover-bg: #dee1e6;
+  --spe-layout-smart-tab-default-bg: #fff;
+  --spe-layout-tabs-dark-hover-bg: #606060;
+  --spe-layout-tabs-dark-active-bg: #303030;
+
+  --spe-layout-footer-light-text: rgba(0, 0, 0, 0.45);
+  --spe-layout-footer-dark-text: rgba(255, 255, 255, 0.45);
+  --spe-layout-footer-dark-divider: rgba(255, 255, 255, 0.25);
+
+  --spe-layout-setting-handle-bg: rgba(0, 0, 0, 0.38);
+  --spe-layout-setting-handle-dark-bg: rgba(129, 126, 126, 0.5);
+  --spe-layout-setting-close-hover-bg: #eee;
+  --spe-layout-setting-close-dark-hover-bg: #5b5b5b;
+  --spe-layout-setting-select-color: #1890ff;
+
+  --spe-layout-logo-text-color: #fff;
+
+  --spe-logo-gradient-start: var(--ant-color-primary, #4073fa);
+  --spe-logo-gradient-end: color-mix(in srgb, var(--ant-color-primary, #4073fa), #722ed1 55%);
+  --spe-logo-text-fill: #ffffff;
+  --spe-logo-title-color: var(--ant-color-primary, #4073fa);
+
+  --spe-layout-trigger-hover-bg: rgba(0, 0, 0, 0.06);
+  --spe-layout-trigger-active-bg: rgba(0, 0, 0, 0.1);
+
+  --spe-layout-user-menu-action-hover: rgba(0, 0, 0, 0.025);
+  --spe-layout-user-menu-icon-hover-bg: #eee;
+  --spe-layout-user-menu-account-color: #fff;
+  --spe-layout-header-action-gap: 16px;
+  --spe-layout-header-action-padding-right: 4px;
+  --spe-layout-user-menu-dropdown-height: 48px;
+  --spe-layout-user-menu-icon-size: 32px;
+  --spe-layout-user-menu-icon-gap: 4px;
+  --spe-layout-user-menu-account-gap: 8px;
+  --spe-layout-user-menu-account-font-size: 14px;
+}
+
+html[data-theme='dark'] {
+  --ant-color-bg-container: #141414;
+  --ant-color-bg-layout: #000000;
+
+  --text-color: rgba(255, 255, 255, 0.85);
+  --text-color-secondary: rgba(255, 255, 255, 0.45);
+  --background-color: #000000;
+  --primary-color: #4073fa;
+  --primary-color-hover: #5c8afc;
+
+  --spe-layout-border-color: var(--ant-color-border-secondary);
+  --spe-sider-bg-color: var(--spe-dark-menu-sub-menu-bg);
+
+  --spe-layout-sidebar-light-border: var(--ant-color-border-secondary);
+
+  --spe-layout-left-nav-dark-bg: #0c131b;
+  --spe-layout-left-nav-light-bg: var(--ant-color-bg-container);
+
+  --spe-layout-header-light-bg: var(--ant-color-bg-container);
+  --spe-layout-header-account-text: rgba(255, 255, 255, 0.65);
+
+  --spe-layout-smooth-tab-default-bg: var(--ant-color-bg-container);
+  --spe-layout-smooth-tab-hover-bg: #606060;
+  --spe-layout-smart-tab-default-bg: var(--ant-color-bg-container);
+
+  --spe-layout-footer-light-text: rgba(255, 255, 255, 0.45);
+
+  --spe-layout-setting-handle-bg: rgba(129, 126, 126, 0.5);
+  --spe-layout-setting-close-hover-bg: #5b5b5b;
+
+  --spe-logo-gradient-start: color-mix(in srgb, var(--ant-color-primary, #4073fa), #597ef7 55%);
+  --spe-logo-gradient-end: color-mix(in srgb, var(--ant-color-primary, #4073fa), #9254de 55%);
+  --spe-logo-text-fill: #ffffff;
+  --spe-logo-title-color: #ffffff;
+
+  --spe-layout-trigger-hover-bg: rgba(255, 255, 255, 0.12);
+  --spe-layout-trigger-active-bg: rgba(255, 255, 255, 0.18);
+
+  --spe-layout-user-menu-icon-hover-bg: #383838;
+  --spe-layout-user-menu-dark-icon-bg: #001529;
+  --spe-layout-user-menu-dark-icon-hover-bg: rgba(255, 255, 255, 0.08);
+}

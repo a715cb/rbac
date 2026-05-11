@@ -1,0 +1,42 @@
+@import './variables.less';
+
+.header-fixed() {
+  position: fixed;
+  top: 0;
+  transition: width 0.2s;
+}
+
+.header-content() {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 100%;
+  padding: 0 16px;
+}
+
+.header-menu-area() {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  flex: 1;
+}
+
+.header-theme-light() {
+  background: @layout-header-light-bg;
+}
+
+.header-theme-dark() {
+  background: @layout-header-dark-bg;
+}
+
+.layout-header-action() {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  height: 100%;
+  gap: @layout-header-action-gap;
+  padding-right: @layout-header-action-padding-right;
+}

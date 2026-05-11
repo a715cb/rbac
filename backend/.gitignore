@@ -1,0 +1,70 @@
+# Composer 依赖
+/vendor/
+
+# 运行时目录
+/runtime/
+/cache/
+/log/
+/temp/
+
+# 环境配置
+/.env
+/.env.local
+/.env.*.local
+
+# IDE 配置
+/.idea/
+/.vscode/*
+!.vscode/extensions.json
+*.sublime-project
+*.sublime-workspace
+
+# 系统文件
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# 日志文件
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# 数据库文件
+*.sqlite
+*.sqlite3
+*.db
+
+# 备份文件
+*.bak
+*.backup
+*~
+
+# 编译文件
+*.pyc
+*.pyo
+*.class
+
+# 压缩包
+*.zip
+*.tar.gz
+*.rar
+
+# 临时文件
+tmp/
+temp/
+*.tmp
+*.swp
+*.swo
+*~
+
+# 测试覆盖率
+/coverage/
+.phpunit.result.cache
+
+# ThinkPHP 特定
+/runtime/cache/
+/runtime/log/
+/runtime/session/
+/runtime/template/
+/runtime/compile/

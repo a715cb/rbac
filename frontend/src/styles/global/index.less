@@ -1,0 +1,686 @@
+@import './variables.less';
+@import './variables.css';
+@import './transition.less';
+
+// 全局样式
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans',
+    sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  font-size: @font-size-base;
+  line-height: 1.5;
+  color: @text-color;
+  background-color: @background-color-base;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#app {
+  height: 100%;
+}
+
+// 滚动条样式
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+// Ant Design Vue 全局样式覆盖
+.ant-layout {
+  background: @background-color-base;
+}
+
+.ant-layout-sider {
+  background: @sidebar-bg;
+}
+
+.ant-layout-header {
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(0, 21, 41, 0.08);
+}
+
+// 卡片样式优化
+.ant-card {
+  border-radius: 4px;
+  box-shadow: none;
+
+  .ant-card-head {
+    border-bottom: 1px solid @border-color-split;
+    padding: 0 24px;
+    min-height: 48px;
+
+    .ant-card-head-title {
+      font-size: @font-size-lg;
+      font-weight: 500;
+      padding: 12px 0;
+    }
+  }
+
+  .ant-card-body {
+    padding: 24px;
+  }
+}
+
+// 表格样式优化
+.ant-table {
+  .ant-table-thead > tr > th {
+    background: #fafafa;
+    font-weight: 500;
+    padding: 12px 16px;
+    border-bottom: 1px solid #e8e8e8;
+  }
+
+  .ant-table-tbody > tr > td {
+    padding: 12px 16px;
+    border-bottom: 1px solid #e8e8e8;
+  }
+
+  .ant-table-tbody > tr:hover > td {
+    background: #e6f7ff;
+  }
+}
+
+// 表单样式优化
+.ant-form-item {
+  margin-bottom: 20px;
+}
+
+.ant-input,
+.ant-input-password,
+.ant-select-selector,
+.ant-picker {
+  border-radius: @border-radius-base;
+  transition: all 0.3s;
+}
+
+.ant-input:focus,
+.ant-input-password:focus,
+.ant-select-focused .ant-select-selector {
+  box-shadow: 0 0 0 2px @primary-color-outline;
+}
+
+// 按钮样式优化
+.ant-btn {
+  border-radius: @border-radius-base;
+  transition: all 0.3s;
+
+  &.ant-btn-primary {
+    box-shadow: 0 2px 0 rgba(0, 0, 0, 0.045);
+
+    &:hover {
+      background: @primary-color-hover;
+      border-color: @primary-color-hover;
+    }
+
+    &:active {
+      background: @primary-color-active;
+      border-color: @primary-color-active;
+    }
+  }
+}
+
+// 标签样式优化
+.ant-tag {
+  border-radius: @border-radius-base;
+  padding: 0 8px;
+  font-size: @font-size-sm;
+  line-height: 20px;
+  height: 22px;
+}
+
+// 分页样式优化
+.ant-pagination {
+  .ant-pagination-item {
+    border-radius: @border-radius-base;
+
+    &-active {
+      background: @primary-color;
+      border-color: @primary-color;
+
+      a {
+        color: #fff;
+      }
+
+      &:hover {
+        background: @primary-color-hover;
+        border-color: @primary-color-hover;
+      }
+    }
+  }
+}
+
+// 弹窗样式优化
+.ant-modal {
+  .ant-modal-content {
+    border-radius: @border-radius-base;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  .ant-modal-header {
+    border-radius: @border-radius-base @border-radius-base 0 0;
+    padding: 16px 24px;
+    border-bottom: 1px solid #e8e8e8;
+  }
+
+  .ant-modal-title {
+    font-weight: 500;
+    font-size: @font-size-lg;
+  }
+
+  .ant-modal-body {
+    padding: 24px;
+  }
+
+  .ant-modal-footer {
+    padding: 10px 24px;
+    border-top: 1px solid #e8e8e8;
+  }
+}
+
+// 下拉菜单样式优化
+.ant-dropdown-menu {
+  border-radius: @border-radius-base;
+  box-shadow:
+    0 3px 6px -4px rgba(0, 0, 0, 0.12),
+    0 6px 16px rgba(0, 0, 0, 0.08),
+    0 9px 28px 8px rgba(0, 0, 0, 0.05);
+
+  .ant-dropdown-menu-item {
+    padding: 8px 16px;
+    transition: all 0.3s;
+
+    &:hover {
+      background: #e6f7ff;
+      color: @primary-color;
+    }
+  }
+}
+
+// 面包屑样式优化
+.ant-breadcrumb {
+  font-size: @font-size-base;
+
+  a {
+    color: @text-color-secondary;
+    transition: color 0.3s;
+
+    &:hover {
+      color: @primary-color;
+    }
+  }
+
+  .ant-breadcrumb-separator {
+    color: @text-color-secondary;
+  }
+
+  .ant-breadcrumb-link {
+    color: @text-color-secondary;
+  }
+
+  .ant-breadcrumb-link:last-child {
+    color: @text-color;
+  }
+}
+
+// 菜单样式优化（亮色主题）- 仅适用于侧边栏菜单（inline 模式）
+.ant-menu-light.ant-menu-inline,
+.ant-menu-light.ant-menu-vertical {
+  background: @sidebar-bg;
+
+  .ant-menu-item {
+    color: @sidebar-text-color;
+    margin: 4px 4px;
+    width: calc(100% - 8px);
+    border-radius: 0;
+
+    &:hover {
+      color: var(--ant-color-primary);
+      background: var(--ant-color-primary-bg);
+    }
+
+    &.ant-menu-item-selected {
+      background: var(--ant-color-primary-bg);
+      color: var(--ant-color-primary);
+      // border-right: 3px solid var(--ant-color-primary);
+    }
+  }
+
+  .ant-menu-submenu-title {
+    color: @sidebar-text-color;
+    margin: 4px 4px;
+    width: calc(100% - 8px);
+    border-radius: 0;
+
+    &:hover {
+      color: var(--ant-color-primary);
+      background: var(--ant-color-primary-bg);
+    }
+  }
+
+  .ant-menu-submenu-selected > .ant-menu-submenu-title {
+    color: var(--ant-color-primary);
+  }
+}
+
+// 菜单样式优化（深色主题）- 仅适用于侧边栏菜单（inline 模式）
+.ant-menu-dark.ant-menu-inline,
+.ant-menu-dark.ant-menu-vertical {
+  // background: #001529;
+
+  .ant-menu-item {
+    color: rgba(255, 255, 255, 0.65);
+    margin: 4px 4px;
+    width: calc(100% - 8px);
+    border-radius: 0;
+
+    &:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    &.ant-menu-item-selected {
+      background: var(--ant-color-primary);
+      color: #fff;
+    }
+  }
+
+  .ant-menu-submenu-title {
+    color: rgba(255, 255, 255, 0.65);
+    margin: 4px 4px;
+    width: calc(100% - 8px);
+    border-radius: 0;
+
+    &:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.08);
+    }
+  }
+
+  .ant-menu-submenu-selected > .ant-menu-submenu-title {
+    color: #fff;
+  }
+}
+
+// ============================================
+// 亮色主题全局样式
+// ============================================
+
+.ant-theme-light {
+  .ant-pro-sider {
+    background-color: #fff;
+  }
+  .logo h1 {
+    color: var(--ant-color-primary);
+  }
+}
+
+// ============================================
+// 暗色主题全局样式（侧边栏暗色，内容区亮色）
+// ============================================
+
+.ant-theme-dark {
+  .ant-pro-sider {
+    background-color: var(--spe-sider-bg-color);
+  }
+
+  .logo h1 {
+    color: #fff;
+  }
+}
+
+// ============================================
+// 混合布局侧边栏样式
+// ============================================
+
+.ant-layout-mix .ant-pro-sider {
+  background-color: var(--ant-color-bg-container);
+}
+
+// 菜单栏滚动条 - 亮色主题
+.ant-theme-light .ant-layout-sider-children ::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.06);
+  border-radius: 3px;
+  box-shadow: inset 0 0 5px rgb(0 21 41 / 5%);
+}
+
+.ant-theme-light .ant-layout-sider-children ::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.12);
+  border-radius: 3px;
+  box-shadow: inset 0 0 5px rgb(0 21 41 / 5%);
+}
+
+// 菜单栏滚动条 - 深色主题
+.ant-pro-sider .ant-layout-sider-children ::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.ant-pro-sider .ant-layout-sider-children ::-webkit-scrollbar-thumb {
+  background: hsla(0, 0%, 100%, 0.2);
+  border-radius: 3px;
+  box-shadow: inset 0 0 5px hsl(0deg 0% 100% / 5%);
+}
+
+.ant-pro-sider .ant-layout-sider-children ::-webkit-scrollbar-track {
+  background: hsla(0, 0%, 100%, 0.15);
+  border-radius: 3px;
+  box-shadow: inset 0 0 5px rgb(37 37 37 / 5%);
+}
+
+// 开关样式优化
+.ant-switch {
+  min-width: 36px;
+  height: 20px;
+  line-height: 20px;
+
+  &.ant-switch-checked {
+    background: @success-color;
+  }
+}
+
+// 徽章样式优化
+.ant-badge {
+  .ant-badge-count {
+    box-shadow: 0 0 0 1px #fff;
+  }
+}
+
+// 树形选择样式优化
+.ant-tree {
+  .ant-tree-treenode {
+    padding: 4px 0;
+
+    &:hover {
+      background: @background-color-light;
+    }
+
+    &.ant-tree-treenode-selected {
+      background: #e6f7ff;
+    }
+  }
+}
+
+// 工具类
+.line-feed-1 {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  line-clamp: 1;
+  -webkit-box-orient: vertical;
+}
+
+.text-primary {
+  color: @primary-color;
+}
+
+.text-success {
+  color: @success-color;
+}
+
+.text-warning {
+  color: @warning-color;
+}
+
+.text-error {
+  color: @error-color;
+}
+
+.text-secondary {
+  color: @text-color-secondary;
+}
+
+.bg-primary {
+  background: @primary-color;
+}
+
+.bg-success {
+  background: @success-color;
+}
+
+.bg-warning {
+  background: @warning-color;
+}
+
+.bg-error {
+  background: @error-color;
+}
+
+// 页面容器
+// padding 和 min-height 由 DefaultLayout 统一控制，此处不再重复定义
+
+// 搜索卡片
+.search-card {
+  margin-bottom: 24px;
+  background: #fff;
+
+  .ant-form-item {
+    margin-bottom: 0;
+  }
+
+  .ant-form-item-label {
+    color: rgba(0, 0, 0, 0.85);
+  }
+}
+
+// 表格卡片
+.table-card {
+  background: #fff;
+
+  .table-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    font-size: 16px;
+    font-weight: 500;
+    color: rgba(0, 0, 0, 0.85);
+  }
+}
+
+// ============================================
+// 暗黑模式全局样式
+// ============================================
+
+html[data-theme='dark'] {
+  --text-color: rgba(255, 255, 255, 0.85);
+  --text-color-secondary: rgba(255, 255, 255, 0.45);
+  --background-color: #000;
+  --primary-color: #4073fa;
+  --primary-color-hover: #5c8afc;
+  --spe-layout-border-color: var(--ant-color-border-secondary);
+  --spe-sider-bg-color: var(--spe-dark-menu-sub-menu-bg);
+
+  ::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.2);
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(255, 255, 255, 0.3);
+  }
+
+  // 菜单和头部
+  .ant-menu-dark .ant-menu-inline.ant-menu-sub,
+  .ant-layout-sider-dark,
+  .layout-header {
+    background: var(--ant-color-bg-container);
+  }
+
+  .ant-pro-sider-links {
+    border-top: 1px solid var(--ant-color-border-secondary);
+  }
+
+  .ant-modal-root .ant-modal-mask {
+    background-color: rgb(0 0 0 / 0.65);
+  }
+
+  // 暗黑模式的分页样式
+  .ant-table-wrapper .ant-pagination-mini {
+    .ant-pagination-prev,
+    .ant-pagination-next,
+    .ant-pagination-item:not(.ant-pagination-item-active) {
+      background-color: transparent;
+    }
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    color: rgba(255, 255, 255, 0.85);
+  }
+
+  .hljs {
+    color: #d1d1d1;
+    background: var(--ant-color-bg-container);
+  }
+
+  .hljs-string {
+    color: #e5e5e5;
+  }
+
+  // 搜索卡片暗黑模式
+  .search-card {
+    background: #1f1f1f;
+
+    .ant-form-item-label {
+      color: rgba(255, 255, 255, 0.85);
+    }
+  }
+
+  // 表格卡片暗黑模式
+  .table-card {
+    background: #1f1f1f;
+
+    .table-header {
+      color: rgba(255, 255, 255, 0.85);
+    }
+
+    .table-title {
+      color: rgba(255, 255, 255, 0.85);
+    }
+  }
+
+  // 表格暗黑模式
+  .ant-table {
+    .ant-table-thead > tr > th {
+      background: #1f1f1f;
+      color: rgba(255, 255, 255, 0.85);
+      border-bottom: 1px solid #303030;
+    }
+
+    .ant-table-tbody > tr > td {
+      border-bottom: 1px solid #303030;
+    }
+
+    .ant-table-tbody > tr:hover > td {
+      background: #111b26;
+    }
+  }
+
+  // 卡片暗黑模式
+  .ant-card {
+    background: #1f1f1f;
+
+    .ant-card-head {
+      border-bottom: 1px solid #303030;
+
+      .ant-card-head-title {
+        color: rgba(255, 255, 255, 0.85);
+      }
+    }
+  }
+
+  // 操作链接暗黑模式
+  .action-link {
+    color: #4073fa !important;
+
+    &:hover {
+      color: #5c8afc !important;
+    }
+  }
+
+  .action-delete {
+    color: #ff7875 !important;
+
+    &:hover {
+      color: #ffa39e !important;
+    }
+  }
+
+  // 状态文本暗黑模式
+  .text-success {
+    color: #73d13d;
+  }
+
+  .text-error {
+    color: #ff7875;
+  }
+
+  .text-red {
+    color: #ff7875;
+  }
+
+  // API 路径标签暗黑模式
+  .api-path {
+    background: #303030;
+    color: rgba(255, 255, 255, 0.65);
+  }
+
+  // 分隔线暗黑模式
+  .ant-divider {
+    border-color: #303030;
+  }
+
+  // 统计卡片暗黑模式
+  .stat-card {
+    :deep(.ant-statistic-title) {
+      color: rgba(255, 255, 255, 0.45);
+    }
+  }
+}
+
+// ============================================
+// View Transition 主题切换动画
+// ============================================
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+::view-transition-old(root) {
+  z-index: 1;
+}
+
+::view-transition-new(root) {
+  z-index: 2147483646;
+}
+
+[data-theme='dark']::view-transition-old(root) {
+  z-index: 2147483646;
+}
+
+[data-theme='dark']::view-transition-new(root) {
+  z-index: 1;
+}
