@@ -1,13 +1,9 @@
 <!--
-  @description 系统管理 - 角色管理页面
-  提供角色的增删改查、状态切换、权限分配和数据范围设置等功能。
-  页面结构：搜索栏 → 操作工具栏 → 数据表格 → 弹窗（新增/编辑、权限分配、数据范围）
-  @字典集成：
-    - DictSelect：字典选择器组件，通过字典编码动态获取筛选选项
-    - useDict：字典数据缓存组合式函数，支持全局缓存与自动刷新
-    - role_status：角色状态字典编码，筛选选项来源于字典管理系统
-    - data_scope：数据权限范围字典编码，表格列标签来源于字典管理系统
-  @核心数据流：
+  @文件: index.vue
+  @用途: 角色管理页面，提供角色的增删改查、状态切换、权限分配和数据范围设置
+  @描述: 系统管理-角色管理核心页面，页面结构为搜索栏→操作工具栏→数据表格→弹窗（新增/编辑、权限分配、数据范围）。
+         集成字典组件：DictSelect用于状态筛选（role_status）、表格列标签（data_scope），useDict提供字典缓存与自动刷新。
+  @核心逻辑:
     1. 页面挂载 → fetchData() 加载角色列表，useDict 加载字典选项
     2. 搜索/字典筛选变更 → 重置页码 → fetchData() 刷新数据
     3. 新增/编辑/删除/状态变更 → 操作成功后 fetchData() 刷新列表
@@ -62,7 +58,7 @@
           <div class="flex items-center">
             <div class="table-header-toolbar">
               <div>
-                <a-button type="primary" @click="handleAdd">
+                <a-button v-auth="'system_role:add'" type="primary" @click="handleAdd">
                   <PlusOutlined />
                   新增
                 </a-button>
@@ -80,6 +76,7 @@
         :loading="loading"
         :pagination="pagination"
         :size="tableSettingState.size"
+        :scroll="{ x: 1100 }"
         row-key="id"
         @change="handleTableChange"
       />
@@ -129,6 +126,10 @@ import { usePageTable } from '@/composables/usePageTable'
 import type { ColumnItem } from '@/components/TableSetting/types'
 import { DictSelect } from '@/components/Dict'
 import { useDict, getDictLabel } from '@/composables/useDict'
+import { useUserStore } from '@/stores/user'
+
+/** 用户权限 Store，用于按钮级权限判断 */
+const userStore = useUserStore()
 
 /** 表格加载状态 */
 const loading = ref(false)
@@ -220,6 +221,7 @@ const columnItems: ColumnItem[] = [
     customRender: ({ record }: { record: RoleInfo }) => {
       return h(Switch, {
         checked: record.status === 1,
+        disabled: !userStore.hasPermission('system_role:status'),
         onChange: (checked: boolean | string | number) =>
           handleStatusChange(record, Boolean(checked))
       })
@@ -233,29 +235,24 @@ const columnItems: ColumnItem[] = [
     width: 350,
     fixed: 'right',
     customRender: ({ record }: { record: RoleInfo }) => {
-      return h(Space, {}, () => [
-        h(Button, { type: 'link', size: 'small', onClick: () => handleEdit(record) }, () => [
-          h(EditOutlined),
-          ' 编辑'
-        ]),
-        h(Button, { type: 'link', size: 'small', onClick: () => handlePermissions(record) }, () => [
-          h(SafetyOutlined),
-          ' 权限'
-        ]),
-        h(Button, { type: 'link', size: 'small', onClick: () => handleDataScope(record) }, () => [
-          h(ClusterOutlined),
-          ' 数据'
-        ]),
-        h(
-          Popconfirm,
-          { title: '确定要删除该角色吗？', onConfirm: () => handleDelete(record) },
-          () =>
-            h(Button, { type: 'link', danger: true, size: 'small' }, () => [
-              h(DeleteOutlined),
-              ' 删除'
-            ])
+      const buttons: ReturnType<typeof h>[] = []
+      if (userStore.hasPermission('system_role:edit')) {
+        buttons.push(h(Button, { type: 'link', size: 'small', onClick: () => handleEdit(record) }, () => [h(EditOutlined), ' 编辑']))
+      }
+      if (userStore.hasPermission('system_role:permission')) {
+        buttons.push(h(Button, { type: 'link', size: 'small', onClick: () => handlePermissions(record) }, () => [h(SafetyOutlined), ' 权限']))
+      }
+      if (userStore.hasPermission('system_role:data_scope')) {
+        buttons.push(h(Button, { type: 'link', size: 'small', onClick: () => handleDataScope(record) }, () => [h(ClusterOutlined), ' 数据']))
+      }
+      if (userStore.hasPermission('system_role:delete')) {
+        buttons.push(
+          h(Popconfirm, { title: '确定要删除该角色吗？', onConfirm: () => handleDelete(record) }, () =>
+            h(Button, { type: 'link', danger: true, size: 'small' }, () => [h(DeleteOutlined), ' 删除'])
+          )
         )
-      ])
+      }
+      return h(Space, {}, () => buttons)
     }
   }
 ]

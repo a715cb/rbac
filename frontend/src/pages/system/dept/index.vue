@@ -1,6 +1,25 @@
+<!--
+  @文件: dept/index.vue
+  @用途: 部门管理主页面
+  @描述: 系统管理模块下的部门管理页面，以树形表格展示部门层级结构。
+         支持部门的增删改查、状态切换、展开/折叠、名称搜索高亮、
+         查看部门成员等操作。
+  @主要组件:
+    - DeptFormModal: 部门新增/编辑弹窗
+    - DeptUsersModal: 部门成员查看弹窗
+    - TableSetting: 表格列设置组件
+  @核心逻辑:
+    - 树形表格展示部门层级数据，支持展开/折叠控制
+    - 名称列支持自定义筛选下拉搜索，搜索关键词高亮显示
+    - 状态列使用 Switch 开关，支持直接切换部门启用/禁用
+    - 操作列提供添加子部门、修改、查看成员、删除功能
+    - 使用 usePageTable 组合式函数管理表格列配置
+    - 使用 useTreeSearch 组合式函数管理树形搜索和展开状态
+-->
 <template>
   <div ref="wrapRef" class="page-container">
     <div class="s-table-wrapper">
+      <!-- 表格顶部工具栏：新增按钮、展开/折叠按钮、表格设置 -->
       <div class="s-table-header">
         <div class="table-header-container">
           <div class="flex items-center">
@@ -25,6 +44,7 @@
         </div>
       </div>
 
+      <!-- 部门树形表格：不分页，支持横向滚动 -->
       <a-table
         :columns="visibleColumns"
         :data-source="tableData"
@@ -37,6 +57,7 @@
         :scroll="{ x: 1300 }"
         @expand="handleExpand"
       >
+        <!-- 名称列自定义筛选下拉面板 -->
         <template
           #customFilterDropdown="{ setSelectedKeys, selectedKeys, confirm, clearFilters, column }"
         >
@@ -68,10 +89,12 @@
           </div>
         </template>
 
+        <!-- 筛选图标：激活时显示蓝色 -->
         <template #customFilterIcon="{ filtered }">
           <SearchOutlined :style="{ color: filtered ? '#1890ff' : undefined }" />
         </template>
 
+        <!-- 树形展开图标：自定义箭头样式，支持旋转动画 -->
         <template #expandIcon="{ expandable, expanded, record, onExpand }">
           <a
             v-if="expandable"
@@ -86,6 +109,7 @@
       </a-table>
     </div>
 
+    <!-- 部门新增/编辑弹窗 -->
     <DeptFormModal
       v-model:visible="modalVisible"
       :record="currentRecord"
@@ -94,6 +118,7 @@
       @success="fetchData"
     />
 
+    <!-- 部门成员查看弹窗 -->
     <DeptUsersModal
       v-model:visible="usersModalVisible"
       :dept-id="currentDeptId"
@@ -108,11 +133,14 @@ import { useDebounceFn } from '@vueuse/core'
 import {
   SearchOutlined,
   PlusOutlined,
+  EditOutlined,
+  DeleteOutlined,
+  TeamOutlined,
   ExpandOutlined,
   ShrinkOutlined,
   CaretRightOutlined
 } from '@ant-design/icons-vue'
-import { message } from 'ant-design-vue'
+import { message, Space, Button, Popconfirm } from 'ant-design-vue'
 import { getDeptList, deleteDept, changeDeptStatus } from '@/api/dept'
 import type { DeptInfo } from '@/api/dept'
 import DeptFormModal from './components/DeptFormModal.vue'
@@ -122,26 +150,45 @@ import { usePageTable } from '@/composables/usePageTable'
 import type { ColumnItem } from '@/components/TableSetting/types'
 import { useTreeSearch } from '@/composables/useTreeSearch'
 
+/** 页面加载状态 */
 const loading = ref(false)
+
+/** 部门表格数据：树形结构的部门列表 */
 const tableData = ref<DeptInfo[]>([])
+
+/** 部门表单弹窗可见状态 */
 const modalVisible = ref(false)
+
+/** 当前操作的部门记录：编辑时传入，新增时为 null */
 const currentRecord = ref<DeptInfo | null>(null)
+
+/** 新增子部门时的上级部门ID */
 const parentId = ref<number | undefined>(undefined)
+
+/** 页面容器引用，用于全屏等功能 */
 const wrapRef = ref<HTMLElement | null>(null)
+
+/** 搜索输入框引用，用于筛选下拉打开时自动聚焦 */
 const searchInput = ref()
+
+/** 部门树形数据：与 tableData 同步，供 DeptFormModal 的上级部门选择器使用 */
 const treeData = ref<DeptInfo[]>([])
+
+/** 部门成员弹窗可见状态 */
 const usersModalVisible = ref(false)
+
+/** 当前查看成员的部门ID */
 const currentDeptId = ref<number | undefined>(undefined)
+
+/** 当前查看成员的部门名称 */
 const currentDeptName = ref('')
 
+/** 树形搜索组合式函数：管理搜索文本、展开行和关键词高亮 */
 const { searchText, expandedRowKeys, highlightText, doSearch, resetSearch } = useTreeSearch('name')
 
+/** 表格列配置项：定义部门表格的所有列信息 */
 const columnItems: ColumnItem[] = [
-  {
-    key: 'name',
-    title: '名称',
-    dataIndex: 'name'
-  },
+  { key: 'name', title: '名称', dataIndex: 'name' },
   { key: 'code', title: '部门编码', dataIndex: 'code', width: 120 },
   { key: 'leader', title: '负责人', dataIndex: 'leader', width: 100 },
   { key: 'phone', title: '联系电话', dataIndex: 'phone', width: 140 },
@@ -149,13 +196,24 @@ const columnItems: ColumnItem[] = [
   { key: 'sort', title: '排序', dataIndex: 'sort', width: 80, align: 'center' },
   { key: 'status', title: '状态', dataIndex: 'status', width: 100, align: 'center' },
   { key: 'create_time', title: '创建时间', dataIndex: 'create_time', width: 180 },
-  { key: 'action', title: '操作', dataIndex: 'action', width: 280, fixed: 'right' }
+  { key: 'action', title: '操作', dataIndex: 'action', width: 320, fixed: 'right' }
 ]
 
+/**
+ * 渲染搜索高亮文本
+ * @param text - 原始文本
+ * @returns 带有高亮 HTML 标记的文本，无搜索关键词时返回原文
+ */
 const renderHighlightText = (text: string): string => {
   return searchText.value ? highlightText(text, searchText.value) : text
 }
 
+/**
+ * 递归收集所有可展开节点的ID
+ * @param data - 树形部门数据
+ * @returns 所有拥有子节点的部门ID数组
+ * @description 遍历整棵部门树，收集所有包含 children 的节点ID，用于"展开全部"功能
+ */
 const collectExpandableIds = (data: DeptInfo[]): (string | number)[] => {
   const ids: (string | number)[] = []
   const walk = (list: DeptInfo[]) => {
@@ -170,14 +228,28 @@ const collectExpandableIds = (data: DeptInfo[]): (string | number)[] => {
   return ids
 }
 
+/**
+ * 展开全部树形节点
+ * @description 收集所有可展开节点ID并设置到 expandedRowKeys
+ */
 const expandAll = () => {
   expandedRowKeys.value = collectExpandableIds(tableData.value)
 }
 
+/**
+ * 折叠全部树形节点
+ * @description 清空 expandedRowKeys，使所有节点折叠
+ */
 const collapseAll = () => {
   expandedRowKeys.value = []
 }
 
+/**
+ * 处理单个节点展开/折叠
+ * @param expanded - 是否展开
+ * @param record - 当前操作的部门记录
+ * @description 手动维护 expandedRowKeys，实现受控展开状态
+ */
 const handleExpand = (expanded: boolean, record: DeptInfo) => {
   if (expanded) {
     expandedRowKeys.value = [...expandedRowKeys.value, record.id]
@@ -186,21 +258,39 @@ const handleExpand = (expanded: boolean, record: DeptInfo) => {
   }
 }
 
+/** 防抖搜索：300ms 延迟，避免频繁触发搜索 */
 const debouncedDoSearch = useDebounceFn((keyword: string) => {
   doSearch(keyword, tableData)
 }, 300)
 
+/**
+ * 筛选搜索处理
+ * @param selectedKeys - 选中的筛选关键词数组
+ * @param confirm - 确认筛选回调，关闭下拉面板
+ * @description 确认筛选并执行防抖搜索
+ */
 const handleFilterSearch = (selectedKeys: string[], confirm: () => void) => {
   confirm()
   debouncedDoSearch(selectedKeys[0] || '')
 }
 
+/**
+ * 筛选重置处理
+ * @param clearFilters - 清除筛选条件回调
+ * @param confirm - 确认回调，关闭下拉面板
+ * @description 清除筛选条件并重置搜索状态
+ */
 const handleFilterReset = (clearFilters: (() => void) | undefined, confirm: () => void) => {
   clearFilters?.()
   resetSearch()
   confirm()
 }
 
+/**
+ * 获取部门列表数据
+ * @description 调用 API 获取部门树形数据，同步更新表格数据和树形选择器数据，
+ *              并默认展开所有节点
+ */
 const fetchData = async () => {
   loading.value = true
   try {
@@ -215,12 +305,20 @@ const fetchData = async () => {
   }
 }
 
+/** 表格设置组合式函数：管理表格尺寸和列可见性 */
 const { tableSettingState, visibleColumns: baseColumns } = usePageTable({
   columns: columnItems,
   fetchData,
   wrapRef
 })
 
+/**
+ * 最终可见列配置
+ * @computed 在基础列配置上增强特定列的渲染逻辑：
+ *   - name 列：添加自定义筛选下拉、搜索高亮渲染
+ *   - status 列：渲染为 Switch 开关，支持直接切换状态
+ *   - action 列：渲染操作按钮组（PlusOutlined 添加、EditOutlined 修改、TeamOutlined 成员、DeleteOutlined 删除）
+ */
 const visibleColumns = computed(() =>
   baseColumns.value.map((col) => {
     const base: Record<string, any> = { ...col }
@@ -246,24 +344,32 @@ const visibleColumns = computed(() =>
     }
     if (col.key === 'action') {
       base.customRender = ({ record }: { record: DeptInfo }) => {
-        return h('div', {}, [
-          h('a', { onClick: () => handleAddChild(record) }, '添加'),
-          h('a-divider', { type: 'vertical' }),
-          h('a', { onClick: () => handleEdit(record) }, '修改'),
-          h('a-divider', { type: 'vertical' }),
-          h('a', { onClick: () => handleViewMembers(record) }, '查看成员'),
-          h('a-divider', { type: 'vertical' }),
+        return h(Space, {}, () => [
+          h(Button, { type: 'link', size: 'small', onClick: () => handleAddChild(record) }, () => [
+            h(PlusOutlined),
+            ' 添加'
+          ]),
+          h(Button, { type: 'link', size: 'small', onClick: () => handleEdit(record) }, () => [
+            h(EditOutlined),
+            ' 修改'
+          ]),
+          h(Button, { type: 'link', size: 'small', onClick: () => handleViewMembers(record) }, () => [
+            h(TeamOutlined),
+            ' 成员'
+          ]),
           h(
-            'a-popconfirm',
+            Popconfirm,
             {
               title: '确认要删除吗?',
               okText: '确定',
               cancelText: '取消',
               onConfirm: () => handleDelete(record)
             },
-            {
-              default: () => h('a', { class: 'danger-link' }, '删除')
-            }
+            () =>
+              h(Button, { type: 'link', danger: true, size: 'small' }, () => [
+                h(DeleteOutlined),
+                ' 删除'
+              ])
           )
         ])
       }
@@ -272,24 +378,43 @@ const visibleColumns = computed(() =>
   })
 )
 
+/**
+ * 新增顶级部门
+ * @description 清空当前记录和上级部门ID，打开表单弹窗
+ */
 const handleAdd = () => {
   currentRecord.value = null
   parentId.value = undefined
   modalVisible.value = true
 }
 
+/**
+ * 新增子部门
+ * @param record - 父部门记录
+ * @description 设置上级部门ID为当前记录的ID，打开表单弹窗
+ */
 const handleAddChild = (record: DeptInfo) => {
   currentRecord.value = null
   parentId.value = record.id
   modalVisible.value = true
 }
 
+/**
+ * 编辑部门
+ * @param record - 待编辑的部门记录
+ * @description 设置当前记录，打开表单弹窗（编辑模式）
+ */
 const handleEdit = (record: DeptInfo) => {
   currentRecord.value = record
   parentId.value = undefined
   modalVisible.value = true
 }
 
+/**
+ * 删除部门
+ * @param record - 待删除的部门记录
+ * @description 调用删除 API，成功后刷新列表数据
+ */
 const handleDelete = async (record: DeptInfo) => {
   try {
     await deleteDept(record.id)
@@ -297,10 +422,15 @@ const handleDelete = async (record: DeptInfo) => {
     fetchData()
   } catch (error) {
     if (import.meta.env.DEV) console.error('[Dept] Delete dept failed:', error)
-    // error handled by request interceptor
   }
 }
 
+/**
+ * 切换部门状态
+ * @param record - 部门记录
+ * @param checked - 开关状态，true 为启用，false 为禁用
+ * @description 调用状态切换 API，成功后刷新列表数据
+ */
 const handleStatusChange = async (record: DeptInfo, checked: boolean) => {
   try {
     await changeDeptStatus(record.id, checked ? 1 : 0)
@@ -308,26 +438,27 @@ const handleStatusChange = async (record: DeptInfo, checked: boolean) => {
     fetchData()
   } catch (error) {
     if (import.meta.env.DEV) console.error('[Dept] Change dept status failed:', error)
-    // error handled by request interceptor
   }
 }
 
+/**
+ * 查看部门成员
+ * @param record - 部门记录
+ * @description 设置当前部门ID和名称，打开成员查看弹窗
+ */
 const handleViewMembers = (record: DeptInfo) => {
   currentDeptId.value = record.id
   currentDeptName.value = record.name
   usersModalVisible.value = true
 }
 
+/** 页面挂载时加载部门数据 */
 onMounted(() => {
   fetchData()
 })
 </script>
 
 <style lang="less" scoped>
-.danger-link {
-  color: #ff4d4f;
-}
-
 .page-container {
   .s-table-wrapper {
     background: var(--ant-color-bg-container, #fff);

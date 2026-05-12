@@ -1,8 +1,20 @@
+/**
+ * @文件: options.ts
+ * @用途: 设置抽屉配置选项数据
+ * @描述: 定义设置抽屉中所有可配置项的选项数据，包括主题风格、主题色、
+ *        导航模式、路由动画、标签页类型和设置入口位置。
+ *        每个选项包含 label（显示文本）、value（配置值）和 icon（图标标识）。
+ */
+
+/** 应用状态类型，约束主题和布局的可选值 */
 export type AppState = {
+  /** 主题风格：light=亮色, dark=暗色, realDark=暗黑 */
   theme: 'light' | 'dark' | 'realDark'
+  /** 布局模式：side=侧边, top=顶部, mix=混合, left=左侧混合 */
   layout: 'side' | 'top' | 'mix' | 'left'
 }
 
+/** 主题风格选项：亮色、暗色、暗黑 */
 export const themeStyle = [
   {
     label: '亮色主题风格',
@@ -21,6 +33,7 @@ export const themeStyle = [
   }
 ]
 
+/** 主题色选项：8 种预设颜色 */
 export const themeColors = [
   {
     key: '极客蓝（默认）',
@@ -56,7 +69,7 @@ export const themeColors = [
   }
 ]
 
-/** 导航模式（布局方式） */
+/** 导航模式（布局方式）选项 */
 export const layouts = [
   {
     label: '侧边菜单布局',
@@ -80,7 +93,7 @@ export const layouts = [
   }
 ]
 
-/** 路由动画 */
+/** 路由动画选项 */
 export const animation = [
   {
     value: 'fade-slide',
@@ -104,7 +117,7 @@ export const animation = [
   }
 ]
 
-// 多标签类型
+/** 多标签页类型选项 */
 export const tabsType = [
   {
     value: 'smooth-tab',
@@ -116,7 +129,7 @@ export const tabsType = [
   }
 ]
 
-// 主题设置位置
+/** 主题设置入口位置选项 */
 export const setPosiList = [
   {
     value: 'header',

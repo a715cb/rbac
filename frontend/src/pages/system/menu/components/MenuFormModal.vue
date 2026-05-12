@@ -1,4 +1,14 @@
-<!-- 菜单表单弹窗组件：用于新增/编辑菜单，包含菜单类型、上级菜单、路由信息、状态等字段 -->
+<!--
+  @文件: MenuFormModal.vue
+  @用途: 菜单表单弹窗组件，用于新增/编辑菜单
+  @描述: 支持新增和编辑两种模式，包含菜单类型、上级菜单、路由信息、状态等字段，
+         编辑模式通过 record 属性区分，新增子菜单通过 parentId 属性指定父级
+  @核心逻辑:
+    1. 根据 record 是否存在判断新增/编辑模式，动态加载表单数据
+    2. 上级菜单使用树形选择器，数据来源于 useMenuTree 组合式函数
+    3. 提交时校验表单，根据模式调用 createMenu 或 updateMenu 接口
+    4. 弹窗关闭时重置表单数据，打开时根据模式回填或重置
+-->
 <template>
   <a-modal
     :title="isEdit ? '编辑菜单' : '新增菜单'"
@@ -159,8 +169,6 @@ import type { MenuInfo, MenuForm } from '@/api/menu'
 import { useMenuTree } from '@/composables/useTreeData'
 import { SIconSelect } from '@/components/Icon'
 
-// ==================== 组件属性与事件 ====================
-
 interface Props {
   visible: boolean
   record: MenuInfo | null
@@ -172,8 +180,6 @@ const emit = defineEmits<{
   (e: 'update:visible', value: boolean): void
   (e: 'success'): void
 }>()
-
-// ==================== 响应式状态 ====================
 
 const formRef = ref<FormInstance>() // 表单实例引用，用于校验和重置
 const loading = ref(false) // 提交加载状态
@@ -203,15 +209,11 @@ const formState = reactive<MenuForm>({
   remark: ''
 })
 
-// ==================== 表单校验规则 ====================
-
 const rules = {
   name: [{ required: true, message: '请输入菜单名称', trigger: 'blur' }],
   code: [{ required: true, message: '请输入菜单标识', trigger: 'blur' }],
   menu_type: [{ required: true, message: '请选择菜单类型', trigger: 'change' }]
 }
-
-// ==================== 表单操作 ====================
 
 /** 重置表单数据为默认值 */
 const resetForm = () => {
@@ -264,8 +266,6 @@ const loadFormData = () => {
   }
 }
 
-// ==================== 提交与取消 ====================
-
 /** 提交表单：校验通过后调用新增/更新接口 */
 const handleSubmit = async () => {
   try {
@@ -299,8 +299,6 @@ const handleCancel = () => {
   resetForm()
 }
 
-// ==================== 侦听器 ====================
-
 /** 监听弹窗可见性变化，打开时加载表单数据 */
 watch(
   () => props.visible,
@@ -310,8 +308,6 @@ watch(
     }
   }
 )
-
-// ==================== 生命周期 ====================
 
 onMounted(() => {
   fetchMenuTree()

@@ -101,7 +101,7 @@ export const useUserStore = defineStore('user', () => {
 
       setUserInfo(info)
       setMenus((data.menus || []) as unknown as MenuRoute[])
-      setPermissions(data.permissions || [])
+      setPermissions([...(data.permissions || []), ...(data.button_codes || [])])
       setRoles((data.roles || []).map((r: RoleInfo) => ({ ...r, id: Number(r.id) })))
     } catch (error) {
       if (import.meta.env.DEV) console.error('[UserStore] Fetch user info failed:', error)

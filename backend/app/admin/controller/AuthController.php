@@ -179,6 +179,7 @@ class AuthController extends BaseController
             'roles' => $roles,
             'menus' => $menus,
             'permissions' => $auth->getMenuCodes(),
+            'button_codes' => $auth->getButtonCodes(),
         ], '获取成功');
     }
 

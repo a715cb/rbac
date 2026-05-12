@@ -82,6 +82,8 @@ INSERT INTO `sys_menu_button` (`id`, `menu_id`, `name`, `code`, `icon`, `sort`, 
 (1012, 101, '编辑角色', 'system_role:edit', 'ant-design:edit-outlined', 2, 1, 1, NOW(), 1, NOW()),
 (1013, 101, '删除角色', 'system_role:delete', 'ant-design:delete-outlined', 3, 1, 1, NOW(), 1, NOW()),
 (1014, 101, '分配权限', 'system_role:permission', 'ant-design:lock-outlined', 4, 1, 1, NOW(), 1, NOW()),
+(1015, 101, '数据范围', 'system_role:data_scope', 'ant-design:cluster-outlined', 5, 1, 1, NOW(), 1, NOW()),
+(1016, 101, '状态切换', 'system_role:status', 'ant-design:swap-outlined', 6, 1, 1, NOW(), 1, NOW()),
 
 (1021, 102, '新增菜单', 'system_menu:add', 'ant-design:plus-outlined', 1, 1, 1, NOW(), 1, NOW()),
 (1022, 102, '编辑菜单', 'system_menu:edit', 'ant-design:edit-outlined', 2, 1, 1, NOW(), 1, NOW()),

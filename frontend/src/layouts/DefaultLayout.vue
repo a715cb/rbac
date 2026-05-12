@@ -1,7 +1,13 @@
 <!--
-  @description 应用主布局组件
-  负责组装侧边栏、顶部导航、多标签页、内容区域、底部栏及设置抽屉，
-  并根据全局配置动态切换主题（亮色/暗色/暗黑）、布局模式（左侧/混合）和路由切换动画。
+  @文件: DefaultLayout.vue
+  @用途: 应用主布局组件
+  @描述: 负责组装侧边栏、顶部导航、多标签页、内容区域、底部栏及设置抽屉，
+         并根据全局配置动态切换主题（亮色/暗色/暗黑）、布局模式（侧边/顶部/混合/左侧）和路由切换动画。
+  @核心逻辑:
+    1. 从 useSetting 获取布局配置，动态计算 layoutClass 控制主题和布局样式
+    2. 通过 provide 向后代组件注入 openSetting 方法，支持远程打开设置面板
+    3. 路由视图支持切换动画（transition），通过 openAnimation 和 animation 配置控制
+    4. 各子组件（Sidebar/Header/Footer/TagsView/SettingDrawer）按配置条件渲染
 -->
 <template>
   <!-- 根布局容器，通过 layoutClass 动态绑定主题与布局样式 -->

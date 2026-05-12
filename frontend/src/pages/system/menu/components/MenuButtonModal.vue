@@ -1,4 +1,14 @@
-<!-- 菜单按钮管理弹窗组件：管理某个菜单下的按钮（权限按钮），支持新增、编辑、删除按钮 -->
+<!--
+  @文件: MenuButtonModal.vue
+  @用途: 菜单按钮管理弹窗组件，管理菜单下的权限按钮
+  @描述: 管理某个菜单下的按钮（权限按钮），支持新增、编辑、删除按钮，
+         采用双层弹窗结构：外层展示按钮列表，内层为按钮表单
+  @核心逻辑:
+    1. 外层弹窗展示当前菜单下的按钮列表，支持新增/编辑/删除操作
+    2. 内层弹窗为按钮表单，根据 isEdit 区分新增/编辑模式
+    3. 删除和提交成功后刷新列表并通知父组件
+    4. 监听弹窗可见性变化，打开时自动加载按钮列表
+-->
 <template>
   <!-- 外层弹窗：按钮列表 -->
   <a-modal
@@ -125,8 +135,6 @@ import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons-vu
 import { getMenuButtons, createMenuButton, updateMenuButton, deleteMenuButton } from '@/api/menu'
 import type { MenuButton } from '@/api/menu'
 
-// ==================== 组件属性与事件 ====================
-
 interface Props {
   visible: boolean
   menuId?: number
@@ -138,12 +146,8 @@ const emit = defineEmits<{
   (e: 'success'): void
 }>()
 
-// ==================== 列表相关状态 ====================
-
 const loading = ref(false) // 列表加载状态
 const buttonList = ref<MenuButton[]>([]) // 按钮列表数据
-
-// ==================== 表单相关状态 ====================
 
 const formVisible = ref(false) // 表单弹窗可见性
 const formLoading = ref(false) // 表单提交加载状态
@@ -168,8 +172,6 @@ const formRules = {
   code: [{ required: true, message: '请输入按钮编码', trigger: 'blur' }]
 }
 
-// ==================== 表格列配置 ====================
-
 const columns = [
   { title: '按钮名称', dataIndex: 'name', key: 'name' },
   { title: '按钮编码', dataIndex: 'code', key: 'code' },
@@ -178,8 +180,6 @@ const columns = [
   { title: '状态', key: 'status', width: 80, align: 'center' },
   { title: '操作', key: 'action', width: 150 }
 ]
-
-// ==================== 数据请求 ====================
 
 /** 获取当前菜单下的按钮列表 */
 const fetchButtons = async () => {
@@ -194,8 +194,6 @@ const fetchButtons = async () => {
     loading.value = false
   }
 }
-
-// ==================== 列表操作 ====================
 
 /** 新增按钮：打开表单弹窗（新增模式） */
 const handleAdd = () => {
@@ -229,8 +227,6 @@ const handleDelete = async (record: MenuButton) => {
     if (import.meta.env.DEV) console.error('[MenuButtonModal] Delete button failed:', error)
   }
 }
-
-// ==================== 表单操作 ====================
 
 /** 重置表单数据为默认值 */
 const resetForm = () => {
@@ -284,8 +280,6 @@ const handleFormCancel = () => {
 const handleCancel = () => {
   emit('update:visible', false)
 }
-
-// ==================== 侦听器 ====================
 
 /** 监听弹窗可见性变化，打开时加载按钮列表 */
 watch(

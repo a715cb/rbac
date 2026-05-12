@@ -42,9 +42,7 @@ class MenuController extends BaseController
 
         $list = $query->select()->toArray();
 
-        foreach ($list as &$item) {
-            $item['buttons'] = (new MenuButton())->getButtonsByMenu($item['id']);
-        }
+        $this->appendButtons($list);
 
         $tree = (new MenuModel())->buildTree($list);
 
@@ -59,6 +57,8 @@ class MenuController extends BaseController
 
         $menuModel = new MenuModel();
         $list = $menuModel->getMenuTreeList($status !== null && $status !== '' ? (int) $status : null);
+
+        $this->appendButtons($list);
 
         return $this->success([
             'tree' => $list,
@@ -351,6 +351,17 @@ class MenuController extends BaseController
         } catch (\Exception $e) {
             Db::rollback();
             return $this->error('删除按钮失败：' . $e->getMessage());
+        }
+    }
+
+    private function appendButtons(array &$list): void
+    {
+        $menuButton = new MenuButton();
+        foreach ($list as &$item) {
+            $item['buttons'] = $menuButton->getButtonsByMenu($item['id']);
+            if (!empty($item['children'])) {
+                $this->appendButtons($item['children']);
+            }
         }
     }
 }

@@ -1,4 +1,16 @@
+<!--
+  @文件: index.vue
+  @用途: 接口管理页面
+  @描述: 系统管理模块下的接口（API）管理页面，提供接口的完整 CRUD 功能
+  @核心逻辑:
+    1. 搜索筛选 - 支持按关键词、请求方法、分组、状态多维度筛选接口
+    2. 数据展示 - 表格展示接口列表，请求方法以彩色标签区分，路径以代码样式展示
+    3. 状态切换 - 通过开关组件直接切换接口启用/禁用状态，失败时自动回滚
+    4. 新增/编辑 - 共用 ApiFormModal 弹窗，通过 currentRecord 是否为 null 区分模式
+    5. 表格设置 - 支持列显隐、密度调整、全屏模式
+-->
 <template>
+  <!-- 页面根容器，供全屏表格等功能获取 DOM 引用 -->
   <div ref="wrapRef" class="page-container">
     <!-- 搜索区域：支持按关键词、请求方法、分组、状态筛选接口 -->
     <div class="search-card">
@@ -71,6 +83,7 @@
 
     <!-- 表格区域：展示接口列表，支持新增、编辑、删除、状态切换 -->
     <div class="s-table-wrapper">
+      <!-- 表格顶部工具栏：新增按钮 + 表格设置（列显隐、密度、全屏） -->
       <div class="s-table-header">
         <div class="table-header-container">
           <div class="flex items-center">
@@ -88,12 +101,14 @@
         </div>
       </div>
 
+      <!-- 接口数据表格：横向滚动阈值 1200px，行唯一键为 id -->
       <a-table
         :columns="visibleColumns"
         :data-source="tableData"
         :loading="loading"
         :pagination="pagination"
         :size="tableSettingState.size"
+        :scroll="{ x: 1200 }"
         row-key="id"
         @change="handleTableChange"
       >
@@ -130,6 +145,7 @@
               </a-popconfirm>
             </a-space>
           </template>
+          <!-- 默认列：直接渲染文本内容 -->
           <template v-else>
             {{ text }}
           </template>
@@ -142,12 +158,6 @@
   </div>
 </template>
 
-<!--
-  @component ApiPage
-  @description 系统管理 - 接口管理页面
-  提供接口（API）的增删改查功能，支持按关键词、请求方法、分组、状态进行筛选，
-  并可通过开关直接切换接口启用/禁用状态。表格列支持自定义显隐和密度调整。
--->
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
 import {
@@ -259,13 +269,19 @@ const { tableSettingState, visibleColumns } = usePageTable({
   wrapRef
 })
 
-/** 点击查询：重置页码为 1 后重新拉取数据 */
+/**
+ * 点击查询按钮处理
+ * 重置页码为 1 后重新拉取数据，确保搜索结果从第一页开始
+ */
 const handleSearch = () => {
   pagination.current = 1
   fetchData()
 }
 
-/** 点击重置：清空所有搜索条件，重置页码后重新拉取数据 */
+/**
+ * 点击重置按钮处理
+ * 清空所有搜索条件，重置页码后重新拉取数据
+ */
 const handleReset = () => {
   searchForm.keyword = ''
   searchForm.method = undefined
@@ -285,15 +301,19 @@ const handleTableChange = (pag: TablePaginationConfig) => {
   fetchData()
 }
 
-/** 点击新增：清空当前记录（进入新增模式），打开弹窗 */
+/**
+ * 点击新增按钮处理
+ * 清空当前记录（进入新增模式），打开弹窗
+ */
 const handleAdd = () => {
   currentRecord.value = null
   modalVisible.value = true
 }
 
 /**
- * 点击编辑：将当前行数据赋值给 currentRecord（进入编辑模式），打开弹窗
+ * 点击编辑按钮处理
  * @param record - 当前行的接口数据
+ * 将当前行数据赋值给 currentRecord（进入编辑模式），打开弹窗
  */
 const handleEdit = (record: ApiInfo) => {
   currentRecord.value = record
@@ -303,7 +323,7 @@ const handleEdit = (record: ApiInfo) => {
 /**
  * 删除接口
  * @param record - 待删除的接口数据，通过 id 调用删除接口
- * 删除成功后刷新列表数据
+ * 删除成功后刷新列表数据；若当前页仅剩一条数据且非第一页，自动回退到上一页
  */
 const handleDelete = async (record: ApiInfo) => {
   try {
@@ -322,7 +342,8 @@ const handleDelete = async (record: ApiInfo) => {
  * 切换接口启用/禁用状态
  * @param record - 目标接口数据
  * @param checked - 开关状态，true 为启用，false 为禁用
- * 将布尔值映射为 1/0 后调用状态变更接口，成功后刷新列表
+ * 将布尔值映射为 1/0 后调用状态变更接口，成功后刷新列表；
+ * 失败时自动回滚到原始状态
  */
 const handleStatusChange = async (record: ApiInfo, checked: boolean) => {
   const oldStatus = record.status
@@ -336,7 +357,7 @@ const handleStatusChange = async (record: ApiInfo, checked: boolean) => {
   }
 }
 
-/** 页面挂载时同时加载接口列表和分组选项 */
+/** 页面挂载时加载接口列表数据 */
 onMounted(() => {
   fetchData()
 })
@@ -344,47 +365,56 @@ onMounted(() => {
 
 <style lang="less" scoped>
 .page-container {
+  /* 搜索区域卡片样式：白色背景、圆角、底部间距 */
   .search-card {
     background: var(--ant-color-bg-container, #fff);
     border-radius: var(--ant-border-radius, 8px);
     padding: 16px;
     margin-bottom: 16px;
 
+    /* 搜索表单行内布局时去除表单项底部间距 */
     :deep(.ant-form-item) {
       margin-bottom: 0;
     }
   }
 
+  /* 表格区域容器：白色背景、圆角 */
   .s-table-wrapper {
     background: var(--ant-color-bg-container, #fff);
     border-radius: var(--ant-border-radius, 8px);
     padding: 16px;
   }
 
+  /* 表格顶部工具栏区域底部间距 */
   .s-table-header {
     margin-bottom: 16px;
   }
 
+  /* 工具栏容器：撑满宽度 */
   .table-header-container {
     width: 100%;
     padding: 0;
   }
 
+  /* 工具栏布局：flex 横向排列，新增按钮与表格设置分居两侧 */
   .table-header-toolbar {
     flex: 1;
     display: flex;
     align-items: center;
     justify-content: space-between;
 
+    /* 工具栏内按钮之间的右间距 */
     div > * {
       margin-right: 8px;
     }
   }
 
+  /* 桌面端表格设置组件靠右对齐 */
   .table-header__toolbar-desktop {
     margin-left: auto;
   }
 
+  /* 接口路径代码样式：浅灰背景、圆角、等宽字体风格 */
   .api-path {
     background: var(--ant-color-fill-quaternary, #f5f5f5);
     padding: 2px 8px;
@@ -407,10 +437,12 @@ onMounted(() => {
     flex-direction: column;
     overflow: visible;
 
+    /* 全屏模式下搜索区域不收缩 */
     .search-card {
       flex-shrink: 0;
     }
 
+    /* 全屏模式下表格区域自适应剩余空间 */
     .s-table-wrapper {
       flex: 1;
       display: flex;
@@ -418,10 +450,12 @@ onMounted(() => {
       min-height: 0;
     }
 
+    /* 全屏模式下工具栏不收缩 */
     .s-table-header {
       flex-shrink: 0;
     }
 
+    /* 全屏模式下表格内容区域可滚动 */
     :deep(.ant-table-wrapper) {
       flex: 1;
       overflow: auto;

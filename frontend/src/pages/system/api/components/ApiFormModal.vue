@@ -1,4 +1,16 @@
+<!--
+  @文件: ApiFormModal.vue
+  @用途: 接口新增/编辑表单弹窗组件
+  @描述: 接口（API）新增/编辑表单弹窗组件，通过 v-model:visible 双向绑定控制弹窗显隐，success 事件通知父组件刷新列表
+  @核心逻辑:
+    1. 根据 props.record 是否存在判断为编辑或新增模式
+    2. 编辑模式下，弹窗打开时自动加载接口详情并回填表单
+    3. 新增模式下，弹窗打开时重置表单为默认值
+    4. 提交时先进行表单校验，校验通过后调用对应的新增/更新接口
+    5. 通过 v-model:visible 双向绑定控制弹窗显隐，success 事件通知父组件刷新列表
+-->
 <template>
+  <!-- 接口新增/编辑弹窗，标题根据模式动态切换 -->
   <a-modal
     :title="isEdit ? '编辑接口' : '新增接口'"
     :open="visible"
@@ -8,8 +20,10 @@
     @ok="handleSubmit"
     @cancel="handleCancel"
   >
+    <!-- 详情加载中的遮罩层，编辑模式下加载数据时显示 -->
     <a-spin :spinning="detailLoading">
       <a-form ref="formRef" :model="formState" :rules="rules" layout="vertical">
+        <!-- 第一行：接口名称 + 接口标识 -->
         <a-row :gutter="16">
           <a-col :span="12">
             <a-form-item label="接口名称" name="name" html-for="api-name">
@@ -33,6 +47,7 @@
           </a-col>
         </a-row>
 
+        <!-- 第二行：请求方法 + 接口路径 -->
         <a-row :gutter="16">
           <a-col :span="12">
             <a-form-item label="请求方法" name="method" html-for="api-method">
@@ -42,6 +57,7 @@
                 name="method"
                 placeholder="请选择请求方法"
               >
+                <!-- 遍历 HTTP_METHODS 常量渲染请求方法选项 -->
                 <a-select-option v-for="m in HTTP_METHODS" :key="m.value" :value="m.value">
                   {{ m.label }}
                 </a-select-option>
@@ -60,9 +76,11 @@
           </a-col>
         </a-row>
 
+        <!-- 第三行：所属菜单（树形选择）+ 分组 -->
         <a-row :gutter="16">
           <a-col :span="12">
             <a-form-item label="所属菜单" name="menu_id" html-for="api-menu-id">
+              <!-- 树形下拉选择器，用于关联接口与菜单节点 -->
               <a-tree-select
                 id="api-menu-id"
                 v-model:value="formState.menu_id"
@@ -87,6 +105,7 @@
           </a-col>
         </a-row>
 
+        <!-- 状态选择：正常 / 禁用 -->
         <a-form-item label="状态" name="status" html-for="api-status">
           <a-radio-group id="api-status" v-model:value="formState.status" name="status">
             <a-radio :value="1">正常</a-radio>
@@ -106,24 +125,40 @@ import { createApi, updateApi, getApiDetail, HTTP_METHODS } from '@/api/api'
 import type { ApiInfo, ApiForm } from '@/api/api'
 import { useMenuTree } from '@/composables/useTreeData'
 
+/** 组件属性定义 */
 interface Props {
+  /** 弹窗是否可见 */
   visible: boolean
+  /** 当前操作的接口记录，为 null 时表示新增模式 */
   record: ApiInfo | null
 }
 
 const props = defineProps<Props>()
+
+/** 组件事件定义 */
 const emit = defineEmits<{
+  /** 更新弹窗可见状态（支持 v-model:visible） */
   (e: 'update:visible', value: boolean): void
+  /** 操作成功后触发，通知父组件刷新数据 */
   (e: 'success'): void
 }>()
 
+/** 表单实例引用，用于调用校验和重置方法 */
 const formRef = ref<FormInstance>()
+
+/** 提交按钮加载状态 */
 const loading = ref(false)
+
+/** 详情数据加载状态，加载期间禁用确认按钮 */
 const detailLoading = ref(false)
+
+/** 菜单树数据及获取方法 */
 const { menuTreeData, fetchMenuTree } = useMenuTree()
 
+/** 是否为编辑模式：record 存在即为编辑，否则为新增 */
 const isEdit = computed(() => !!props.record)
 
+/** 表单数据对象 */
 const formState = reactive<ApiForm>({
   name: '',
   code: '',
@@ -134,6 +169,7 @@ const formState = reactive<ApiForm>({
   status: 1
 })
 
+/** 表单校验规则 */
 const rules = {
   name: [{ required: true, message: '请输入接口名称', trigger: 'blur' }],
   code: [{ required: true, message: '请输入接口标识', trigger: 'blur' }],
@@ -144,6 +180,10 @@ const rules = {
   ]
 }
 
+/**
+ * 重置表单数据为默认值
+ * 将所有字段恢复到初始状态，用于新增模式或提交成功后清理
+ */
 const resetForm = () => {
   formState.name = ''
   formState.code = ''
@@ -154,6 +194,11 @@ const resetForm = () => {
   formState.status = 1
 }
 
+/**
+ * 加载表单数据
+ * 编辑模式下调用接口获取详情并回填表单；新增模式下重置表单为默认值
+ * 加载失败时关闭弹窗并提示错误信息
+ */
 const loadFormData = async () => {
   if (props.record) {
     detailLoading.value = true
@@ -179,6 +224,11 @@ const loadFormData = async () => {
   }
 }
 
+/**
+ * 提交表单
+ * 先进行表单校验，校验通过后根据模式调用新增或更新接口
+ * 操作成功后触发 success 事件并关闭弹窗
+ */
 const handleSubmit = async () => {
   if (!formRef.value) return
   try {
@@ -201,18 +251,26 @@ const handleSubmit = async () => {
     resetForm()
   } catch (error: unknown) {
     if (import.meta.env.DEV) console.error('[ApiFormModal] handleSubmit failed:', error)
-    // error handled by request interceptor
+    // 错误由请求拦截器统一处理
   } finally {
     loading.value = false
   }
 }
 
+/**
+ * 取消操作
+ * 关闭弹窗并重置表单校验状态和数据
+ */
 const handleCancel = () => {
   emit('update:visible', false)
   formRef.value?.resetFields()
   resetForm()
 }
 
+/**
+ * 监听弹窗可见状态变化
+ * 弹窗打开时自动加载表单数据（编辑回填或新增重置）
+ */
 watch(
   () => props.visible,
   (val) => {
@@ -222,6 +280,7 @@ watch(
   }
 )
 
+/** 组件挂载时预加载菜单树数据，供所属菜单下拉选择使用 */
 onMounted(() => {
   fetchMenuTree()
 })

@@ -1,15 +1,10 @@
 <!--
-  @组件名称：用户管理页面
-  @组件描述：系统用户管理的核心页面，提供用户的增删改查、状态切换、密码重置及数据导出等功能。
-            页面布局采用左右分栏结构：左侧为部门树（用于按部门筛选用户），右侧为搜索表单与用户数据表格。
-  @依赖组件：
-    - DeptTree：部门树组件，提供部门选择功能
-    - UserFormModal：用户新增/编辑弹窗
-    - ResetPasswordModal：重置密码弹窗
-    - TableSetting：表格列设置组件（支持列显隐、密度调整、全屏等）
-    - DictSelect：字典选择器组件，通过字典编码动态获取筛选选项
-    - DictTag：字典标签组件，根据字典值渲染对应标签
-  @核心数据流：
+  @文件: index.vue
+  @用途: 用户管理页面，提供用户的增删改查、状态切换、密码重置及数据导出等功能
+  @描述: 系统用户管理核心页面，页面布局采用左右分栏结构：左侧为部门树（按部门筛选用户），右侧为搜索表单与用户数据表格。
+         依赖组件：DeptTree（部门树）、UserFormModal（用户新增/编辑弹窗）、ResetPasswordModal（重置密码弹窗）、
+         TableSetting（表格列设置）、DictSelect（字典选择器）、DictTag（字典标签）。
+  @核心逻辑:
     1. 页面挂载 → fetchData() 加载用户列表，useDict 加载字典选项
     2. 搜索/部门选择/字典筛选变更 → 重置页码 → fetchData() 刷新数据
     3. 新增/编辑/删除/状态变更 → 操作成功后 fetchData() 刷新列表
@@ -124,6 +119,7 @@
             :loading="loading"
             :pagination="pagination"
             :size="tableSettingState.size"
+            :scroll="{ x: 1600 }"
             row-key="id"
             @change="handleTableChange"
           />

@@ -1,8 +1,14 @@
 <!--
-  SettingDrawer - 设置抽屉组件
-  功能：提供可视化配置界面，允许用户自定义主题风格、主题色、导航模式和其他系统设置。
-  所有设置通过 useSetting hook 统一管理，并持久化到 localStorage。
-  支持两种入口模式：通过头部 UserMenu 打开，或固定在页面右侧作为把手。
+  @文件: SettingDrawer/index.vue
+  @用途: 设置抽屉组件
+  @描述: 提供可视化配置界面，允许用户自定义主题风格、主题色、导航模式和其他系统设置。
+         所有设置通过 useSetting Hook 统一管理，并持久化到 localStorage。
+         支持两种入口模式：通过头部 UserMenu 打开，或固定在页面右侧作为把手。
+  @核心逻辑:
+    1. 从 useSetting 获取所有设置状态和变更方法
+    2. 监听 layout 变化自动调整 splitMenu 和 showBreadcrumb 的联动
+    3. 通过 defineExpose 暴露 toggle 方法供父组件远程控制
+    4. 主题风格和主题色变更分别调用 changeTheme 和 changeSetting
 -->
 <template>
   <div class="setting-container">

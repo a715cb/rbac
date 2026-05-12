@@ -1,26 +1,14 @@
 <!--
-  重置密码弹窗组件 (ResetPasswordModal)
-  ─────────────────────────────────────────────
-  功能描述：
-    在用户管理页面中，管理员通过此弹窗为指定用户重置登录密码。
+  @文件: ResetPasswordModal.vue
+  @用途: 管理员通过弹窗为指定用户重置登录密码
+  @描述: 在用户管理页面中，管理员通过此弹窗为指定用户重置登录密码。
     弹窗包含"新密码"和"确认密码"两个输入框，提交时校验密码长度和一致性。
-
-  核心交互：
+    父组件通过 visible prop 控制弹窗显示/隐藏，弹窗打开时自动清空表单。
+  @核心逻辑:
     1. 父组件通过 visible prop 控制弹窗显示/隐藏
-    2. 弹窗打开时自动清空表单（通过 watch 监听 visible 变化）
+    2. 弹窗打开时自动清空表单（watch 监听 visible 变化）
     3. 填写密码 → 表单校验（必填 + 最少6位 + 两次一致）→ 调用重置密码接口
     4. 重置成功后通知父组件刷新数据并关闭弹窗
-
-  依赖接口：
-    - resetPassword(userId, password)：重置指定用户的密码
-
-  对外事件：
-    - update:visible(value: boolean)：更新弹窗显示状态（支持 v-model:visible）
-    - success()：密码重置成功后触发，通知父组件刷新用户列表
-
-  Props：
-    - visible: boolean — 控制弹窗是否显示
-    - userId?: number — 待重置密码的用户ID（可选，无效时提交会提示错误）
 -->
 <template>
   <!--
@@ -124,24 +112,24 @@ const resetForm = () => {
  * 4. 成功后：提示成功 → 通知父组件刷新 → 关闭弹窗 → 清空表单
  */
 const handleSubmit = async () => {
-  // 步骤1：触发表单校验
+  // 触发表单校验
   try {
     await formRef.value?.validate()
   } catch {
     return
   }
 
-  // 步骤2：校验用户ID有效性
+  // 校验用户ID有效性
   if (!props.userId) {
     message.error('用户 ID 无效')
     return
   }
 
-  // 步骤3：调用重置密码接口
+  // 调用重置密码接口
   loading.value = true
   try {
     await resetPassword(props.userId, formState.password)
-    // 步骤4：成功后处理
+    // 成功后处理
     message.success('密码重置成功')
     emit('success')
     emit('update:visible', false)

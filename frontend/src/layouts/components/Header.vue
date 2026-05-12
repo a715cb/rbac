@@ -1,3 +1,18 @@
+<!--
+  @文件: Header.vue
+  @用途: 应用顶部导航栏组件
+  @描述: 负责渲染顶部导航栏，包含折叠触发器、面包屑导航、顶部菜单和用户菜单。
+         支持多种布局模式（side/top/mix/left），根据布局模式动态切换显示内容：
+         - side/left 布局：显示折叠触发器 + 面包屑
+         - top 布局：显示 Logo + 完整横向菜单
+         - mix 布局 + splitMenu：显示 Logo + 一级菜单
+         - mix 布局 + 非 splitMenu：显示 Logo + 面包屑
+  @核心逻辑:
+    1. 根据 layout 和 splitMenu 计算顶部菜单显示策略
+    2. 通过 useHeaderSetting 获取头部布局参数（宽度、高度、面包屑可见性）
+    3. 通过 useSetting 获取全局配置（主题、布局模式、菜单数据）
+    4. mix 布局下使用 getMatchedMenuPath 计算当前一级菜单高亮
+-->
 <template>
   <!-- 占位 header，用于撑开布局高度，避免内容被固定定位的 header 遮挡 -->
   <header :style="getDomStyle"></header>

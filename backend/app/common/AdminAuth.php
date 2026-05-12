@@ -15,6 +15,7 @@ class AdminAuth
     private $roles = [];
     private $permissions = [];
     private $menus = [];
+    private $buttonCodes = [];
     private $dataScope = 1;
     private $dataScopeDeptIds = [];
 
@@ -103,6 +104,42 @@ class AdminAuth
         SimpleCache::set($cacheKey, $this->permissions, $cacheTime);
 
         return $this->permissions;
+    }
+
+    public function getButtonCodes(): array
+    {
+        if (!empty($this->buttonCodes)) {
+            return $this->buttonCodes;
+        }
+
+        $cacheKey = 'user_button_codes_' . $this->userId;
+        $cacheTime = Config::get('auth.cache_time', 3600);
+
+        $cached = SimpleCache::get($cacheKey);
+        if ($cached !== null) {
+            $this->buttonCodes = $cached;
+            return $this->buttonCodes;
+        }
+
+        $roleModel = new Role();
+        $roleIds = array_column($this->roles, 'id');
+        $buttonIds = $roleModel->getRoleButtonsByRoleIds($roleIds);
+
+        if (empty($buttonIds)) {
+            $this->buttonCodes = [];
+            SimpleCache::set($cacheKey, $this->buttonCodes, $cacheTime);
+            return $this->buttonCodes;
+        }
+
+        $this->buttonCodes = Db::name('sys_menu_button')
+            ->whereIn('id', $buttonIds)
+            ->where('status', 1)
+            ->whereNull('delete_time')
+            ->column('code');
+
+        SimpleCache::set($cacheKey, $this->buttonCodes, $cacheTime);
+
+        return $this->buttonCodes;
     }
 
     public function getMenuTree(): array
@@ -232,6 +269,7 @@ class AdminAuth
         if ($this->userId > 0) {
             SimpleCache::delete('user_menu_codes_' . $this->userId);
             SimpleCache::delete('user_api_codes_' . $this->userId);
+            SimpleCache::delete('user_button_codes_' . $this->userId);
             SimpleCache::delete('user_menu_tree_' . $this->userId);
         }
     }
@@ -246,6 +284,7 @@ class AdminAuth
         $this->roles = [];
         $this->permissions = [];
         $this->menus = [];
+        $this->buttonCodes = [];
         $this->dataScope = 1;
         $this->dataScopeDeptIds = [];
     }

@@ -1,18 +1,14 @@
 <!--
-  @组件名称：用户表单弹窗（UserFormModal）
-  @组件描述：用于新增和编辑用户信息的模态弹窗组件。根据传入的 record 是否为空自动切换
-            新增/编辑模式，编辑模式下用户名不可修改、密码字段隐藏。
-  @依赖组件：
-    - DictSelect：字典选择器，用于性别字段（字典编码 user_gender）
-    - DictRadio：字典单选组，用于状态字段（字典编码 user_status）
-  @核心交互流程：
+  @文件: UserFormModal.vue
+  @用途: 用户表单弹窗组件，用于新增和编辑用户信息
+  @描述: 根据传入的 record 是否为空自动切换新增/编辑模式，编辑模式下用户名不可修改、密码字段隐藏。
+         依赖组件：DictSelect（性别字段，字典编码 user_gender）、DictRadio（状态字段，字典编码 user_status）。
+         后端 createUser/updateUser 接口已内置 role_ids 处理逻辑（事务内原子操作），前端无需单独调用 assignRoles 接口。
+  @核心逻辑:
     1. 弹窗打开 → 加载角色列表和部门树 → nextTick 后填充表单数据
     2. 用户填写表单 → 点击确定 → 表单验证 → 调用创建/更新接口
     3. 操作成功 → emit('success') 通知父页面刷新列表 → 关闭弹窗
     4. 弹窗关闭时自动销毁内部 DOM（destroy-on-close），无需手动清理状态
-  @角色分配说明：
-    后端 createUser/updateUser 接口已内置 role_ids 处理逻辑（事务内原子操作），
-    前端无需单独调用 assignRoles 接口，避免非原子操作导致数据不一致。
 -->
 <template>
   <!-- 用户表单弹窗

@@ -1,4 +1,15 @@
-<!-- 系统菜单管理页面：以树形表格展示菜单层级结构，支持增删改查、展开折叠、搜索高亮 -->
+<!--
+  @文件: index.vue
+  @用途: 系统菜单管理页面，以树形表格展示菜单层级结构
+  @描述: 以树形表格展示菜单层级结构，支持增删改查、展开折叠、搜索高亮，
+         包含菜单类型标签渲染、状态展示、图标渲染等自定义列功能，
+         操作成功后自动刷新列表和菜单缓存
+  @核心逻辑:
+    1. 树形表格展示菜单层级数据，支持展开/折叠全部节点
+    2. 基于名称字段的搜索筛选，支持防抖搜索和文本高亮
+    3. 新增/编辑菜单通过 MenuFormModal 弹窗实现，删除后刷新列表和菜单缓存
+    4. 使用 usePageTable 组合式函数管理表格设置和列可见性
+-->
 <template>
   <div ref="wrapRef" class="page-container">
     <div class="s-table-wrapper">
@@ -38,6 +49,7 @@
         :size="tableSettingState.size"
         :expanded-row-keys="expandedRowKeys"
         :indent-size="16"
+        :scroll="{ x: 1300 }"
         @expand="handleExpand"
       >
         <!-- 自定义筛选下拉框：用于菜单名称搜索 -->
@@ -126,8 +138,6 @@ import { StorageManager } from '@/utils/storage'
 import { AppConfig } from '@/config/app'
 import { useUserStore } from '@/stores/user'
 
-// ==================== 响应式状态 ====================
-
 const userStore = useUserStore()
 
 /** 清除前端菜单缓存，使下次路由导航时重新从后端获取菜单数据 */
@@ -147,14 +157,8 @@ const searchInput = ref() // 搜索输入框引用，用于自动聚焦
 // 树形搜索组合式函数：基于 name 字段进行搜索、高亮、展开匹配节点
 const { searchText, expandedRowKeys, highlightText, doSearch, resetSearch } = useTreeSearch('name')
 
-// ==================== 表格列配置 ====================
-
 const columnItems: ColumnItem[] = [
-  {
-    key: 'name',
-    title: '菜单名称',
-    dataIndex: 'name'
-  },
+  { key: 'name', title: '菜单名称', dataIndex: 'name' },
   { key: 'icon', title: '图标', dataIndex: 'icon', width: 80, align: 'center' },
   { key: 'path', title: '路由地址', dataIndex: 'path' },
   { key: 'component', title: '路由组件', dataIndex: 'component' },
@@ -162,10 +166,8 @@ const columnItems: ColumnItem[] = [
   { key: 'code', title: '菜单标识', dataIndex: 'code' },
   { key: 'status', title: '菜单状态', dataIndex: 'status', width: 100, align: 'center' },
   { key: 'sort', title: '排序', dataIndex: 'sort', width: 80, align: 'center' },
-  { key: 'action', title: '操作', dataIndex: 'action', width: 200 }
+  { key: 'action', title: '操作', dataIndex: 'action', width: 280, fixed: 'right' }
 ]
-
-// ==================== 辅助函数 ====================
 
 /** 渲染搜索高亮文本，无搜索关键词时原样返回 */
 const renderHighlightText = (text: string): string => {
@@ -183,8 +185,6 @@ const menuTypeText = (type: number): string => {
   const texts: Record<number, string> = { 1: '目录', 2: '菜单', 3: '按钮' }
   return texts[type] || '未知'
 }
-
-// ==================== 展开/折叠控制 ====================
 
 /** 递归收集所有可展开的节点 ID（只有存在子节点的才需要展开） */
 const collectExpandableIds = (data: MenuInfo[]): (string | number)[] => {
@@ -220,8 +220,6 @@ const handleExpand = (expanded: boolean, record: MenuInfo) => {
   }
 }
 
-// ==================== 搜索筛选 ====================
-
 /** 防抖搜索：300ms 延迟避免频繁触发 */
 const debouncedDoSearch = useDebounceFn((keyword: string) => {
   doSearch(keyword, tableData)
@@ -240,8 +238,6 @@ const handleFilterReset = (clearFilters: (() => void) | undefined, confirm: () =
   confirm()
 }
 
-// ==================== 数据请求 ====================
-
 /** 获取菜单列表数据，将 id 统一转为数字类型 */
 const fetchData = async () => {
   loading.value = true
@@ -255,8 +251,6 @@ const fetchData = async () => {
     loading.value = false
   }
 }
-
-// ==================== 表格设置与列渲染 ====================
 
 // 使用 usePageTable 组合式函数，获取表格设置状态和基础可见列
 const { tableSettingState, visibleColumns: baseColumns } = usePageTable({
@@ -332,8 +326,6 @@ const visibleColumns = computed(() =>
   })
 )
 
-// ==================== 操作事件处理 ====================
-
 /** 新增顶级菜单 */
 const handleAdd = () => {
   currentRecord.value = null
@@ -372,8 +364,6 @@ const handleModalSuccess = () => {
   fetchData()
   refreshMenuCache()
 }
-
-// ==================== 生命周期 ====================
 
 onMounted(() => {
   fetchData()
