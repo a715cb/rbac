@@ -1,6 +1,6 @@
 export { DictSelect, DictTag, DictRadio } from './Dict'
 export type { DictOption } from '@/composables/useDict'
-export { default as SIcon } from './Icon'
+export { default as SIcon, SIconSelect } from './Icon'
 export { default as SBreadcrumb } from './Breadcrumb/SBreadcrumb.vue'
 export { default as SButton } from './Button/SButton.vue'
 export { default as Captcha } from './Captcha/index.vue'

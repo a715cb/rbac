@@ -73,7 +73,7 @@ cp .env.example .env
 | `REDIS_PORT` | Redis 端口 | 6379 |
 | `REDIS_PASSWORD` | Redis 密码 | - |
 | `REDIS_DB` | Redis 数据库 | 0 |
-| `CACHE_DRIVER` | 缓存驱动 | file |
+| `CACHE_DRIVER` | 缓存驱动 | redis |
 | `WX_MINIAPP_APPID` | 微信小程序 AppID | - |
 | `WX_MINIAPP_SECRET` | 微信小程序 Secret | - |
 | `MEMORY_FILE_PATH` | 知识图谱记忆文件路径 | runtime/data/knowledge_graph_memory.json |
@@ -255,6 +255,8 @@ backend/
 | POST | `/admin/menus/:id/buttons` | 创建菜单按钮 |
 | PUT | `/admin/menus/:id/buttons/:buttonId` | 更新菜单按钮 |
 | DELETE | `/admin/menus/:id/buttons/:buttonId` | 删除菜单按钮 |
+
+> **缓存说明**：菜单和按钮的创建、更新、删除操作会自动清除所有活跃用户的菜单缓存（`user_menu_tree_*`、`user_menu_codes_*`、`user_api_codes_*`），确保前端能立即获取最新权限数据。
 
 ### 部门管理
 
@@ -464,4 +466,4 @@ server {
 
 *项目版本：v1.0*
 *技术栈：ThinkPHP 8 + MySQL + Redis + JWT*
-*最后更新：2026-05-09*
+*最后更新：2026-05-12*

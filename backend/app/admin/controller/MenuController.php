@@ -5,11 +5,21 @@ use app\model\Menu as MenuModel;
 use app\model\MenuButton;
 use app\admin\validate\MenuValidate;
 use app\admin\validate\MenuButtonValidate;
+use app\common\SimpleCache;
 use think\Request;
 use think\facade\Db;
 
 class MenuController extends BaseController
 {
+    private function clearAllMenuCache(): void
+    {
+        $userIds = Db::name('user')->where('status', 1)->column('id');
+        foreach ($userIds as $userId) {
+            SimpleCache::delete('user_menu_tree_' . $userId);
+            SimpleCache::delete('user_menu_codes_' . $userId);
+            SimpleCache::delete('user_api_codes_' . $userId);
+        }
+    }
     public function index(Request $request)
     {
         $status = $request->get('status');
@@ -123,6 +133,7 @@ class MenuController extends BaseController
             $menu->created_by = $request->userInfo['id'] ?? null;
             $menu->save();
 
+            $this->clearAllMenuCache();
             Db::commit();
             return $this->success(['id' => $menu->id], '创建成功');
         } catch (\Exception $e) {
@@ -182,6 +193,7 @@ class MenuController extends BaseController
             $menu->updated_by = $request->userInfo['id'] ?? null;
             $menu->save();
 
+            $this->clearAllMenuCache();
             Db::commit();
             return $this->success([], '更新成功');
         } catch (\Exception $e) {
@@ -210,12 +222,14 @@ class MenuController extends BaseController
         try {
             MenuModel::destroy($id);
             Db::name('sys_role_menu')->where('menu_id', $id)->delete();
-            Db::name('sys_role_menu_button')->alias('rmb')
-                ->join('sys_menu_button mb', 'rmb.menu_button_id = mb.id')
-                ->where('mb.menu_id', $id)
+            Db::name('sys_role_menu_button')
+                ->where('menu_button_id', 'in', function ($query) use ($id) {
+                    $query->name('sys_menu_button')->where('menu_id', $id)->field('id');
+                })
                 ->delete();
             Db::name('sys_menu_button')->where('menu_id', $id)->delete();
 
+            $this->clearAllMenuCache();
             Db::commit();
             return $this->success([], '删除成功');
         } catch (\Exception $e) {
@@ -267,6 +281,7 @@ class MenuController extends BaseController
         $button->created_by = $request->userInfo['id'] ?? null;
         $button->save();
 
+        $this->clearAllMenuCache();
         return $this->success(['id' => $button->id], '创建按钮成功');
     }
 
@@ -309,6 +324,7 @@ class MenuController extends BaseController
         $button->updated_by = $request->userInfo['id'] ?? null;
         $button->save();
 
+        $this->clearAllMenuCache();
         return $this->success([], '更新按钮成功');
     }
 
@@ -329,6 +345,7 @@ class MenuController extends BaseController
             MenuButton::destroy($buttonId);
             Db::name('sys_role_menu_button')->where('menu_button_id', $buttonId)->delete();
 
+            $this->clearAllMenuCache();
             Db::commit();
             return $this->success([], '删除按钮成功');
         } catch (\Exception $e) {

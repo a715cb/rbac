@@ -127,6 +127,11 @@ frontend/
 │   │   ├── Breadcrumb/           # 面包屑组件
 │   │   ├── Button/               # 自定义按钮
 │   │   ├── Icon/                 # 图标组件
+│   │   │   ├── SIcon.vue          # 图标渲染组件
+│   │   │   ├── SIconSelect.vue    # 图标选择器组件
+│   │   │   ├── components/        # 图标子组件
+│   │   │   │   ├── IconSelector.vue # 图标浏览器（分组 + 搜索）
+│   │   │   │   └── icons.ts       # 图标库数据（6 大分类）
 │   │   ├── TableSetting/         # 表格设置（列设置/全屏/刷新/尺寸）
 │   │   ├── TokenProvider/        # CSS Token 变量提供者
 │   │   ├── Captcha/             # 验证码组件
@@ -253,8 +258,9 @@ frontend/
 - 菜单树形展示
 - 菜单新增、编辑、删除
 - 菜单按钮管理（增删改查）
-- 菜单图标配置
+- 图标选择器（分组浏览 + 关键词搜索，6 大分类、300+ 图标）
 - 菜单路由与组件配置
+- 菜单变更后自动清除前端缓存，刷新时重新加载最新权限
 
 ### 5. 部门管理
 - 部门树形展示
@@ -480,4 +486,4 @@ VITE_APP_ERROR_COMPONENT_PATH=@/pages/error/404.vue
 
 *项目版本：v1.0*
 *技术栈：Vue 3 + TypeScript + Vite + Ant Design Vue + Tailwind CSS*
-*最后更新：2026-05-09*
+*最后更新：2026-05-12*

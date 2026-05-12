@@ -1,3 +1,4 @@
+<!-- 菜单表单弹窗组件：用于新增/编辑菜单，包含菜单类型、上级菜单、路由信息、状态等字段 -->
 <template>
   <a-modal
     :title="isEdit ? '编辑菜单' : '新增菜单'"
@@ -8,6 +9,7 @@
     @cancel="handleCancel"
   >
     <a-form ref="formRef" :model="formState" :rules="rules" layout="vertical">
+      <!-- 第一行：菜单类型 + 上级菜单 -->
       <a-row :gutter="16">
         <a-col :span="12">
           <a-form-item label="菜单类型" name="menu_type" html-for="menu-type">
@@ -19,6 +21,7 @@
         </a-col>
         <a-col :span="12">
           <a-form-item label="上级菜单" name="parent_id" html-for="menu-parent-id">
+            <!-- 树形选择器：从菜单树数据中选择上级菜单 -->
             <a-tree-select
               id="menu-parent-id"
               v-model:value="formState.parent_id"
@@ -33,6 +36,7 @@
         </a-col>
       </a-row>
 
+      <!-- 第二行：菜单名称 + 菜单标识 -->
       <a-row :gutter="16">
         <a-col :span="12">
           <a-form-item label="菜单名称" name="name" html-for="menu-name">
@@ -56,6 +60,7 @@
         </a-col>
       </a-row>
 
+      <!-- 第三行：路由路径 + 组件路径 -->
       <a-row :gutter="16">
         <a-col :span="12">
           <a-form-item label="路由路径" name="path" html-for="menu-path">
@@ -79,15 +84,11 @@
         </a-col>
       </a-row>
 
+      <!-- 第四行：图标 + 排序 -->
       <a-row :gutter="16">
         <a-col :span="12">
           <a-form-item label="图标" name="icon" html-for="menu-icon">
-            <a-input
-              id="menu-icon"
-              v-model:value="formState.icon"
-              name="icon"
-              placeholder="请输入图标名称"
-            />
+            <s-icon-select v-model="formState.icon" />
           </a-form-item>
         </a-col>
         <a-col :span="12">
@@ -103,6 +104,7 @@
         </a-col>
       </a-row>
 
+      <!-- 第五行：显示状态 + 缓存状态 + 菜单状态（三列等分） -->
       <a-row :gutter="16">
         <a-col :span="8">
           <a-form-item label="显示状态" name="visible" html-for="menu-visible">
@@ -134,6 +136,7 @@
         </a-col>
       </a-row>
 
+      <!-- 备注 -->
       <a-form-item label="备注" name="remark" html-for="menu-remark">
         <a-textarea
           id="menu-remark"
@@ -154,6 +157,9 @@ import { message } from 'ant-design-vue'
 import { createMenu, updateMenu } from '@/api/menu'
 import type { MenuInfo, MenuForm } from '@/api/menu'
 import { useMenuTree } from '@/composables/useTreeData'
+import { SIconSelect } from '@/components/Icon'
+
+// ==================== 组件属性与事件 ====================
 
 interface Props {
   visible: boolean
@@ -167,12 +173,16 @@ const emit = defineEmits<{
   (e: 'success'): void
 }>()
 
-const formRef = ref<FormInstance>()
-const loading = ref(false)
-const { menuTreeData, fetchMenuTree } = useMenuTree()
+// ==================== 响应式状态 ====================
 
+const formRef = ref<FormInstance>() // 表单实例引用，用于校验和重置
+const loading = ref(false) // 提交加载状态
+const { menuTreeData, fetchMenuTree } = useMenuTree() // 菜单树数据，用于上级菜单选择器
+
+/** 是否为编辑模式（有传入记录则为编辑，否则为新增） */
 const isEdit = computed(() => !!props.record)
 
+/** 表单数据对象，包含菜单所有字段 */
 const formState = reactive<MenuForm>({
   name: '',
   code: '',
@@ -193,12 +203,17 @@ const formState = reactive<MenuForm>({
   remark: ''
 })
 
+// ==================== 表单校验规则 ====================
+
 const rules = {
   name: [{ required: true, message: '请输入菜单名称', trigger: 'blur' }],
   code: [{ required: true, message: '请输入菜单标识', trigger: 'blur' }],
   menu_type: [{ required: true, message: '请选择菜单类型', trigger: 'change' }]
 }
 
+// ==================== 表单操作 ====================
+
+/** 重置表单数据为默认值 */
 const resetForm = () => {
   formState.name = ''
   formState.code = ''
@@ -219,8 +234,10 @@ const resetForm = () => {
   formState.remark = ''
 }
 
+/** 根据模式加载表单数据：编辑模式回填记录、新增子菜单模式设置父级 ID、新增顶级菜单模式重置表单 */
 const loadFormData = () => {
   if (props.record) {
+    // 编辑模式：将记录数据回填到表单
     formState.name = props.record.name
     formState.code = props.record.code
     formState.menu_type = props.record.menu_type
@@ -239,12 +256,17 @@ const loadFormData = () => {
     formState.status = props.record.status
     formState.remark = props.record.remark || ''
   } else if (props.parentId) {
+    // 新增子菜单模式：仅设置父级 ID，其余保持默认
     formState.parent_id = props.parentId
   } else {
+    // 新增顶级菜单模式：重置表单
     resetForm()
   }
 }
 
+// ==================== 提交与取消 ====================
+
+/** 提交表单：校验通过后调用新增/更新接口 */
 const handleSubmit = async () => {
   try {
     await formRef.value?.validate()
@@ -266,17 +288,20 @@ const handleSubmit = async () => {
     resetForm()
   } catch (error: unknown) {
     if (import.meta.env.DEV) console.error('[MenuFormModal] handleSubmit failed:', error)
-    // error handled by request interceptor
   } finally {
     loading.value = false
   }
 }
 
+/** 取消操作：关闭弹窗并重置表单 */
 const handleCancel = () => {
   emit('update:visible', false)
   resetForm()
 }
 
+// ==================== 侦听器 ====================
+
+/** 监听弹窗可见性变化，打开时加载表单数据 */
 watch(
   () => props.visible,
   (val) => {
@@ -285,6 +310,8 @@ watch(
     }
   }
 )
+
+// ==================== 生命周期 ====================
 
 onMounted(() => {
   fetchMenuTree()

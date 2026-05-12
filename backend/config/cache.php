@@ -5,7 +5,7 @@
 
 return [
     // 默认缓存驱动
-    'default' => env('CACHE_DRIVER', 'file'),
+    'default' => env('CACHE_DRIVER', 'redis'),
     // 缓存连接配置
     'stores' => [
         'file' => [

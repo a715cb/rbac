@@ -111,6 +111,7 @@ coverage/
 .yarn/
 .cache/
 .eslintcache
+.vite/
 
 # 包管理器锁文件（可选，根据团队规范决定）
 # package-lock.json
