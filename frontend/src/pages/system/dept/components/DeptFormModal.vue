@@ -97,10 +97,10 @@ interface TreeDataItem {
 
 /** 组件属性定义 */
 interface Props {
-  visible: boolean       // 弹窗是否可见，支持 v-model:visible 双向绑定
-  record: DeptInfo | null  // 编辑时传入的部门记录，null 表示新增模式
-  parentId?: number      // 新增子部门时指定的上级部门ID
-  treeData?: DeptInfo[]  // 部门树形数据，用于构建上级部门选择器
+  visible: boolean // 弹窗是否可见，支持 v-model:visible 双向绑定
+  record: DeptInfo | null // 编辑时传入的部门记录，null 表示新增模式
+  parentId?: number // 新增子部门时指定的上级部门ID
+  treeData?: DeptInfo[] // 部门树形数据，用于构建上级部门选择器
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -110,8 +110,8 @@ const props = withDefaults(defineProps<Props>(), {
 
 /** 组件事件定义 */
 const emit = defineEmits<{
-  (e: 'update:visible', value: boolean): void  // 更新弹窗可见状态
-  (e: 'success'): void                          // 表单提交成功后触发，通知父组件刷新数据
+  (e: 'update:visible', value: boolean): void // 更新弹窗可见状态
+  (e: 'success'): void // 表单提交成功后触发，通知父组件刷新数据
 }>()
 
 /** 表单实例引用，用于调用 validate 方法 */
@@ -125,11 +125,11 @@ const isEdit = computed(() => !!props.record)
 
 /** 表单数据：部门表单字段 */
 const formState = reactive<DeptForm>({
-  parent_id: 0,       // 上级部门ID，0 表示顶级部门
-  name: '',           // 部门名称
-  code: '',           // 部门编码
-  leader: '',         // 负责人
-  sort: undefined     // 排序值，数字类型
+  parent_id: 0, // 上级部门ID，0 表示顶级部门
+  name: '', // 部门名称
+  code: '', // 部门编码
+  leader: '', // 负责人
+  sort: undefined // 排序值，数字类型
 })
 
 /** 表单校验规则 */

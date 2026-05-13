@@ -4,7 +4,9 @@ import { getDeptTree } from '@/api/dept'
 
 type TreeNode = { id: number; name: string; children?: TreeNode[] }
 
-const normalizeTreeIds = <T extends { id: string | number; name: string; children?: T[] }>(tree: T[]): TreeNode[] => {
+const normalizeTreeIds = <T extends { id: string | number; name: string; children?: T[] }>(
+  tree: T[]
+): TreeNode[] => {
   return tree.map((node) => ({
     ...node,
     id: Number(node.id),

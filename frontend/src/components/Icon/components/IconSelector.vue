@@ -6,7 +6,7 @@
       allow-clear
       style="margin-bottom: 12px"
     />
-    <a-tabs v-model:activeKey="currentTab" @change="handleTabChange">
+    <a-tabs v-model:active-key="currentTab" @change="handleTabChange">
       <a-tab-pane v-for="group in filteredIcons" :key="group.key" :tab="group.title">
         <ul v-if="group.icons.length" class="icon-list">
           <li

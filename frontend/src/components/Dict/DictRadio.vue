@@ -67,8 +67,10 @@ const innerValue = computed({
 
 const attrs = useAttrs()
 const filteredAttrs = computed(() => {
-  const { value, 'onUpdate:value': onUpdateValue, ...rest } = attrs as Record<string, unknown>
-  return rest
+  const filtered = { ...attrs }
+  delete filtered.value
+  delete filtered['onUpdate:value']
+  return filtered
 })
 
 watch(

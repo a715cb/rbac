@@ -58,9 +58,9 @@ import type { DeptUserItem } from '@/api/dept'
 
 /** 组件属性定义 */
 interface Props {
-  visible: boolean       // 弹窗是否可见，支持 v-model:visible 双向绑定
-  deptId?: number        // 部门ID，用于查询该部门下的成员
-  deptName?: string      // 部门名称，用于弹窗标题展示
+  visible: boolean // 弹窗是否可见，支持 v-model:visible 双向绑定
+  deptId?: number // 部门ID，用于查询该部门下的成员
+  deptName?: string // 部门名称，用于弹窗标题展示
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -70,7 +70,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 /** 组件事件定义 */
 const emit = defineEmits<{
-  (e: 'update:visible', value: boolean): void  // 更新弹窗可见状态，实现 v-model:visible
+  (e: 'update:visible', value: boolean): void // 更新弹窗可见状态，实现 v-model:visible
 }>()
 
 /** 加载状态：标记成员数据是否正在请求中 */

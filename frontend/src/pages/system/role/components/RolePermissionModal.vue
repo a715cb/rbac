@@ -153,7 +153,11 @@ const menuTreeData = ref<TreeNode[]>([])
 const buttonTreeData = ref<ButtonTreeNode[]>([])
 
 const apiTreeData = ref<
-  Array<{ id: number | string; name: string; children?: Array<{ id: number | string; name: string }> }>
+  Array<{
+    id: number | string
+    name: string
+    children?: Array<{ id: number | string; name: string }>
+  }>
 >([])
 
 const menuCheckedKeys = ref<(number | string)[]>([])
@@ -188,7 +192,8 @@ const fetchMenuAndButtonTree = async () => {
     menuTreeData.value = extractMenuTree(tree)
     buttonTreeData.value = buildButtonTree(tree)
   } catch (error: unknown) {
-    if (import.meta.env.DEV) console.error('[RolePermissionModal] fetchMenuAndButtonTree failed:', error)
+    if (import.meta.env.DEV)
+      console.error('[RolePermissionModal] fetchMenuAndButtonTree failed:', error)
   } finally {
     tabLoading.menus = false
     tabLoading.buttons = false
@@ -238,7 +243,10 @@ const fetchRolePermissions = async () => {
     const buttonIds = (res.data.button_ids || []).map((id: string | number) => Number(id))
     const apiIds = (res.data.api_ids || []).map((id: string | number) => Number(id))
     menuCheckedKeys.value = filterValidKeys(menuIds, menuTreeData.value)
-    buttonCheckedKeys.value = filterValidKeys(buttonIds, buttonTreeData.value as unknown as TreeNode[])
+    buttonCheckedKeys.value = filterValidKeys(
+      buttonIds,
+      buttonTreeData.value as unknown as TreeNode[]
+    )
     apiCheckedKeys.value = filterValidKeys(apiIds, apiTreeData.value)
   } catch (error: unknown) {
     if (import.meta.env.DEV)
@@ -260,9 +268,18 @@ const handleSubmit = async () => {
 
   loading.value = true
   try {
-    await assignRoleMenus(props.roleId, menuCheckedKeys.value.filter((k): k is number => typeof k === 'number'))
-    await assignRoleButtons(props.roleId, buttonCheckedKeys.value.filter((k): k is number => typeof k === 'number'))
-    await assignRoleApis(props.roleId, apiCheckedKeys.value.filter((k): k is number => typeof k === 'number'))
+    await assignRoleMenus(
+      props.roleId,
+      menuCheckedKeys.value.filter((k): k is number => typeof k === 'number')
+    )
+    await assignRoleButtons(
+      props.roleId,
+      buttonCheckedKeys.value.filter((k): k is number => typeof k === 'number')
+    )
+    await assignRoleApis(
+      props.roleId,
+      apiCheckedKeys.value.filter((k): k is number => typeof k === 'number')
+    )
     message.success('权限分配成功')
     emit('success')
     emit('update:visible', false)

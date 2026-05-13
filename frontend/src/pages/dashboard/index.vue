@@ -110,10 +110,10 @@ import { message } from 'ant-design-vue'
 
 /** 统计数据：存储仪表盘四项核心指标 */
 const stats = reactive({
-  userTotal: 0,    // 用户总数
-  roleTotal: 0,    // 角色总数
-  menuTotal: 0,    // 菜单总数
-  deptTotal: 0     // 部门总数
+  userTotal: 0, // 用户总数
+  roleTotal: 0, // 角色总数
+  menuTotal: 0, // 菜单总数
+  deptTotal: 0 // 部门总数
 })
 
 /** 数据加载状态 */

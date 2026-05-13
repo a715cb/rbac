@@ -324,7 +324,9 @@ onMounted(() => {
       /* 鼠标悬停时使用主题色浅底 */
       &:hover {
         background-color: var(--ant-color-primary-bg);
-        transition: background-color 0.25s ease, transform 0.2s ease;
+        transition:
+          background-color 0.25s ease,
+          transform 0.2s ease;
         transform: translateX(2px);
       }
 
@@ -332,7 +334,9 @@ onMounted(() => {
       &.ant-tree-node-selected {
         background-color: var(--ant-color-primary-bg);
         color: var(--ant-color-primary);
-        transition: background-color 0.2s ease, color 0.2s ease;
+        transition:
+          background-color 0.2s ease,
+          color 0.2s ease;
       }
     }
   }

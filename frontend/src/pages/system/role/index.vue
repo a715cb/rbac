@@ -237,18 +237,40 @@ const columnItems: ColumnItem[] = [
     customRender: ({ record }: { record: RoleInfo }) => {
       const buttons: ReturnType<typeof h>[] = []
       if (userStore.hasPermission('permission_role:edit')) {
-        buttons.push(h(Button, { type: 'link', size: 'small', onClick: () => handleEdit(record) }, () => [h(EditOutlined), ' 编辑']))
+        buttons.push(
+          h(Button, { type: 'link', size: 'small', onClick: () => handleEdit(record) }, () => [
+            h(EditOutlined),
+            ' 编辑'
+          ])
+        )
       }
       if (userStore.hasPermission('permission_role:permission')) {
-        buttons.push(h(Button, { type: 'link', size: 'small', onClick: () => handlePermissions(record) }, () => [h(SafetyOutlined), ' 权限']))
+        buttons.push(
+          h(
+            Button,
+            { type: 'link', size: 'small', onClick: () => handlePermissions(record) },
+            () => [h(SafetyOutlined), ' 权限']
+          )
+        )
       }
       if (userStore.hasPermission('permission_role:data_scope')) {
-        buttons.push(h(Button, { type: 'link', size: 'small', onClick: () => handleDataScope(record) }, () => [h(ClusterOutlined), ' 数据']))
+        buttons.push(
+          h(Button, { type: 'link', size: 'small', onClick: () => handleDataScope(record) }, () => [
+            h(ClusterOutlined),
+            ' 数据'
+          ])
+        )
       }
       if (userStore.hasPermission('permission_role:delete')) {
         buttons.push(
-          h(Popconfirm, { title: '确定要删除该角色吗？', onConfirm: () => handleDelete(record) }, () =>
-            h(Button, { type: 'link', danger: true, size: 'small' }, () => [h(DeleteOutlined), ' 删除'])
+          h(
+            Popconfirm,
+            { title: '确定要删除该角色吗？', onConfirm: () => handleDelete(record) },
+            () =>
+              h(Button, { type: 'link', danger: true, size: 'small' }, () => [
+                h(DeleteOutlined),
+                ' 删除'
+              ])
           )
         )
       }

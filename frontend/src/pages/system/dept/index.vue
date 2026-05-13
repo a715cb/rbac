@@ -353,10 +353,11 @@ const visibleColumns = computed(() =>
             h(EditOutlined),
             ' 修改'
           ]),
-          h(Button, { type: 'link', size: 'small', onClick: () => handleViewMembers(record) }, () => [
-            h(TeamOutlined),
-            ' 成员'
-          ]),
+          h(
+            Button,
+            { type: 'link', size: 'small', onClick: () => handleViewMembers(record) },
+            () => [h(TeamOutlined), ' 成员']
+          ),
           h(
             Popconfirm,
             {

@@ -310,14 +310,11 @@ const visibleColumns = computed(() =>
             h(EditOutlined),
             ' 编辑'
           ]),
-          h(
-            Popconfirm,
-            { title: '确认要删除吗?', onConfirm: () => handleDelete(record) },
-            () =>
-              h(Button, { type: 'link', danger: true, size: 'small' }, () => [
-                h(DeleteOutlined),
-                ' 删除'
-              ])
+          h(Popconfirm, { title: '确认要删除吗?', onConfirm: () => handleDelete(record) }, () =>
+            h(Button, { type: 'link', danger: true, size: 'small' }, () => [
+              h(DeleteOutlined),
+              ' 删除'
+            ])
           )
         ])
       }

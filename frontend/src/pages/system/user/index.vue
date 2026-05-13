@@ -335,7 +335,7 @@ const columnItems: ColumnItem[] = [
     key: 'action',
     title: '操作',
     dataIndex: 'action',
-    width: 240,
+    width: 300,
     fixed: 'right',
     // 操作列：固定在右侧，包含编辑、重置密码、删除三个操作按钮
     // 删除按钮使用 Popconfirm 二次确认，防止误操作

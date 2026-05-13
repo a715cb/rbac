@@ -44,6 +44,16 @@ function sanitizeRoutePath(path: string): string {
   return sanitized || '/'
 }
 
+const componentPathMapping: Record<string, string> = {
+  'system/menu/index': 'permission/menu/index',
+  'system/api/index': 'permission/api/index',
+  'system/button/index': 'permission/button/index'
+}
+
+function mapComponentPath(component: string): string {
+  return componentPathMapping[component] || component
+}
+
 function getComponent(component: string) {
   if (component.startsWith('layouts/')) {
     const layoutName = component.replace('layouts/', '')
@@ -51,6 +61,8 @@ function getComponent(component: string) {
   }
 
   let normalizedComponent = component
+  normalizedComponent = mapComponentPath(normalizedComponent)
+
   if (normalizedComponent.startsWith('@/')) {
     normalizedComponent = normalizedComponent.replace('@/', '/src/')
   } else if (!normalizedComponent.startsWith('/')) {

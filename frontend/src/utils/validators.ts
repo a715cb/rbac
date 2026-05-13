@@ -36,7 +36,10 @@ export function getPasswordRules(required = true): Rule[] {
   return rules
 }
 
-export function getConfirmPasswordRules(getPassword: () => string | undefined, required = true): Rule[] {
+export function getConfirmPasswordRules(
+  getPassword: () => string | undefined,
+  required = true
+): Rule[] {
   const rules: Rule[] = []
   if (required) {
     rules.push({ required: true, message: '请确认密码', trigger: 'blur' })

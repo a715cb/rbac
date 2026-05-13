@@ -75,40 +75,24 @@
                   新增
                 </a-button>
                 <span v-auth="'permission_button:batch_enable'">
-                  <a-popconfirm
-                    title="确定要启用选中的按钮吗？"
-                    @confirm="handleBatchStatus(1)"
-                  >
-                    <a-button
-                      :disabled="selectedRowKeys.length === 0"
-                    >
+                  <a-popconfirm title="确定要启用选中的按钮吗？" @confirm="handleBatchStatus(1)">
+                    <a-button :disabled="selectedRowKeys.length === 0">
                       <CheckCircleOutlined />
                       批量启用
                     </a-button>
                   </a-popconfirm>
                 </span>
                 <span v-auth="'permission_button:batch_disable'">
-                  <a-popconfirm
-                    title="确定要禁用选中的按钮吗？"
-                    @confirm="handleBatchStatus(0)"
-                  >
-                    <a-button
-                      :disabled="selectedRowKeys.length === 0"
-                    >
+                  <a-popconfirm title="确定要禁用选中的按钮吗？" @confirm="handleBatchStatus(0)">
+                    <a-button :disabled="selectedRowKeys.length === 0">
                       <StopOutlined />
                       批量禁用
                     </a-button>
                   </a-popconfirm>
                 </span>
                 <span v-auth="'permission_button:batch_delete'">
-                  <a-popconfirm
-                    title="确定要删除选中的按钮吗？"
-                    @confirm="handleBatchDelete"
-                  >
-                    <a-button
-                      danger
-                      :disabled="selectedRowKeys.length === 0"
-                    >
+                  <a-popconfirm title="确定要删除选中的按钮吗？" @confirm="handleBatchDelete">
+                    <a-button danger :disabled="selectedRowKeys.length === 0">
                       <DeleteOutlined />
                       批量删除
                     </a-button>
@@ -144,10 +128,7 @@
     />
 
     <!-- 按钮详情弹窗 -->
-    <ButtonDetailModal
-      v-model:visible="detailVisible"
-      :record="currentRecord"
-    />
+    <ButtonDetailModal v-model:visible="detailVisible" :record="currentRecord" />
   </div>
 </template>
 
@@ -164,7 +145,12 @@ import {
   StopOutlined
 } from '@ant-design/icons-vue'
 import { message, Switch, Space, Button, Popconfirm } from 'ant-design-vue'
-import { getButtonList, changeButtonStatus, batchButtonStatus, batchDeleteButtons } from '@/api/button'
+import {
+  getButtonList,
+  changeButtonStatus,
+  batchButtonStatus,
+  batchDeleteButtons
+} from '@/api/button'
 import type { ButtonInfo, ButtonQuery } from '@/api/button'
 import { createPagination, type TablePaginationConfig } from '@/utils/common'
 import ButtonFormModal from './components/ButtonFormModal.vue'
@@ -258,15 +244,31 @@ const visibleColumns = computed(() =>
       base.customRender = ({ record }: { record: ButtonInfo }) => {
         const buttons: ReturnType<typeof h>[] = []
         if (userStore.hasPermission('permission_button:edit')) {
-          buttons.push(h(Button, { type: 'link', size: 'small', onClick: () => handleEdit(record) }, () => [h(EditOutlined), ' 编辑']))
+          buttons.push(
+            h(Button, { type: 'link', size: 'small', onClick: () => handleEdit(record) }, () => [
+              h(EditOutlined),
+              ' 编辑'
+            ])
+          )
         }
         if (userStore.hasPermission('permission_button:detail')) {
-          buttons.push(h(Button, { type: 'link', size: 'small', onClick: () => handleDetail(record) }, () => [h(EyeOutlined), ' 详情']))
+          buttons.push(
+            h(Button, { type: 'link', size: 'small', onClick: () => handleDetail(record) }, () => [
+              h(EyeOutlined),
+              ' 详情'
+            ])
+          )
         }
         if (userStore.hasPermission('permission_button:delete')) {
           buttons.push(
-            h(Popconfirm, { title: '确定要删除该按钮吗？', onConfirm: () => handleDelete(record) }, () =>
-              h(Button, { type: 'link', danger: true, size: 'small' }, () => [h(DeleteOutlined), ' 删除'])
+            h(
+              Popconfirm,
+              { title: '确定要删除该按钮吗？', onConfirm: () => handleDelete(record) },
+              () =>
+                h(Button, { type: 'link', danger: true, size: 'small' }, () => [
+                  h(DeleteOutlined),
+                  ' 删除'
+                ])
             )
           )
         }

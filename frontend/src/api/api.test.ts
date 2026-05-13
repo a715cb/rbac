@@ -100,8 +100,30 @@ describe('getApiList 响应数据处理', () => {
       msg: '获取成功',
       data: {
         list: [
-          { id: 1, name: '接口1', code: 'api_1', method: 'GET', path: '/api/1', status: 1, menu_id: 1, menu_name: '菜单1', group: '系统', create_time: '2024-01-01' },
-          { id: 2, name: '接口2', code: 'api_2', method: 'POST', path: '/api/2', status: 1, menu_id: 1, menu_name: '菜单1', group: '系统', create_time: '2024-01-01' }
+          {
+            id: 1,
+            name: '接口1',
+            code: 'api_1',
+            method: 'GET',
+            path: '/api/1',
+            status: 1,
+            menu_id: 1,
+            menu_name: '菜单1',
+            group: '系统',
+            create_time: '2024-01-01'
+          },
+          {
+            id: 2,
+            name: '接口2',
+            code: 'api_2',
+            method: 'POST',
+            path: '/api/2',
+            status: 1,
+            menu_id: 1,
+            menu_name: '菜单1',
+            group: '系统',
+            create_time: '2024-01-01'
+          }
         ],
         groups: ['系统', '用户'],
         pagination: { page: 1, page_size: 10, total: 25, total_pages: 3 }
@@ -123,7 +145,18 @@ describe('getApiList 响应数据处理', () => {
       msg: '获取成功',
       data: {
         list: [
-          { id: 1, name: 'GET接口', code: 'api_1', method: 'GET', path: '/api/1', status: 1, menu_id: 1, menu_name: '菜单1', group: '系统', create_time: '2024-01-01' }
+          {
+            id: 1,
+            name: 'GET接口',
+            code: 'api_1',
+            method: 'GET',
+            path: '/api/1',
+            status: 1,
+            menu_id: 1,
+            menu_name: '菜单1',
+            group: '系统',
+            create_time: '2024-01-01'
+          }
         ],
         groups: ['系统'],
         pagination: { page: 1, page_size: 10, total: 5, total_pages: 1 }
@@ -133,7 +166,9 @@ describe('getApiList 响应数据处理', () => {
     const result = await getApiList({ page: 1, limit: 10, method: 'GET' })
 
     expect(result.data.pagination.total).toBe(5)
-    expect(mockGet).toHaveBeenCalledWith('/admin/apis', { params: { page: 1, limit: 10, method: 'GET' } })
+    expect(mockGet).toHaveBeenCalledWith('/admin/apis', {
+      params: { page: 1, limit: 10, method: 'GET' }
+    })
   })
 
   it('total 为 0 时应正确返回', async () => {

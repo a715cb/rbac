@@ -176,10 +176,10 @@ const isSubmitting = ref(false)
 
 /** 登录表单数据 */
 const formState = reactive({
-  username: '',      // 用户名
-  password: '',      // 密码
-  captcha: '',       // 图形验证码
-  remember: false    // 是否记住密码
+  username: '', // 用户名
+  password: '', // 密码
+  captcha: '', // 图形验证码
+  remember: false // 是否记住密码
 })
 
 /** 表单校验规则 */
