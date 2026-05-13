@@ -188,7 +188,7 @@ const { searchText, expandedRowKeys, highlightText, doSearch, resetSearch } = us
 
 /** 表格列配置项：定义部门表格的所有列信息 */
 const columnItems: ColumnItem[] = [
-  { key: 'name', title: '名称', dataIndex: 'name' },
+  { key: 'name', title: '名称', dataIndex: 'name', width: 200 },
   { key: 'code', title: '部门编码', dataIndex: 'code', width: 120 },
   { key: 'leader', title: '负责人', dataIndex: 'leader', width: 100 },
   { key: 'phone', title: '联系电话', dataIndex: 'phone', width: 140 },
@@ -448,7 +448,7 @@ const handleStatusChange = async (record: DeptInfo, checked: boolean) => {
  * @description 设置当前部门ID和名称，打开成员查看弹窗
  */
 const handleViewMembers = (record: DeptInfo) => {
-  currentDeptId.value = record.id
+  currentDeptId.value = Number(record.id)
   currentDeptName.value = record.name
   usersModalVisible.value = true
 }
