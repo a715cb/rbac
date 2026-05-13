@@ -58,7 +58,7 @@
           <div class="flex items-center">
             <div class="table-header-toolbar">
               <div>
-                <a-button v-auth="'system_role:add'" type="primary" @click="handleAdd">
+                <a-button v-auth="'permission_role:add'" type="primary" @click="handleAdd">
                   <PlusOutlined />
                   新增
                 </a-button>
@@ -221,13 +221,13 @@ const columnItems: ColumnItem[] = [
     customRender: ({ record }: { record: RoleInfo }) => {
       return h(Switch, {
         checked: record.status === 1,
-        disabled: !userStore.hasPermission('system_role:status'),
+        disabled: !userStore.hasPermission('permission_role:status'),
         onChange: (checked: boolean | string | number) =>
           handleStatusChange(record, Boolean(checked))
       })
     }
   },
-  { key: 'remark', title: '备注', dataIndex: 'remark' },
+  { key: 'remark', title: '备注', dataIndex: 'remark', width: 260 },
   {
     key: 'action',
     title: '操作',
@@ -236,16 +236,16 @@ const columnItems: ColumnItem[] = [
     fixed: 'right',
     customRender: ({ record }: { record: RoleInfo }) => {
       const buttons: ReturnType<typeof h>[] = []
-      if (userStore.hasPermission('system_role:edit')) {
+      if (userStore.hasPermission('permission_role:edit')) {
         buttons.push(h(Button, { type: 'link', size: 'small', onClick: () => handleEdit(record) }, () => [h(EditOutlined), ' 编辑']))
       }
-      if (userStore.hasPermission('system_role:permission')) {
+      if (userStore.hasPermission('permission_role:permission')) {
         buttons.push(h(Button, { type: 'link', size: 'small', onClick: () => handlePermissions(record) }, () => [h(SafetyOutlined), ' 权限']))
       }
-      if (userStore.hasPermission('system_role:data_scope')) {
+      if (userStore.hasPermission('permission_role:data_scope')) {
         buttons.push(h(Button, { type: 'link', size: 'small', onClick: () => handleDataScope(record) }, () => [h(ClusterOutlined), ' 数据']))
       }
-      if (userStore.hasPermission('system_role:delete')) {
+      if (userStore.hasPermission('permission_role:delete')) {
         buttons.push(
           h(Popconfirm, { title: '确定要删除该角色吗？', onConfirm: () => handleDelete(record) }, () =>
             h(Button, { type: 'link', danger: true, size: 'small' }, () => [h(DeleteOutlined), ' 删除'])
