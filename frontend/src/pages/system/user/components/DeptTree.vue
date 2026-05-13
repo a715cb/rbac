@@ -323,13 +323,16 @@ onMounted(() => {
     .ant-tree-node-content-wrapper {
       /* 鼠标悬停时使用主题色浅底 */
       &:hover {
-        background-color: var(--ant-color-bg-text-hover);
+        background-color: var(--ant-color-primary-bg);
+        transition: background-color 0.25s ease, transform 0.2s ease;
+        transform: translateX(2px);
       }
 
       /* 选中节点使用主题色背景 + 主题色文字 */
       &.ant-tree-node-selected {
         background-color: var(--ant-color-primary-bg);
         color: var(--ant-color-primary);
+        transition: background-color 0.2s ease, color 0.2s ease;
       }
     }
   }

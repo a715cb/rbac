@@ -63,6 +63,14 @@ Route::group('admin', function () {
         Route::delete(':id', '\\app\\admin\\controller\\MenuController@destroy');
     });
 
+    Route::group('menu-buttons', function () {
+        Route::get('', '\\app\\admin\\controller\\MenuButtonController@index');
+        Route::post('batch-status', '\\app\\admin\\controller\\MenuButtonController@batchStatus');
+        Route::post('batch-delete', '\\app\\admin\\controller\\MenuButtonController@batchDelete');
+        Route::put(':id/status', '\\app\\admin\\controller\\MenuButtonController@changeStatus');
+        Route::get(':id', '\\app\\admin\\controller\\MenuButtonController@show');
+    });
+
     Route::group('depts', function () {
         Route::get('', '\\app\\admin\\controller\\DepartmentController@index');
         Route::get('tree', '\\app\\admin\\controller\\DepartmentController@tree');

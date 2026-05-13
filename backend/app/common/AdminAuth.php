@@ -62,6 +62,10 @@ class AdminAuth
 
     public function getMenuCodes(): array
     {
+        if ($this->isSuperAdmin()) {
+            return $this->getAllMenuCodes();
+        }
+
         if (!empty($this->menus)) {
             return $this->menus;
         }
@@ -85,6 +89,10 @@ class AdminAuth
 
     public function getApiCodes(): array
     {
+        if ($this->isSuperAdmin()) {
+            return $this->getAllApiCodes();
+        }
+
         if (!empty($this->permissions)) {
             return $this->permissions;
         }
@@ -108,6 +116,10 @@ class AdminAuth
 
     public function getButtonCodes(): array
     {
+        if ($this->isSuperAdmin()) {
+            return $this->getAllButtonCodes();
+        }
+
         if (!empty($this->buttonCodes)) {
             return $this->buttonCodes;
         }
@@ -153,7 +165,12 @@ class AdminAuth
         }
 
         $menuModel = new Menu();
-        $tree = $menuModel->getUserMenuTree($this->userId);
+
+        if ($this->isSuperAdmin()) {
+            $tree = $menuModel->getMenuTreeList(1);
+        } else {
+            $tree = $menuModel->getUserMenuTree($this->userId);
+        }
 
         SimpleCache::set($cacheKey, $tree, $cacheTime);
 
@@ -177,6 +194,8 @@ class AdminAuth
         }
 
         switch ($this->dataScope) {
+            case 1:
+                return [];
             case 2:
                 return $this->getUserDeptIds();
             case 3:
@@ -225,6 +244,10 @@ class AdminAuth
 
     public function setUser(int $userId): void
     {
+        if ($this->userId !== $userId) {
+            $this->resetState();
+        }
+
         $this->userId = $userId;
         $this->loadUserRoles();
     }
@@ -255,13 +278,107 @@ class AdminAuth
         $this->roles = $roles;
 
         if (!empty($roles)) {
-            $firstRole = $roles[0];
-            $this->dataScope = $firstRole['data_scope'] ?? 1;
-            $this->dataScopeDeptIds = $firstRole['data_scope_dept_ids'] ?? [];
-            if (is_string($this->dataScopeDeptIds)) {
-                $this->dataScopeDeptIds = $this->dataScopeDeptIds ? explode(',', $this->dataScopeDeptIds) : [];
+            $this->dataScope = $this->resolveDataScope($roles);
+            $this->dataScopeDeptIds = $this->resolveDataScopeDeptIds($roles);
+        }
+    }
+
+    private function resolveDataScope(array $roles): int
+    {
+        $minScope = 5;
+        foreach ($roles as $role) {
+            $scope = (int) ($role['data_scope'] ?? 1);
+            if ($scope < $minScope) {
+                $minScope = $scope;
+            }
+            if ($minScope === 1) {
+                break;
             }
         }
+        return $minScope;
+    }
+
+    private function resolveDataScopeDeptIds(array $roles): array
+    {
+        $allDeptIds = [];
+        foreach ($roles as $role) {
+            $deptIds = $role['data_scope_dept_ids'] ?? [];
+            if (is_string($deptIds)) {
+                $deptIds = $deptIds ? explode(',', $deptIds) : [];
+            }
+            if (!empty($deptIds)) {
+                $allDeptIds = array_merge($allDeptIds, $deptIds);
+            }
+        }
+        return array_values(array_unique($allDeptIds));
+    }
+
+    private function resetState(): void
+    {
+        $this->user = null;
+        $this->roles = [];
+        $this->permissions = [];
+        $this->menus = [];
+        $this->buttonCodes = [];
+        $this->dataScope = 1;
+        $this->dataScopeDeptIds = [];
+    }
+
+    private function getAllMenuCodes(): array
+    {
+        $cacheKey = 'all_menu_codes';
+        $cacheTime = Config::get('auth.cache_time', 3600);
+
+        $cached = SimpleCache::get($cacheKey);
+        if ($cached !== null) {
+            return $cached;
+        }
+
+        $codes = (new Menu())->where('status', 1)->column('code');
+
+        SimpleCache::set($cacheKey, $codes, $cacheTime);
+
+        return $codes;
+    }
+
+    private function getAllApiCodes(): array
+    {
+        $cacheKey = 'all_api_codes';
+        $cacheTime = Config::get('auth.cache_time', 3600);
+
+        $cached = SimpleCache::get($cacheKey);
+        if ($cached !== null) {
+            return $cached;
+        }
+
+        $codes = Db::name('sys_api')
+            ->where('status', 1)
+            ->whereNull('delete_time')
+            ->column('code');
+
+        SimpleCache::set($cacheKey, $codes, $cacheTime);
+
+        return $codes;
+    }
+
+    private function getAllButtonCodes(): array
+    {
+        $cacheKey = 'all_button_codes';
+        $cacheTime = Config::get('auth.cache_time', 3600);
+
+        $cached = SimpleCache::get($cacheKey);
+        if ($cached !== null) {
+            return $cached;
+        }
+
+        $codes = Db::name('sys_menu_button')
+            ->where('status', 1)
+            ->whereNull('delete_time')
+            ->column('code');
+
+        SimpleCache::set($cacheKey, $codes, $cacheTime);
+
+        return $codes;
     }
 
     public function clearCache(): void
@@ -272,6 +389,10 @@ class AdminAuth
             SimpleCache::delete('user_button_codes_' . $this->userId);
             SimpleCache::delete('user_menu_tree_' . $this->userId);
         }
+
+        SimpleCache::delete('all_menu_codes');
+        SimpleCache::delete('all_api_codes');
+        SimpleCache::delete('all_button_codes');
     }
 
     public function clearAllCache(): void
@@ -280,12 +401,6 @@ class AdminAuth
             $this->clearCache();
         }
         $this->userId = 0;
-        $this->user = null;
-        $this->roles = [];
-        $this->permissions = [];
-        $this->menus = [];
-        $this->buttonCodes = [];
-        $this->dataScope = 1;
-        $this->dataScopeDeptIds = [];
+        $this->resetState();
     }
 }

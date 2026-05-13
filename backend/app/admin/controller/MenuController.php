@@ -11,9 +11,16 @@ use think\facade\Db;
 
 class MenuController extends BaseController
 {
+    private MenuButton $menuButton;
+
+    public function __construct()
+    {
+        $this->menuButton = new MenuButton();
+    }
+
     private function clearAllMenuCache(): void
     {
-        $userIds = Db::name('user')->where('status', 1)->column('id');
+        $userIds = Db::name('sys_user')->where('status', 1)->column('id');
         foreach ($userIds as $userId) {
             SimpleCache::delete('user_menu_tree_' . $userId);
             SimpleCache::delete('user_menu_codes_' . $userId);
@@ -73,7 +80,7 @@ class MenuController extends BaseController
         }
 
         $menuData = $menu->toArray();
-        $menuData['buttons'] = (new MenuButton())->getButtonsByMenu($id);
+        $menuData['buttons'] = $this->menuButton->getButtonsByMenu($id);
 
         $menuModel = new MenuModel();
         $menuData['path'] = $menuModel->getMenuPath($id);
@@ -245,7 +252,7 @@ class MenuController extends BaseController
             return $this->error('菜单不存在', 404);
         }
 
-        $buttons = (new MenuButton())->getButtonsByMenu($id);
+        $buttons = $this->menuButton->getButtonsByMenu($id);
 
         return $this->success($buttons, '获取成功');
     }
@@ -356,9 +363,8 @@ class MenuController extends BaseController
 
     private function appendButtons(array &$list): void
     {
-        $menuButton = new MenuButton();
         foreach ($list as &$item) {
-            $item['buttons'] = $menuButton->getButtonsByMenu($item['id']);
+            $item['buttons'] = $this->menuButton->getButtonsByMenu($item['id']);
             if (!empty($item['children'])) {
                 $this->appendButtons($item['children']);
             }

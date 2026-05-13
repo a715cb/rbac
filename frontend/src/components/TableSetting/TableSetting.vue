@@ -21,11 +21,11 @@ import ColumnSetting from './ColumnSetting.vue'
   gap: 16px;
 
   :deep(.anticon) {
-    color: rgba(0, 0, 0, 0.65);
+    color: var(--table-settings-icon-color);
     transition: color 0.3s;
 
     &:hover {
-      color: rgba(0, 0, 0, 0.85);
+      color: var(--table-settings-icon-hover);
     }
   }
 

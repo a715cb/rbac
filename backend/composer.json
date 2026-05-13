@@ -21,11 +21,17 @@
     },
     "config": {
         "preferred-install": "dist",
-        "sort-packages": true
+        "sort-packages": true,
+        "audit": {
+            "block-insecure": false
+        }
     },
     "scripts": {
         "post-autoload-dump": [
             "@php think service:discover"
         ]
+    },
+    "require-dev": {
+        "phpunit/phpunit": "11"
     }
 }

@@ -23,6 +23,16 @@ body {
   height: 100%;
 }
 
+// API 路径标签主题变量（默认亮色主题）
+:root {
+  --api-path-bg: @api-path-bg;
+  --api-path-text: @api-path-text;
+  --table-settings-icon-color: @table-settings-icon-color;
+  --table-settings-icon-hover: @table-settings-icon-hover;
+  --tree-selected-bg: @tree-selected-bg;
+  --tree-selected-bg-hover: @tree-selected-bg-hover;
+}
+
 // 滚动条样式
 ::-webkit-scrollbar {
   width: 6px;
@@ -407,12 +417,18 @@ body {
   .ant-tree-treenode {
     padding: 4px 0;
 
-    &:hover {
-      background: @background-color-light;
-    }
+    // &:hover,
+    // &:focus {
+    //   background: #181515;
+    // }
 
     &.ant-tree-treenode-selected {
-      background: #e6f7ff;
+      background: var(--tree-selected-bg);
+      transition: background-color 0.2s ease;
+
+      &:hover {
+        background: var(--tree-selected-bg-hover);
+      }
     }
   }
 }
@@ -640,11 +656,13 @@ html[data-theme='dark'] {
     color: #ff7875;
   }
 
-  // API 路径标签暗黑模式
-  .api-path {
-    background: #303030;
-    color: rgba(255, 255, 255, 0.65);
-  }
+  // API 路径标签暗黑模式 CSS 变量覆盖
+  --api-path-bg: @api-path-bg-dark;
+  --api-path-text: @api-path-text-dark;
+  --table-settings-icon-color: @table-settings-icon-color-dark;
+  --table-settings-icon-hover: @table-settings-icon-hover-dark;
+  --tree-selected-bg: @tree-selected-bg-dark;
+  --tree-selected-bg-hover: @tree-selected-bg-hover-dark;
 
   // 分隔线暗黑模式
   .ant-divider {

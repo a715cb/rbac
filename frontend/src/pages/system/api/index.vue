@@ -414,13 +414,13 @@ onMounted(() => {
     margin-left: auto;
   }
 
-  /* 接口路径代码样式：浅灰背景、圆角、等宽字体风格 */
+  /* 接口路径代码样式：通过全局 CSS 变量实现主题自适应 */
   .api-path {
-    background: var(--ant-color-fill-quaternary, #f5f5f5);
+    background-color: var(--api-path-bg);
+    color: var(--api-path-text);
     padding: 2px 8px;
     border-radius: 4px;
     font-size: 13px;
-    color: var(--ant-color-text-secondary, #666);
   }
 
   /* 全屏表格模式：覆盖页面容器为 fixed 定位，撑满视口 */
