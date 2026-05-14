@@ -153,10 +153,8 @@ import { getLoginLogList, clearLoginLog, deleteLoginLog } from '@/api/loginLog'
 import type { LoginLogInfo, LoginLogQuery } from '@/api/loginLog'
 import { createPagination, type TablePaginationConfig } from '@/utils/common'
 import TableSetting from '@/components/TableSetting/TableSetting.vue'
-import {
-  useTableSetting,
-  createTableSettingContext
-} from '@/components/TableSetting/useTableSetting'
+import { usePageTable } from '@/composables/usePageTable'
+import { useExport } from '@/composables'
 import type { ColumnItem } from '@/components/TableSetting/types'
 
 /** 表格数据加载状态 */
@@ -269,64 +267,6 @@ const columnItems: ColumnItem[] = [
   { key: 'login_time', title: '登录时间', dataIndex: 'login_time', width: 180 }
 ]
 
-/** 初始化表格设置（列显隐、密度、全屏等） */
-const {
-  state: tableSettingState,
-  getVisibleColumns,
-  getPopupContainer,
-  wrapRef: settingWrapRef
-} = useTableSetting({
-  columns: columnItems,
-  onRefresh: () => {
-    fetchData()
-  },
-  wrapRef
-})
-
-/** 创建表格设置上下文，供 TableSetting 子组件访问状态和操作方法 */
-createTableSettingContext({
-  state: tableSettingState,
-  actions: {
-    /** 刷新表格数据 */
-    refresh: () => fetchData(),
-    /** 切换全屏显示 */
-    toggleFullscreen: () => {
-      tableSettingState.isFullscreen = !tableSettingState.isFullscreen
-    },
-    /** 切换表格密度 */
-    changeSize: (size) => {
-      tableSettingState.size = size
-    },
-    /** 设置可见列配置 */
-    setColumns: (columns) => {
-      tableSettingState.columns = columns
-    },
-    /** 重置列配置为默认值 */
-    resetColumns: () => {
-      tableSettingState.columns = columnItems.map((col) => ({ ...col }))
-    }
-  },
-  wrapRef: settingWrapRef,
-  getVisibleColumns,
-  getPopupContainer
-})
-
-/** 当前可见的表格列，根据用户设置过滤后映射为 a-table 所需格式（保留 customRender 等渲染属性） */
-const visibleColumns = computed(() => {
-  return getVisibleColumns.value.map((col) => ({
-    ...col,
-    align: col.align as 'left' | 'center' | 'right' | undefined
-  }))
-})
-
-/** 表格行选择配置，控制多选行为 */
-const rowSelection = computed(() => ({
-  selectedRowKeys: selectedRowKeys.value,
-  onChange: (keys: number[]) => {
-    selectedRowKeys.value = keys
-  }
-}))
-
 /**
  * 获取登录日志列表数据
  * @description 根据当前搜索条件和分页参数请求后端接口，更新表格数据
@@ -354,6 +294,24 @@ const fetchData = async () => {
     loading.value = false
   }
 }
+
+/** usePageTable 组合式函数：管理表格列显隐和表格设置状态 */
+const { tableSettingState, visibleColumns } = usePageTable({
+  columns: columnItems,
+  fetchData,
+  wrapRef
+})
+
+/** useExport 组合式函数：CSV 导出工具 */
+const { downloadCsv, escapeCsvField } = useExport()
+
+/** 表格行选择配置，控制多选行为 */
+const rowSelection = computed(() => ({
+  selectedRowKeys: selectedRowKeys.value,
+  onChange: (keys: number[]) => {
+    selectedRowKeys.value = keys
+  }
+}))
 
 /**
  * 执行搜索查询
@@ -417,8 +375,9 @@ const handleClean = () => {
         selectedRowKeys.value = []
         pagination.current = 1
         await fetchData()
-      } catch (error: any) {
-        message.error(error?.message || '清除日志失败，请稍后重试')
+      } catch (error: unknown) {
+        const messageText = error instanceof Error ? error.message : '清除日志失败，请稍后重试'
+        message.error(messageText)
       }
     }
   })
@@ -444,8 +403,9 @@ const handleBatchDelete = () => {
         message.success(`已删除 ${count} 条登录日志`)
         selectedRowKeys.value = []
         await fetchData()
-      } catch (error: any) {
-        message.error(error?.message || '删除失败，请稍后重试')
+      } catch (error: unknown) {
+        const msg = error instanceof Error ? error.message : '删除失败，请稍后重试'
+        message.error(msg)
       }
     }
   })
@@ -454,7 +414,7 @@ const handleBatchDelete = () => {
 /**
  * 导出登录日志为CSV文件
  * @description 若有选中行则仅导出选中数据，否则导出当前页全部数据。
- *              生成带BOM头的UTF-8 CSV文件以确保中文兼容性
+ *              使用 downloadCsv 生成带 BOM 头的 UTF-8 CSV 文件以确保中文兼容性
  */
 const handleExport = () => {
   const data = selectedRowKeys.value.length
@@ -462,21 +422,15 @@ const handleExport = () => {
     : tableData.value
   const headers = ['ID', '登录账号', '登录IP', '操作系统', '浏览器', '登录状态', '登录时间']
   const rows = data.map((item) => [
-    item.id,
-    item.username,
-    item.ip,
-    item.os,
-    item.browser,
-    item.status === 1 ? '成功' : '失败',
-    item.login_time
+    escapeCsvField(item.id),
+    escapeCsvField(item.username),
+    escapeCsvField(item.ip),
+    escapeCsvField(item.os),
+    escapeCsvField(item.browser),
+    escapeCsvField(item.status === 1 ? '成功' : '失败'),
+    escapeCsvField(item.login_time)
   ])
-  const csvContent = [headers.join(','), ...rows.map((row) => row.join(','))].join('\n')
-  /* 添加BOM头(\ufeff)确保Excel正确识别UTF-8编码 */
-  const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' })
-  const link = document.createElement('a')
-  link.href = URL.createObjectURL(blob)
-  link.download = `login_logs_${new Date().toISOString().slice(0, 10)}.csv`
-  link.click()
+  downloadCsv({ filename: 'login_logs', headers, rows })
   message.success('导出成功')
 }
 
@@ -486,99 +440,4 @@ onMounted(() => {
 })
 </script>
 
-<style lang="less" scoped>
-.page-container {
-  /* 搜索区域卡片样式 */
-  .search-card {
-    background: var(--ant-color-bg-container, #fff);
-    border-radius: var(--ant-border-radius, 8px);
-    padding: 16px;
-    margin-bottom: 16px;
-
-    /* 搜索区域内表单项去除底部间距 */
-    :deep(.ant-form-item) {
-      margin-bottom: 0;
-    }
-  }
-
-  /* 表格区域容器样式 */
-  .s-table-wrapper {
-    background: var(--ant-color-bg-container, #fff);
-    border-radius: var(--ant-border-radius, 8px);
-    padding: 16px;
-  }
-
-  /* 表格顶部工具栏与表格的间距 */
-  .s-table-header {
-    margin-bottom: 16px;
-  }
-
-  .table-header-container {
-    width: 100%;
-    padding: 0;
-  }
-
-  /* 工具栏布局：操作按钮左对齐，设置组件右对齐 */
-  .table-header-toolbar {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-
-    div > * {
-      margin-right: 8px;
-    }
-  }
-
-  /* 桌面端表格设置组件靠右对齐 */
-  .table-header__toolbar-desktop {
-    margin-left: auto;
-  }
-
-  /* 全屏模式样式：固定定位覆盖整个视口 */
-  &.fullscreen-table {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 9999;
-    background: var(--ant-color-bg-container, #fff);
-    padding: 16px;
-    display: flex;
-    flex-direction: column;
-    overflow: visible;
-
-    .search-card {
-      flex-shrink: 0;
-    }
-
-    .s-table-wrapper {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      min-height: 0;
-    }
-
-    .s-table-header {
-      flex-shrink: 0;
-    }
-
-    /* 全屏模式下表格区域自适应剩余空间 */
-    :deep(.ant-table-wrapper) {
-      flex: 1;
-      overflow: auto;
-    }
-  }
-}
-
-/* 移动端小屏幕适配：表格横向可滚动 */
-@media (max-width: 480px) {
-  .page-container {
-    :deep(.ant-table) {
-      width: 100%;
-      overflow-x: auto;
-    }
-  }
-}
-</style>
+<style lang="less" scoped></style>

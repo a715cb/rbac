@@ -26,7 +26,7 @@ module.exports = {
     'vue/multi-word-component-names': 'off',
     '@typescript-eslint/no-explicit-any': 'warn',
     '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
-    'no-console': 'warn',
+    'no-console': ['warn', { allow: ['error', 'warn'] }],
     'no-debugger': 'warn'
   },
   globals: {

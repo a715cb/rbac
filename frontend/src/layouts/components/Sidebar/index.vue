@@ -36,6 +36,7 @@
 </template>
 
 <script setup lang="ts">
+defineOptions({ name: 'LayoutSidebar' })
 import Sider from './Sider.vue'
 import { useSetting } from '@/layouts/composables'
 import { useRoute } from 'vue-router'

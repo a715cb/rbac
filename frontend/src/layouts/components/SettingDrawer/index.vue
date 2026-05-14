@@ -261,6 +261,7 @@ import { ref, computed, watch } from 'vue'
 import * as options from './options'
 import SetListItem from './SetListItem.vue'
 import { useSetting } from '../../composables'
+import type { ThemeType } from '../../composables'
 
 /**
  * 从 useSetting 获取所有设置相关的状态和操作方法：
@@ -351,7 +352,7 @@ const toggle = () => {
  *
  * @param newTheme - 新的主题值（light/dark/realDark）
  */
-const setTheme = (newTheme: any) => {
+const setTheme = (newTheme: ThemeType) => {
   changeTheme(newTheme)
 }
 

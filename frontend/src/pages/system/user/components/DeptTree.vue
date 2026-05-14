@@ -84,7 +84,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import {
   PlusSquareOutlined,
   MinusSquareOutlined,
@@ -92,20 +92,14 @@ import {
   FolderOpenOutlined
 } from '@ant-design/icons-vue'
 import { Empty } from 'ant-design-vue'
-import { getDeptTree } from '@/api/dept'
+import { useDeptTree } from '@/composables/useTreeData'
 import type { DeptInfo } from '@/api/dept'
 
 /** Empty 组件的简约图片引用，用于 a-empty 的 image 属性 */
 const simpleImage = Empty.PRESENTED_IMAGE_SIMPLE
 
-/** 部门树数据加载状态，控制 a-spin 旋转动画 */
-const loading = ref(false)
-
-/**
- * 部门树原始数据（从接口获取，未经搜索过滤）
- * 作为 filteredTreeData 的数据源，搜索仅影响展示不修改原始数据
- */
-const treeData = ref<DeptInfo[]>([])
+/** 部门树数据与加载状态，来自共享缓存组合式函数，避免各组件重复请求 */
+const { deptTreeData: treeData, loading, fetchDeptTree } = useDeptTree()
 
 /**
  * 搜索关键词
@@ -197,28 +191,6 @@ const collectAllKeys = (nodes: DeptInfo[]): number[] => {
 }
 
 /**
- * 获取部门树数据
- *
- * 调用后端接口获取部门树形结构，获取成功后：
- * 1. 更新 treeData 原始数据
- * 2. 默认展开全部节点（收集所有 key 赋值给 expandedKeys）
- *
- * 失败时仅在开发环境打印错误，不向用户弹窗（部门树为辅助功能，不影响主流程）
- */
-const fetchDeptTree = async () => {
-  loading.value = true
-  try {
-    const res = await getDeptTree()
-    treeData.value = res.data.tree.map((d: DeptInfo) => ({ ...d, id: Number(d.id) }))
-    expandedKeys.value = collectAllKeys(treeData.value)
-  } catch (error: unknown) {
-    if (import.meta.env.DEV) console.error('[DeptTree] fetchDeptTree failed:', error)
-  } finally {
-    loading.value = false
-  }
-}
-
-/**
  * 处理树节点选中事件
  *
  * a-tree 的 select 事件参数为选中 key 数组（底层支持多选配置），
@@ -271,6 +243,12 @@ const handleSearch = () => {
   }
 }
 
+/** 部门树数据加载后自动展开所有节点 */
+watch(treeData, (newData) => {
+  if (newData.length > 0) {
+    expandedKeys.value = collectAllKeys(newData as DeptInfo[])
+  }
+})
 /**
  * 重置选中状态
  *

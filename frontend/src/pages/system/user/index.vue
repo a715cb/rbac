@@ -132,7 +132,11 @@
       - record：传入当前用户数据时为编辑模式，传入 null 时为新增模式
       - @success：表单提交成功后刷新列表
     -->
-    <UserFormModal v-model:visible="modalVisible" :record="currentRecord" @success="handleSearch" />
+    <UserFormModal
+      v-model:visible="modalVisible"
+      :record="currentRecord"
+      @success="handleSuccess"
+    />
 
     <!-- 重置密码弹窗
       - userId：需要重置密码的用户 ID
@@ -147,7 +151,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted, h } from 'vue'
+import {
+  ref,
+  reactive,
+  computed,
+  onMounted,
+  onErrorCaptured,
+  h,
+  type ComponentPublicInstance
+} from 'vue'
 import {
   SearchOutlined,
   ReloadOutlined,
@@ -170,6 +182,7 @@ import { usePageTable } from '@/composables/usePageTable'
 import type { ColumnItem } from '@/components/TableSetting/types'
 import { DictSelect } from '@/components/Dict'
 import { useDict, getDictLabel } from '@/composables/useDict'
+import { useExport } from '@/composables'
 
 /** 表格加载状态 */
 const loading = ref(false)
@@ -399,6 +412,9 @@ const { tableSettingState, visibleColumns } = usePageTable({
   wrapRef
 })
 
+/** useExport 组合式函数：CSV 导出工具 */
+const { downloadCsv, escapeCsvField } = useExport()
+
 /**
  * 部门树选中事件处理
  * 选中部门后按该部门筛选用户列表，同时重置页码到第一页。
@@ -477,6 +493,22 @@ const handleEdit = (record: UserInfo) => {
 }
 
 /**
+ * 表单提交成功回调（局部数据更新）
+ * @param record - 提交后的用户数据
+ * @description 编辑模式：更新匹配行；新增模式：插入到开头
+ */
+const handleSuccess = (record: UserInfo) => {
+  const normalized = { ...record, id: Number(record.id) }
+  const index = tableData.value.findIndex((item) => item.id === normalized.id)
+  if (index !== -1) {
+    tableData.value[index] = { ...tableData.value[index], ...normalized }
+  } else {
+    tableData.value.unshift(normalized)
+    pagination.total = (pagination.total ?? 0) + 1
+  }
+}
+
+/**
  * 删除用户
  * 调用删除接口，成功后提示并刷新列表。
  * @param record - 待删除的用户信息
@@ -485,26 +517,29 @@ const handleDelete = async (record: UserInfo) => {
   try {
     await deleteUser(record.id)
     message.success('删除成功')
-    fetchData()
+    tableData.value = tableData.value.filter((item) => item.id !== record.id)
+    pagination.total = Math.max(0, (pagination.total ?? 0) - 1)
   } catch (error: unknown) {
     if (import.meta.env.DEV) console.error('[UserPage] handleDelete failed:', error)
   }
 }
 
 /**
- * 用户状态切换处理
- * 调用状态变更接口，根据切换结果提示对应信息并刷新列表。
+ * 用户状态切换处理（乐观更新）
+ * 先更新本地状态，调用 API 成功后提示；
+ * 失败时回滚本地状态并提示错误信息。
  * @param record - 状态变更的用户信息
  * @param checked - 切换后的状态（true-启用，false-禁用）
  */
 const handleStatusChange = async (record: UserInfo, checked: boolean) => {
+  const oldStatus = record.status
+  record.status = checked ? 1 : 0
   try {
     await changeUserStatus(record.id, checked ? 1 : 0)
     message.success(checked ? '用户已启用' : '用户已禁用')
-    fetchData()
   } catch (error: unknown) {
+    record.status = oldStatus
     message.error('状态变更失败，请重试')
-    fetchData()
     if (import.meta.env.DEV) console.error('[UserPage] handleStatusChange failed:', error)
   }
 }
@@ -520,27 +555,9 @@ const handleResetPwd = (record: UserInfo) => {
 }
 
 /**
- * CSV 字段转义
- * 当字段值包含逗号、双引号或换行符时，用双引号包裹并转义内部双引号，
- * 防止 CSV 列错位或数据损坏。
- */
-const escapeCsvField = (val: unknown): string => {
-  const str = val == null ? '' : String(val)
-  if (str.includes(',') || str.includes('"') || str.includes('\n')) {
-    return `"${str.replace(/"/g, '""')}"`
-  }
-  return str
-}
-
-/**
  * 导出用户数据为 CSV 文件
- * 实现思路：
- * 1. 根据当前搜索条件调用导出接口获取数据
- * 2. 构建表头行和数据行，以逗号分隔，特殊字符字段进行转义
- * 3. 添加 BOM 头（\ufeff）确保中文在 Excel 中正确显示
- * 4. 通过创建临时 <a> 标签触发浏览器下载，文件名包含当前日期
- * 5. 性别和状态字段通过字典标签转换为可读文本
- * 6. 下载完成后释放 Blob URL，避免内存泄漏
+ * @description 根据当前搜索条件调用导出接口获取数据，使用 downloadCsv 生成
+ *              带 BOM 头的 UTF-8 CSV 文件，性别和状态字段通过字典标签转换为可读文本
  */
 const handleExport = async () => {
   try {
@@ -577,15 +594,7 @@ const handleExport = async () => {
       escapeCsvField(item.last_login_time),
       escapeCsvField(item.create_time)
     ])
-    const csvContent = [headers.join(','), ...rows.map((row: string[]) => row.join(','))].join('\n')
-    // 添加 BOM 头，解决 CSV 文件中文乱码问题
-    const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' })
-    const link = document.createElement('a')
-    const blobUrl = URL.createObjectURL(blob)
-    link.href = blobUrl
-    link.download = `users_${new Date().toISOString().slice(0, 10)}.csv`
-    link.click()
-    URL.revokeObjectURL(blobUrl)
+    downloadCsv({ filename: 'users', headers, rows })
     message.success('导出成功')
   } catch (error: unknown) {
     if (import.meta.env.DEV) console.error('[UserPage] handleExport failed:', error)
@@ -595,6 +604,13 @@ const handleExport = async () => {
 /** 页面挂载时加载用户列表数据 */
 onMounted(() => {
   fetchData()
+})
+
+/** 错误边界：捕获子组件异常，防止页面白屏 */
+onErrorCaptured((error: Error, _instance: ComponentPublicInstance | null, info: string) => {
+  if (import.meta.env.DEV) console.error('[UserPage] Error captured:', error, info)
+  message.error('页面加载异常，请刷新重试')
+  return false
 })
 </script>
 
@@ -635,16 +651,6 @@ onMounted(() => {
 
   /* 搜索表单卡片样式 */
   .search-card {
-    background: var(--ant-color-bg-container, #fff);
-    border-radius: var(--ant-border-radius, 8px);
-    padding: 16px;
-    margin-bottom: 16px;
-
-    /* 行内表单项去除底部间距，使搜索栏更紧凑 */
-    :deep(.ant-form-item) {
-      margin-bottom: 0;
-    }
-
     /* 查询按钮待提交状态：筛选条件变更后显示脉冲动画提示用户点击生效 */
     .has-pending {
       animation: pulse-pending 1.5s ease-in-out infinite;
@@ -666,40 +672,6 @@ onMounted(() => {
     }
   }
 
-  /* 数据表格外层容器 */
-  .s-table-wrapper {
-    background: var(--ant-color-bg-container, #fff);
-    border-radius: var(--ant-border-radius, 8px);
-    padding: 16px;
-  }
-
-  /* 表格顶部工具栏区域 */
-  .s-table-header {
-    margin-bottom: 16px;
-  }
-
-  .table-header-container {
-    width: 100%;
-    padding: 0;
-  }
-
-  /* 工具栏：左侧操作按钮 + 右侧表格设置，两端对齐 */
-  .table-header-toolbar {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-
-    div > * {
-      margin-right: 8px;
-    }
-  }
-
-  /* 桌面端表格设置组件靠右对齐 */
-  .table-header__toolbar-desktop {
-    margin-left: auto;
-  }
-
   /* 全屏表格模式样式
      通过给 page-container 添加 fullscreen-table 类名激活，
      将表格区域铺满整个视口，适用于数据量较大需要更多展示空间的场景。
@@ -710,7 +682,7 @@ onMounted(() => {
     left: 0;
     right: 0;
     bottom: 0;
-    z-index: 9999;
+    z-index: var(--z-fullscreen-table);
     background: var(--ant-color-bg-container, #fff);
     padding: 16px;
     display: flex;
@@ -742,16 +714,6 @@ onMounted(() => {
     :deep(.ant-table-wrapper) {
       flex: 1;
       overflow: auto;
-    }
-  }
-}
-
-/* 移动端小屏幕适配：表格横向可滚动，避免内容被截断 */
-@media (max-width: 480px) {
-  .page-container {
-    :deep(.ant-table) {
-      width: 100%;
-      overflow-x: auto;
     }
   }
 }

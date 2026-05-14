@@ -209,6 +209,30 @@ class MenuController extends BaseController
         }
     }
 
+    public function changeStatus(Request $request, int $id)
+    {
+        $menu = MenuModel::find($id);
+        if (!$menu) {
+            return $this->error('菜单不存在', 404);
+        }
+
+        $data = $request->put();
+
+        try {
+            $validate = new MenuValidate();
+            $validate->scene('change_status')->check($data);
+        } catch (\think\exception\ValidateException $e) {
+            return $this->error($e->getMessage(), 422);
+        }
+
+        $menu->status = (int) $data['status'];
+        $menu->updated_by = $request->userInfo['id'] ?? null;
+        $menu->save();
+
+        $this->clearAllMenuCache();
+        return $this->success([], $data['status'] == 1 ? '菜单已启用' : '菜单已禁用');
+    }
+
     public function destroy(int $id)
     {
         if ($id <= 0) {

@@ -73,6 +73,7 @@ import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import BaseMenu from './Menu/index'
 import { useSetting, useHeaderSetting } from '@/layouts/composables'
+import { layoutConfig } from '../composables/useLayoutDimensions'
 import { UserMenu, LayoutTrigger, Logo } from './Widget'
 import {
   isMenuVisible,
@@ -90,7 +91,7 @@ const visibleTopMenus = computed(() => {
 })
 
 // 头部布局相关配置：宽度、高度、是否显示顶部菜单/面包屑等
-const { width, height, sideOrMobile, showBreadcrumb, showTopMenu } = useHeaderSetting()
+const { width, sideOrMobile, showBreadcrumb, showTopMenu } = useHeaderSetting()
 
 // 全局布局配置：侧边栏状态、主题、布局模式、菜单分割等
 const { navTheme, layout, routerTo, splitMenu, headTheme, toggleSidebar } = useSetting()
@@ -103,28 +104,26 @@ const route = useRoute()
  */
 const selectedKeys = computed(() => [getMatchedMenuPath(route, menus.value)])
 
+const headerHeight = `${layoutConfig.headerHeight}px`
+
 /**
  * 占位 header 的样式
  * 作用：在文档流中占据与固定 header 相同的高度，防止页面内容被遮挡
  */
-const getDomStyle = computed(() => {
-  return {
-    height: height.value,
-    background: 'transparent'
-  }
-})
+const getDomStyle = computed(() => ({
+  height: headerHeight,
+  background: 'transparent'
+}))
 
 /**
  * 固定 header 的样式
  * 包含高度、行高和动态宽度（根据侧边栏展开/折叠状态变化）
  */
-const headerStyle = computed(() => {
-  return {
-    height: height.value,
-    lineHeight: height.value,
-    width: width.value
-  }
-})
+const headerStyle = computed(() => ({
+  height: headerHeight,
+  lineHeight: headerHeight,
+  width: width.value
+}))
 
 const toggle = () => {
   toggleSidebar()

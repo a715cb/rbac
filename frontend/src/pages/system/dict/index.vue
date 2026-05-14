@@ -20,7 +20,6 @@
             v-model:value="searchKeyword"
             name="keyword"
             placeholder="请输入字典名称搜索"
-            @change="onSearch"
           />
         </header>
 
@@ -151,10 +150,7 @@ import type { DictTypeInfo, DictDataInfo } from '@/api/dict'
 import DictTypeModal from './components/DictTypeModal.vue'
 import DictDataModal from './components/DictDataModal.vue'
 import TableSetting from '@/components/TableSetting/TableSetting.vue'
-import {
-  useTableSetting,
-  createTableSettingContext
-} from '@/components/TableSetting/useTableSetting'
+import { usePageTable } from '@/composables/usePageTable'
 import type { ColumnItem } from '@/components/TableSetting/types'
 
 /** 字典类型列表加载状态 */
@@ -238,59 +234,32 @@ const columnItems: ColumnItem[] = [
   }
 ]
 
-/** 初始化表格设置（列配置、刷新回调、容器引用） */
-const {
-  state: tableSettingState,
-  getVisibleColumns,
-  getPopupContainer,
-  wrapRef: settingWrapRef
-} = useTableSetting({
+/**
+ * 获取字典数据列表
+ * @description 根据当前选中的字典类型 ID 获取对应的字典数据，未选中类型时清空列表
+ */
+const fetchDataList = async () => {
+  if (!currentType.value) {
+    dataList.value = []
+    return
+  }
+  dataLoading.value = true
+  try {
+    const res = await getDictDataList({ dict_type_id: currentType.value.id })
+    dataList.value = res.data
+  } catch (error) {
+    if (import.meta.env.DEV) console.error('[Dict] Fetch data list failed:', error)
+    // error handled by request interceptor
+  } finally {
+    dataLoading.value = false
+  }
+}
+
+/** usePageTable 组合式函数：管理字典数据表格列显隐和表格设置状态 */
+const { tableSettingState, visibleColumns } = usePageTable({
   columns: columnItems,
-  onRefresh: () => {
-    fetchDataList()
-  },
+  fetchData: fetchDataList,
   wrapRef
-})
-
-/** 创建表格设置上下文，供 TableSetting 子组件访问状态和操作方法 */
-createTableSettingContext({
-  state: tableSettingState,
-  actions: {
-    /** 刷新字典数据列表 */
-    refresh: () => fetchDataList(),
-    /** 切换全屏模式 */
-    toggleFullscreen: () => {
-      tableSettingState.isFullscreen = !tableSettingState.isFullscreen
-    },
-    /** 切换表格尺寸 */
-    changeSize: (size) => {
-      tableSettingState.size = size
-    },
-    /** 设置表格列配置 */
-    setColumns: (columns) => {
-      tableSettingState.columns = columns
-    },
-    /** 重置表格列为默认配置 */
-    resetColumns: () => {
-      tableSettingState.columns = columnItems.map((col) => ({ ...col }))
-    }
-  },
-  wrapRef: settingWrapRef,
-  getVisibleColumns,
-  getPopupContainer
-})
-
-/** 根据列可见性设置过滤后的表格列，用于 a-table 渲染 */
-const visibleColumns = computed(() => {
-  return getVisibleColumns.value.map((col) => ({
-    title: col.title,
-    dataIndex: col.dataIndex,
-    key: col.key,
-    width: col.width,
-    align: col.align as 'left' | 'center' | 'right' | undefined,
-    ellipsis: col.ellipsis,
-    customRender: col.customRender
-  }))
 })
 
 /**
@@ -324,30 +293,6 @@ const fetchTypeList = async (isInit = false) => {
     typeLoading.value = false
   }
 }
-
-/**
- * 获取字典数据列表
- * @description 根据当前选中的字典类型 ID 获取对应的字典数据，未选中类型时清空列表
- */
-const fetchDataList = async () => {
-  if (!currentType.value) {
-    dataList.value = []
-    return
-  }
-  dataLoading.value = true
-  try {
-    const res = await getDictDataList({ dict_type_id: currentType.value.id })
-    dataList.value = res.data
-  } catch (error) {
-    if (import.meta.env.DEV) console.error('[Dict] Fetch data list failed:', error)
-    // error handled by request interceptor
-  } finally {
-    dataLoading.value = false
-  }
-}
-
-/** 搜索输入变更回调（搜索逻辑由 computed filteredTypeList 驱动，此处为空实现） */
-const onSearch = () => {}
 
 /**
  * 选中字典类型
@@ -394,10 +339,9 @@ const handleDeleteType = (item: DictTypeInfo) => {
         if (currentType.value?.id === item.id) {
           currentType.value = null
         }
-        fetchTypeList()
+        typeList.value = typeList.value.filter((t) => t.id !== item.id)
       } catch (error) {
         if (import.meta.env.DEV) console.error('[Dict] Delete dict type failed:', error)
-        // error handled by request interceptor
       }
     }
   })
@@ -419,10 +363,12 @@ const handleToggleTypeStatus = (item: DictTypeInfo) => {
       try {
         await changeDictTypeStatus(item.id, newStatus)
         message.success(`${msg}成功`)
-        fetchTypeList()
+        item.status = newStatus
+        if (currentType.value?.id === item.id) {
+          currentType.value = { ...currentType.value!, status: newStatus }
+        }
       } catch (error) {
         if (import.meta.env.DEV) console.error('[Dict] Toggle dict type status failed:', error)
-        // error handled by request interceptor
       }
     }
   })
@@ -452,10 +398,9 @@ const handleDeleteData = async (item: DictDataInfo) => {
   try {
     await deleteDictData(item.id)
     message.success('删除成功')
-    fetchDataList()
+    dataList.value = dataList.value.filter((d) => d.id !== item.id)
   } catch (error) {
     if (import.meta.env.DEV) console.error('[Dict] Delete dict data failed:', error)
-    // error handled by request interceptor
   }
 }
 
@@ -471,21 +416,35 @@ const handleDataStatusChange = async (item: DictDataInfo, checked: boolean) => {
   try {
     await changeDictDataStatus(item.id, newStatus)
     message.success(`${msg}成功`)
-    fetchDataList()
+    item.status = newStatus
   } catch (error) {
     if (import.meta.env.DEV) console.error('[Dict] Toggle dict data status failed:', error)
-    fetchDataList()
   }
 }
 
-/** 字典类型弹窗操作成功回调，刷新字典类型列表 */
-const handleTypeModalSuccess = () => {
-  fetchTypeList()
+/** 字典类型弹窗操作成功回调，局部更新列表，避免全量刷新 */
+const handleTypeModalSuccess = (record: DictTypeInfo) => {
+  const normalized = { ...record, id: Number(record.id) }
+  const index = typeList.value.findIndex((item) => item.id === normalized.id)
+  if (index !== -1) {
+    typeList.value[index] = { ...typeList.value[index], ...normalized }
+  } else {
+    typeList.value.push(normalized)
+  }
+  if (currentType.value?.id === normalized.id) {
+    currentType.value = normalized
+  }
 }
 
-/** 字典数据弹窗操作成功回调，刷新字典数据列表 */
-const handleDataModalSuccess = () => {
-  fetchDataList()
+/** 字典数据弹窗操作成功回调，局部更新列表，避免全量刷新 */
+const handleDataModalSuccess = (record: DictDataInfo) => {
+  const normalized = { ...record, id: Number(record.id) }
+  const dataIndex = dataList.value.findIndex((item) => item.id === normalized.id)
+  if (dataIndex !== -1) {
+    dataList.value[dataIndex] = { ...dataList.value[dataIndex], ...normalized }
+  } else {
+    dataList.value.push(normalized)
+  }
 }
 
 /** 页面挂载时初始化加载字典类型列表 */
@@ -498,21 +457,6 @@ onMounted(() => {
 /* 页面容器：撑满父级高度 */
 .page-container {
   height: 100%;
-
-  /* 全屏模式：固定定位覆盖整个视口 */
-  &.fullscreen-table {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 9999;
-    background: var(--ant-color-bg-container, #fff);
-    padding: 16px;
-    display: flex;
-    flex-direction: column;
-    overflow: visible;
-  }
 }
 
 /* 字典容器：左右分栏布局 */

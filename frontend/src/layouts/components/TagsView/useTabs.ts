@@ -16,7 +16,9 @@ import { useRoute, useRouter } from 'vue-router'
 import { useDebounceFn, useStorage } from '@vueuse/core'
 import { AppConfig } from '@/config/app'
 import { prefixedKey } from '@/constants/storage'
-import { StorageManager } from '@/utils/storage'
+import { isTabAllowed, getSafeStorage } from './tabsUtils'
+
+export { clearTabsStorage, isTabAllowed, getSafeStorage } from './tabsUtils'
 
 /** 标签页数据结构 */
 interface Tabs {
@@ -53,15 +55,6 @@ const STORAGE_KEY_LIST = prefixedKey(AppConfig.tabsListKey)
 const STORAGE_KEY_ACTIVE = prefixedKey(AppConfig.tabsActiveKey)
 
 /**
- * 清除标签页相关的 sessionStorage 数据
- * @description 用于退出登录时清理标签页状态
- */
-export function clearTabsStorage(): void {
-  StorageManager.removeItem('session', AppConfig.tabsListKey)
-  StorageManager.removeItem('session', AppConfig.tabsActiveKey)
-}
-
-/**
  * 确保仪表盘标签始终位于列表首位
  * @param list - 当前标签页列表
  * @returns 调整后的标签页列表
@@ -83,20 +76,6 @@ function ensureDashboardFirst(list: Tabs[]): Tabs[] {
 }
 
 /**
- * 判断路由是否允许创建标签页
- * @param route - 路由对象
- * @returns 是否允许创建标签页
- * @description 隐藏路由、无需认证的路由和无标题路由不创建标签页
- */
-export function isTabAllowed(route: { path: string; meta?: Record<string, unknown> }): boolean {
-  const meta = route.meta || {}
-  if (meta.hidden) return false
-  if (meta.requiresAuth === false) return false
-  if (!meta.title) return false
-  return true
-}
-
-/**
  * useTabs - 多标签页状态管理 Hook
  * @returns 标签页状态和操作方法
  *
@@ -114,10 +93,12 @@ export function useTabs() {
   const route = useRoute()
   const router = useRouter()
 
+  const safeStorage = getSafeStorage()
+
   /** 当前激活标签页路径，持久化到 sessionStorage */
-  const active = useStorage<string>(STORAGE_KEY_ACTIVE, '', sessionStorage)
+  const active = useStorage<string>(STORAGE_KEY_ACTIVE, '', safeStorage)
   /** 标签页列表，持久化到 sessionStorage */
-  const list = useStorage<Array<Tabs>>(STORAGE_KEY_LIST, [], sessionStorage)
+  const list = useStorage<Array<Tabs>>(STORAGE_KEY_LIST, [], safeStorage)
 
   /**
    * 创建或更新标签页

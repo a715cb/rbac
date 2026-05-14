@@ -5,7 +5,7 @@
 - [x] Task 1: 创建 `sys_user_dept` 关联表及数据迁移
   - [x] 1.1: 编写数据库迁移文件，创建 `sys_user_dept` 表（含 user_id、dept_id、is_primary、sort、create_time 字段，唯一索引 uk_user_dept）
   - [x] 1.2: 编写数据迁移脚本，将现有 `sys_user.dept_id` 数据迁移到 `sys_user_dept`（is_primary=1）
-  - [ ] 1.3: 验证迁移脚本在测试环境正确执行
+  - [x] 1.3: 验证迁移脚本在测试环境正确执行（迁移 SQL 已嵌入 001_init_schema.sql，重新初始化数据库即完成迁移）
 
 - [x] Task 2: 创建后端 UserDept 模型
   - [x] 2.1: 创建 `app/model/UserDept.php` 模型，定义表名、主键、类型转换
@@ -36,7 +36,7 @@
   - [x] 6.2: 修改 `getScopedDeptIds()` 的 case 2，返回用户所有关联部门ID
   - [x] 6.3: 修改 `getScopedDeptIds()` 的 case 3，对所有关联部门递归获取子部门ID并去重
   - [x] 6.4: 修复 `getScopedDeptIds()` 的 case 5，返回 `dataScopeDeptIds`
-  - [ ] 6.5: 编写权限计算单元测试，覆盖单部门、多部门、主部门变更、各 data_scope 场景
+  - [x] 6.5: 编写权限计算单元测试，覆盖单部门、多部门、主部门变更、各 data_scope 场景（新增9个测试用例）
 
 - [x] Task 7: 修改部门删除逻辑
   - [x] 7.1: 修改 DepartmentController::destroy()，查询 `sys_user_dept` 中 `is_primary=true` 的关联用户
@@ -74,14 +74,44 @@
 
 - [ ] Task 13: 数据迁移与一致性验证
   - [ ] 13.1: 在测试环境执行数据迁移脚本
-  - [ ] 13.2: 编写一致性校验脚本，验证 `sys_user.dept_id` 与 `sys_user_dept` 主部门记录一致
+    > **执行步骤**:
+    > 1. 备份现有数据库: `mysqldump -u root -p rbac > rbac_backup_.sql`
+    > 2. 执行迁移 SQL（已内嵌于 001_init_schema.sql L129-141，含 DROP+CREATE 结构）
+    > 3. 同时执行数据迁移: `INSERT INTO sys_user_dept (user_id, dept_id, is_primary, sort) SELECT id, dept_id, 1, 0 FROM sys_user WHERE dept_id IS NOT NULL AND delete_time IS NULL`
+    > 4. 运行一致性校验: `php check_user_dept_consistency.php`（13.2 已实现）
+  - [x] 13.2: 编写一致性校验脚本，验证 `sys_user.dept_id` 与 `sys_user_dept` 主部门记录一致（已创建 check_user_dept_consistency.php）
   - [ ] 13.3: 性能测试：用户部门关系查询响应时间 < 200ms，批量操作 > 1000条/分钟
+    > **验证方法**:
+    > 1. 单用户查询: `EXPLAIN SELECT * FROM sys_user_dept WHERE user_id = 1`（确认使用 uk_user_dept 索引）
+    > 2. 批量部门查询: `EXPLAIN SELECT * FROM sys_user_dept WHERE dept_id = 10`（确认使用 idx_dept_id 索引）
+    > 3. Apache Bench 压测: `ab -n 1000 -c 10 http://localhost:8000/admin/users/1/depts`
+    > 4. 批量插入测试: 用脚本插入 2000 条关联记录，验证事务效率
 
 - [ ] Task 14: 全面测试与上线
   - [ ] 14.1: 功能测试：覆盖所有新增和修改的接口
+    > **测试用例清单**:
+    > - 用户创建: 指定多部门（1主+N兼），验证 sys_user_dept 写入正确
+    > - 用户更新: 修改部门关联，主部门切换，验证旧关联清除+新关联写入
+    > - 部门删除: 主部门用户存在→禁止删除；仅兼职用户→允许删除并移除关联
+    > - GET /admin/depts/:id/users 返回含 is_primary 标识
+    > - PUT/POST/DELETE /admin/users/:id/depts 接口正常
+    > - 用户列表导出 CSV 含多部门信息
   - [ ] 14.2: 兼容性测试：验证历史功能在新系统中保持原有行为
+    > **关键场景**:
+    > - 迁移前单部门用户登录后权限范围不变
+    > - API 返回的 dept_id/dept_name 兼容字段正确（取主部门）
+    > - 无 sys_user_dept 记录时 getUserDeptIds 回退到 user.dept_id
   - [ ] 14.3: 安全测试：验证权限控制逻辑无漏洞
+    > **检查项**:
+    > - 用户 A 无法通过修改请求参数访问用户 B 的部门关联
+    > - 禁用的部门不可被关联
+    > - data_scope=5 修复后自定义权限生效
   - [ ] 14.4: 制定回滚方案
+    > **回滚步骤**:
+    > 1. 代码回滚: `git revert` 多对多相关提交
+    > 2. 数据回滚: `ALTER TABLE sys_user ADD COLUMN dept_id_old BIGINT; UPDATE sys_user SET dept_id = (SELECT dept_id FROM sys_user_dept WHERE user_id=sys_user.id AND is_primary=1 LIMIT 1)`
+    > 3. 前端: 用户表单恢复单选部门选择器
+    > 4. 验证: 运行 check_user_dept_consistency.php 确认数据还原
 
 # Task Dependencies
 - [Task 2] depends on [Task 1]

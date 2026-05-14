@@ -154,12 +154,12 @@
     </div>
 
     <!-- 接口表单弹窗：新增/编辑共用，通过 currentRecord 区分模式 -->
-    <ApiFormModal v-model:visible="modalVisible" :record="currentRecord" @success="handleSearch" />
+    <ApiFormModal v-model:visible="modalVisible" :record="currentRecord" @success="handleSuccess" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, onErrorCaptured, type ComponentPublicInstance } from 'vue'
 import {
   SearchOutlined,
   ReloadOutlined,
@@ -321,9 +321,27 @@ const handleEdit = (record: ApiInfo) => {
 }
 
 /**
+ * 表单提交成功回调（局部数据更新）
+ * @param record - 提交后的接口数据，包含完整的字段（含 id）
+ * @description 编辑模式：在 tableData 中查找并更新对应行；
+ *              新增模式：将新记录插入到 tableData 开头
+ */
+const handleSuccess = (record: ApiInfo) => {
+  const normalized = { ...record, id: Number(record.id) }
+  const index = tableData.value.findIndex((item) => item.id === normalized.id)
+  if (index !== -1) {
+    tableData.value[index] = { ...tableData.value[index], ...normalized }
+  } else {
+    tableData.value.unshift(normalized)
+    pagination.total = (pagination.total ?? 0) + 1
+  }
+}
+
+/**
  * 删除接口
  * @param record - 待删除的接口数据，通过 id 调用删除接口
- * 删除成功后刷新列表数据；若当前页仅剩一条数据且非第一页，自动回退到上一页
+ * @description 删除成功后局部移除表格数据，避免全量刷新；
+ *              若当前页仅剩一条数据且非第一页，自动回退到上一页
  */
 const handleDelete = async (record: ApiInfo) => {
   try {
@@ -331,8 +349,11 @@ const handleDelete = async (record: ApiInfo) => {
     message.success('删除成功')
     if (tableData.value.length <= 1 && (pagination.current ?? 1) > 1) {
       pagination.current = (pagination.current ?? 2) - 1
+      fetchData()
+      return
     }
-    fetchData()
+    tableData.value = tableData.value.filter((item) => item.id !== record.id)
+    pagination.total = Math.max(0, (pagination.total ?? 0) - 1)
   } catch (error: unknown) {
     if (import.meta.env.DEV) console.error('[ApiPage] handleDelete failed:', error)
   }
@@ -353,6 +374,7 @@ const handleStatusChange = async (record: ApiInfo, checked: boolean) => {
     message.success(checked ? '接口已启用' : '接口已禁用')
   } catch (error: unknown) {
     record.status = oldStatus
+    message.error('状态变更失败，请重试')
     if (import.meta.env.DEV) console.error('[ApiPage] handleStatusChange failed:', error)
   }
 }
@@ -361,59 +383,17 @@ const handleStatusChange = async (record: ApiInfo, checked: boolean) => {
 onMounted(() => {
   fetchData()
 })
+
+/** 错误边界：捕获子组件异常，防止页面白屏 */
+onErrorCaptured((error: Error, _instance: ComponentPublicInstance | null, info: string) => {
+  if (import.meta.env.DEV) console.error('[ApiPage] Error captured:', error, info)
+  message.error('页面渲染异常，请刷新后重试')
+  return false
+})
 </script>
 
 <style lang="less" scoped>
 .page-container {
-  /* 搜索区域卡片样式：白色背景、圆角、底部间距 */
-  .search-card {
-    background: var(--ant-color-bg-container, #fff);
-    border-radius: var(--ant-border-radius, 8px);
-    padding: 16px;
-    margin-bottom: 16px;
-
-    /* 搜索表单行内布局时去除表单项底部间距 */
-    :deep(.ant-form-item) {
-      margin-bottom: 0;
-    }
-  }
-
-  /* 表格区域容器：白色背景、圆角 */
-  .s-table-wrapper {
-    background: var(--ant-color-bg-container, #fff);
-    border-radius: var(--ant-border-radius, 8px);
-    padding: 16px;
-  }
-
-  /* 表格顶部工具栏区域底部间距 */
-  .s-table-header {
-    margin-bottom: 16px;
-  }
-
-  /* 工具栏容器：撑满宽度 */
-  .table-header-container {
-    width: 100%;
-    padding: 0;
-  }
-
-  /* 工具栏布局：flex 横向排列，新增按钮与表格设置分居两侧 */
-  .table-header-toolbar {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-
-    /* 工具栏内按钮之间的右间距 */
-    div > * {
-      margin-right: 8px;
-    }
-  }
-
-  /* 桌面端表格设置组件靠右对齐 */
-  .table-header__toolbar-desktop {
-    margin-left: auto;
-  }
-
   /* 接口路径代码样式：通过全局 CSS 变量实现主题自适应 */
   .api-path {
     background-color: var(--api-path-bg);
@@ -421,55 +401,6 @@ onMounted(() => {
     padding: 2px 8px;
     border-radius: 4px;
     font-size: 13px;
-  }
-
-  /* 全屏表格模式：覆盖页面容器为 fixed 定位，撑满视口 */
-  &.fullscreen-table {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 9999;
-    background: var(--ant-color-bg-container, #fff);
-    padding: 16px;
-    display: flex;
-    flex-direction: column;
-    overflow: visible;
-
-    /* 全屏模式下搜索区域不收缩 */
-    .search-card {
-      flex-shrink: 0;
-    }
-
-    /* 全屏模式下表格区域自适应剩余空间 */
-    .s-table-wrapper {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      min-height: 0;
-    }
-
-    /* 全屏模式下工具栏不收缩 */
-    .s-table-header {
-      flex-shrink: 0;
-    }
-
-    /* 全屏模式下表格内容区域可滚动 */
-    :deep(.ant-table-wrapper) {
-      flex: 1;
-      overflow: auto;
-    }
-  }
-}
-
-/* 移动端适配：小屏幕下表格横向滚动 */
-@media (max-width: 480px) {
-  .page-container {
-    :deep(.ant-table) {
-      width: 100%;
-      overflow-x: auto;
-    }
   }
 }
 </style>

@@ -1,4 +1,4 @@
-import { ref } from 'vue'
+import { ref, type Ref } from 'vue'
 import { getMenuTree } from '@/api/menu'
 import { getDeptTree } from '@/api/dept'
 
@@ -29,17 +29,34 @@ export function useMenuTree() {
   return { menuTreeData, fetchMenuTree }
 }
 
-export function useDeptTree() {
-  const deptTreeData = ref<TreeNode[]>([])
+/** 模块级缓存：部门树数据，所有页面共享，避免重复请求 */
+const cachedDeptTree = ref<TreeNode[]>([])
+const deptTreeLoading = ref(false)
+let deptTreeLoaded = false
 
-  const fetchDeptTree = async () => {
+export function useDeptTree(): {
+  deptTreeData: Ref<TreeNode[]>
+  loading: Ref<boolean>
+  fetchDeptTree: (forceRefresh?: boolean) => Promise<void>
+  refresh: () => Promise<void>
+} {
+  const fetchDeptTree = async (forceRefresh = false) => {
+    if (deptTreeLoaded && !forceRefresh) {
+      return
+    }
+    deptTreeLoading.value = true
     try {
       const res = await getDeptTree()
-      deptTreeData.value = normalizeTreeIds(res.data.tree)
+      cachedDeptTree.value = normalizeTreeIds(res.data.tree)
+      deptTreeLoaded = true
     } catch (error) {
       if (import.meta.env.DEV) console.error('[useDeptTree] Fetch dept tree failed:', error)
+    } finally {
+      deptTreeLoading.value = false
     }
   }
 
-  return { deptTreeData, fetchDeptTree }
+  const refresh = () => fetchDeptTree(true)
+
+  return { deptTreeData: cachedDeptTree, loading: deptTreeLoading, fetchDeptTree, refresh }
 }

@@ -170,10 +170,8 @@ import { getOperateLogList, clearAllOperateLog, deleteOperateLog } from '@/api/o
 import type { OperateLogInfo, OperateLogQuery } from '@/api/operateLog'
 import { createPagination, type TablePaginationConfig } from '@/utils/common'
 import TableSetting from '@/components/TableSetting/TableSetting.vue'
-import {
-  useTableSetting,
-  createTableSettingContext
-} from '@/components/TableSetting/useTableSetting'
+import { usePageTable } from '@/composables/usePageTable'
+import { useExport } from '@/composables'
 import type { ColumnItem } from '@/components/TableSetting/types'
 import { getUserList } from '@/api/user'
 
@@ -275,55 +273,45 @@ const columnItems: ColumnItem[] = [
   { key: 'create_time', title: '操作时间', dataIndex: 'create_time', width: 180 }
 ]
 
-/** 初始化表格设置（列配置、刷新回调、容器引用） */
-const {
-  state: tableSettingState,
-  getVisibleColumns,
-  getPopupContainer,
-  wrapRef: settingWrapRef
-} = useTableSetting({
+/**
+ * 获取操作日志列表数据
+ * @description 根据当前搜索条件和分页参数请求日志数据，并更新表格和分页状态
+ */
+const fetchData = async () => {
+  loading.value = true
+  try {
+    const params: OperateLogQuery = {
+      page: pagination.current,
+      limit: pagination.pageSize,
+      user_id: searchForm.user_id,
+      method: searchForm.method || undefined,
+      ip: searchForm.ip || undefined
+    }
+    /* 若选择了时间范围，格式化为 YYYY-MM-DD 传入查询参数 */
+    if (searchForm.dateRange) {
+      params.start_date = searchForm.dateRange[0].format('YYYY-MM-DD')
+      params.end_date = searchForm.dateRange[1].format('YYYY-MM-DD')
+    }
+    const res = await getOperateLogList(params)
+    tableData.value = res.data.list.map((l: OperateLogInfo) => ({ ...l, id: Number(l.id) }))
+    pagination.total = res.data.pagination.total
+  } catch (error: unknown) {
+    if (import.meta.env.DEV) console.error('[OperationLogPage] fetchData failed:', error)
+    // 错误由请求拦截器统一处理
+  } finally {
+    loading.value = false
+  }
+}
+
+/** usePageTable 组合式函数：管理表格列显隐和表格设置状态 */
+const { tableSettingState, visibleColumns } = usePageTable({
   columns: columnItems,
-  onRefresh: () => {
-    fetchData()
-  },
+  fetchData,
   wrapRef
 })
 
-/** 创建表格设置上下文，供 TableSetting 子组件访问状态和操作方法 */
-createTableSettingContext({
-  state: tableSettingState,
-  actions: {
-    /** 刷新表格数据 */
-    refresh: () => fetchData(),
-    /** 切换全屏模式 */
-    toggleFullscreen: () => {
-      tableSettingState.isFullscreen = !tableSettingState.isFullscreen
-    },
-    /** 切换表格尺寸 */
-    changeSize: (size) => {
-      tableSettingState.size = size
-    },
-    /** 设置可见列配置 */
-    setColumns: (columns) => {
-      tableSettingState.columns = columns
-    },
-    /** 重置列配置为初始状态 */
-    resetColumns: () => {
-      tableSettingState.columns = columnItems.map((col) => ({ ...col }))
-    }
-  },
-  wrapRef: settingWrapRef,
-  getVisibleColumns,
-  getPopupContainer
-})
-
-/** 当前可见的表格列（根据用户列配置过滤后，保留 customRender 等渲染属性） */
-const visibleColumns = computed(() => {
-  return getVisibleColumns.value.map((col) => ({
-    ...col,
-    align: col.align as 'left' | 'center' | 'right' | undefined
-  }))
-})
+/** useExport 组合式函数：CSV 导出工具 */
+const { downloadCsv, escapeCsvField } = useExport()
 
 /** 表格行选择配置（复选框） */
 const rowSelection = computed(() => ({
@@ -361,36 +349,6 @@ const fetchUserOptions = async () => {
     }))
   } catch {
     userOptions.value = []
-  }
-}
-
-/**
- * 获取操作日志列表数据
- * @description 根据当前搜索条件和分页参数请求日志数据，并更新表格和分页状态
- */
-const fetchData = async () => {
-  loading.value = true
-  try {
-    const params: OperateLogQuery = {
-      page: pagination.current,
-      limit: pagination.pageSize,
-      user_id: searchForm.user_id,
-      method: searchForm.method || undefined,
-      ip: searchForm.ip || undefined
-    }
-    /* 若选择了时间范围，格式化为 YYYY-MM-DD 传入查询参数 */
-    if (searchForm.dateRange) {
-      params.start_date = searchForm.dateRange[0].format('YYYY-MM-DD')
-      params.end_date = searchForm.dateRange[1].format('YYYY-MM-DD')
-    }
-    const res = await getOperateLogList(params)
-    tableData.value = res.data.list.map((l: OperateLogInfo) => ({ ...l, id: Number(l.id) }))
-    pagination.total = res.data.pagination.total
-  } catch (error: unknown) {
-    if (import.meta.env.DEV) console.error('[OperationLogPage] fetchData failed:', error)
-    // 错误由请求拦截器统一处理
-  } finally {
-    loading.value = false
   }
 }
 
@@ -456,8 +414,9 @@ const handleClear = () => {
         selectedRowKeys.value = []
         pagination.current = 1
         await fetchData()
-      } catch (error: any) {
-        message.error(error?.message || '清除日志失败，请稍后重试')
+      } catch (error: unknown) {
+        const messageText = error instanceof Error ? error.message : '清除日志失败，请稍后重试'
+        message.error(messageText)
       }
     }
   })
@@ -483,8 +442,9 @@ const handleBatchDelete = () => {
         message.success(`已删除 ${count} 条操作日志`)
         selectedRowKeys.value = []
         await fetchData()
-      } catch (error: any) {
-        message.error(error?.message || '删除失败，请稍后重试')
+      } catch (error: unknown) {
+        const msg = error instanceof Error ? error.message : '删除失败，请稍后重试'
+        message.error(msg)
       }
     }
   })
@@ -493,7 +453,7 @@ const handleBatchDelete = () => {
 /**
  * 导出操作日志为 CSV 文件
  * @description 若有选中行则仅导出选中数据，否则导出当前页全部数据。
- *              生成带 BOM 头的 UTF-8 CSV 文件并触发浏览器下载
+ *              使用 downloadCsv 生成带 BOM 头的 UTF-8 CSV 文件并触发浏览器下载
  */
 const handleExport = () => {
   /* 根据是否选中行决定导出数据范围 */
@@ -515,24 +475,18 @@ const handleExport = () => {
   ]
   /* CSV 数据行，状态字段转换为中文 */
   const rows = data.map((item) => [
-    item.id,
-    item.username,
-    item.module,
-    item.action,
-    item.url,
-    item.method,
-    item.ip,
-    item.param,
-    item.status === 1 ? '成功' : '失败',
-    item.create_time
+    escapeCsvField(item.id),
+    escapeCsvField(item.username),
+    escapeCsvField(item.module),
+    escapeCsvField(item.action),
+    escapeCsvField(item.url),
+    escapeCsvField(item.method),
+    escapeCsvField(item.ip),
+    escapeCsvField(item.param),
+    escapeCsvField(item.status === 1 ? '成功' : '失败'),
+    escapeCsvField(item.create_time)
   ])
-  /* 拼接 CSV 内容，添加 BOM 头确保中文在 Excel 中正确显示 */
-  const csvContent = [headers.join(','), ...rows.map((row) => row.join(','))].join('\n')
-  const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' })
-  const link = document.createElement('a')
-  link.href = URL.createObjectURL(blob)
-  link.download = `operate_logs_${new Date().toISOString().slice(0, 10)}.csv`
-  link.click()
+  downloadCsv({ filename: 'operate_logs', headers, rows })
   message.success('导出成功')
 }
 
@@ -544,104 +498,6 @@ onMounted(() => {
 </script>
 
 <style lang="less" scoped>
-.page-container {
-  /* 搜索区域卡片样式 */
-  .search-card {
-    background: var(--ant-color-bg-container, #fff);
-    border-radius: var(--ant-border-radius, 8px);
-    padding: 16px;
-    margin-bottom: 16px;
-
-    /* 搜索表单项底部间距清零，避免行内布局多余间距 */
-    :deep(.ant-form-item) {
-      margin-bottom: 0;
-    }
-  }
-
-  /* 表格区域容器样式 */
-  .s-table-wrapper {
-    background: var(--ant-color-bg-container, #fff);
-    border-radius: var(--ant-border-radius, 8px);
-    padding: 16px;
-  }
-
-  /* 表格顶部工具栏区域 */
-  .s-table-header {
-    margin-bottom: 16px;
-  }
-
-  .table-header-container {
-    width: 100%;
-    padding: 0;
-  }
-
-  /* 工具栏：左右分布，操作按钮在左，设置组件在右 */
-  .table-header-toolbar {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-
-    div > * {
-      margin-right: 8px;
-    }
-  }
-
-  /* 桌面端表格设置组件靠右对齐 */
-  .table-header__toolbar-desktop {
-    margin-left: auto;
-  }
-
-  /* 全屏模式样式：固定定位覆盖整个视口 */
-  &.fullscreen-table {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 9999;
-    background: var(--ant-color-bg-container, #fff);
-    padding: 16px;
-    display: flex;
-    flex-direction: column;
-    overflow: visible;
-
-    /* 全屏模式下搜索区域不收缩 */
-    .search-card {
-      flex-shrink: 0;
-    }
-
-    /* 全屏模式下表格区域自适应填充剩余空间 */
-    .s-table-wrapper {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      min-height: 0;
-    }
-
-    /* 全屏模式下工具栏不收缩 */
-    .s-table-header {
-      flex-shrink: 0;
-    }
-
-    /* 全屏模式下表格内容区域可滚动 */
-    :deep(.ant-table-wrapper) {
-      flex: 1;
-      overflow: auto;
-    }
-  }
-}
-
-/* 移动端小屏幕适配：表格横向滚动 */
-@media (max-width: 480px) {
-  .page-container {
-    :deep(.ant-table) {
-      width: 100%;
-      overflow-x: auto;
-    }
-  }
-}
-
 /* 代码高亮弹窗中的样式 */
 :deep(.hljs) {
   background: #f0f0f0;

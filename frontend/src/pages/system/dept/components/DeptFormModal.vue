@@ -111,7 +111,7 @@ const props = withDefaults(defineProps<Props>(), {
 /** 组件事件定义 */
 const emit = defineEmits<{
   (e: 'update:visible', value: boolean): void // 更新弹窗可见状态
-  (e: 'success'): void // 表单提交成功后触发，通知父组件刷新数据
+  (e: 'success', record: DeptInfo): void // 表单提交成功后触发，传递保存后的完整记录，供父组件局部更新
 }>()
 
 /** 表单实例引用，用于调用 validate 方法 */
@@ -225,11 +225,12 @@ const handleSubmit = async () => {
     if (isEdit.value && props.record) {
       await updateDept(props.record.id, formState)
       message.success('更新成功')
+      emit('success', { ...formState, id: props.record.id } as DeptInfo)
     } else {
-      await createDept(formState)
+      const res = await createDept(formState)
       message.success('创建成功')
+      emit('success', { ...formState, id: res.data.id } as DeptInfo)
     }
-    emit('success')
     emit('update:visible', false)
     resetForm()
   } catch (error: unknown) {

@@ -199,8 +199,7 @@ import { message } from 'ant-design-vue'
 import { createUser, updateUser } from '@/api/user'
 import type { UserInfo, UserForm, UserDeptItem } from '@/api/user'
 import { getRoleList } from '@/api/role'
-import { getDeptTree } from '@/api/dept'
-import type { DeptInfo } from '@/api/dept'
+import { useDeptTree } from '@/composables/useTreeData'
 import { DictSelect, DictRadio } from '@/components/Dict'
 import { getPasswordRules, getConfirmPasswordRules } from '@/utils/validators'
 
@@ -219,11 +218,11 @@ const props = defineProps<Props>()
 /**
  * 组件事件定义
  * @event update:visible - 更新弹窗可见状态（v-model 双向绑定）
- * @event success - 表单提交成功后触发，通知父页面刷新数据列表
+ * @event success - 表单提交成功后触发，传递保存后的完整记录，供父组件局部更新
  */
 const emit = defineEmits<{
   (e: 'update:visible', value: boolean): void
-  (e: 'success'): void
+  (e: 'success', record: UserInfo): void
 }>()
 
 /** Ant Design Form 实例引用，用于调用 validate() 和 resetFields() */
@@ -232,8 +231,8 @@ const formRef = ref<FormInstance>()
 const loading = ref(false)
 /** 角色下拉选项列表，从后端角色接口获取 */
 const roleList = ref<Array<{ id: number; name: string }>>([])
-/** 部门树数据，从后端部门树接口获取，供 a-tree-select 使用 */
-const deptTreeData = ref<DeptInfo[]>([])
+/** 部门树数据，来自共享缓存组合式函数，供 a-tree-select 使用 */
+const { deptTreeData, fetchDeptTree: fetchDepts } = useDeptTree()
 
 /** 是否为编辑模式（record 非空即为编辑模式） */
 const isEdit = computed(() => !!props.record)
@@ -338,28 +337,6 @@ const fetchRoles = async () => {
 }
 
 /**
- * 获取部门树数据
- * 请求后端部门树接口，用于部门树形选择器。
- * 每次弹窗打开时调用，确保新增的部门能被选择。
- */
-const fetchDepts = async () => {
-  try {
-    const res = await getDeptTree()
-    deptTreeData.value = normalizeDeptIds(res.data.tree)
-  } catch (error) {
-    if (import.meta.env.DEV) console.error('[UserFormModal] Fetch depts failed:', error)
-  }
-}
-
-const normalizeDeptIds = (tree: DeptInfo[]): DeptInfo[] => {
-  return tree.map((node) => ({
-    ...node,
-    id: Number(node.id),
-    children: node.children ? normalizeDeptIds(node.children) : undefined
-  }))
-}
-
-/**
  * 表单提交处理
  * 实现思路：
  * 1. 先调用 formRef.validate() 进行表单验证，验证失败直接返回
@@ -392,11 +369,19 @@ const handleSubmit = async () => {
         role_ids: formState.role_ids
       })
       message.success('更新成功')
+      emit('success', {
+        ...props.record,
+        ...formState,
+        id: props.record.id
+      } as UserInfo)
     } else {
-      await createUser(formState)
+      const res = await createUser(formState)
       message.success('创建成功')
+      emit('success', {
+        ...formState,
+        id: res.data.id
+      } as UserInfo)
     }
-    emit('success')
     emit('update:visible', false)
   } catch (error) {
     if (import.meta.env.DEV) console.error('[UserFormModal] Submit form failed:', error)
@@ -445,7 +430,15 @@ const handleSetPrimary = (index: number) => {
   formState.dept_id = formState.depts[index].dept_id
 }
 
-const findDeptName = (tree: DeptInfo[], id: number): string => {
+/** 递归在部门树中查找节点名称，用于添加部门时显示名称 */
+const findDeptName = (
+  tree: {
+    id: number
+    name: string
+    children?: { id: number; name: string; children?: unknown[] }[]
+  }[],
+  id: number
+): string => {
   for (const node of tree) {
     if (node.id === id) return node.name
     if (node.children) {

@@ -1,0 +1,111 @@
+/* 页面容器公共样式：搜索区域 + 表格区域布局 */
+.page-container {
+  .search-card {
+    background: var(--ant-color-bg-container, #fff);
+    border-radius: var(--ant-border-radius, 8px);
+    padding: 16px;
+    margin-bottom: 16px;
+
+    :deep(.ant-form-item) {
+      margin-bottom: 0;
+    }
+  }
+
+  .s-table-wrapper {
+    background: var(--ant-color-bg-container, #fff);
+    border-radius: var(--ant-border-radius, 8px);
+    padding: 16px;
+  }
+
+  .s-table-header {
+    margin-bottom: 16px;
+  }
+
+  .table-header-container {
+    width: 100%;
+    padding: 0;
+  }
+
+  .table-header-toolbar {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    div > * {
+      margin-right: 8px;
+    }
+  }
+
+  .table-header__toolbar-desktop {
+    margin-left: auto;
+  }
+
+  &.fullscreen-table {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: var(--z-fullscreen-table, 9999);
+    background: var(--ant-color-bg-container, #fff);
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    overflow: visible;
+
+    .search-card {
+      flex-shrink: 0;
+    }
+
+    .s-table-wrapper {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+
+    .s-table-header {
+      flex-shrink: 0;
+    }
+
+    :deep(.ant-table-wrapper) {
+      flex: 1;
+      overflow: auto;
+    }
+  }
+}
+
+/* 移动端小屏幕适配：表格横向可滚动 */
+@media (max-width: 480px) {
+  .page-container {
+    :deep(.ant-table) {
+      width: 100%;
+      overflow-x: auto;
+    }
+  }
+}
+
+/* 平板适配：搜索表单换行 */
+@media (max-width: 768px) {
+  .page-container {
+    .search-card {
+      :deep(.ant-form-inline) {
+        flex-wrap: wrap;
+
+        .ant-form-item {
+          margin-bottom: 8px;
+        }
+      }
+    }
+  }
+}
+
+/* 小桌面适配 */
+@media (max-width: 1024px) {
+  .page-container {
+    .s-table-wrapper {
+      overflow-x: auto;
+    }
+  }
+}

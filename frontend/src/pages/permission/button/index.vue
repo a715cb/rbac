@@ -124,7 +124,7 @@
       v-model:visible="modalVisible"
       :record="currentRecord"
       :menu-tree-data="menuTreeData"
-      @success="handleSearch"
+      @success="handleSuccess"
     />
 
     <!-- 按钮详情弹窗 -->
@@ -223,7 +223,7 @@ const { tableSettingState, visibleColumns: baseColumns } = usePageTable({
 
 const visibleColumns = computed(() =>
   baseColumns.value.map((col) => {
-    const base: Record<string, any> = { ...col }
+    const base = { ...col } as Record<string, unknown>
     if (col.key === 'icon') {
       base.customRender = ({ record }: { record: ButtonInfo }) => {
         if (record.icon) {
@@ -312,6 +312,22 @@ const handleEdit = (record: ButtonInfo) => {
   modalVisible.value = true
 }
 
+/**
+ * 表单提交成功回调（局部数据更新）
+ * @param record - 提交后的按钮数据
+ * @description 编辑模式：更新匹配行；新增模式：插入到开头
+ */
+const handleSuccess = (record: ButtonInfo) => {
+  const normalized = { ...record, id: Number(record.id) }
+  const index = tableData.value.findIndex((item) => item.id === normalized.id)
+  if (index !== -1) {
+    tableData.value[index] = { ...tableData.value[index], ...normalized }
+  } else {
+    tableData.value.unshift(normalized)
+    pagination.total += 1
+  }
+}
+
 const handleDetail = (record: ButtonInfo) => {
   currentRecord.value = record
   detailVisible.value = true
@@ -321,18 +337,28 @@ const handleDelete = async (record: ButtonInfo) => {
   try {
     await batchDeleteButtons([record.id])
     message.success('删除成功')
-    fetchData()
+    tableData.value = tableData.value.filter((item) => item.id !== record.id)
+    pagination.total = Math.max(0, pagination.total - 1)
   } catch (error: unknown) {
     if (import.meta.env.DEV) console.error('[ButtonPage] handleDelete failed:', error)
   }
 }
 
+/**
+ * 切换按钮状态（乐观更新）
+ * @param record - 按钮记录
+ * @param checked - 开关状态，true 为启用，false 为禁用
+ * @description 先更新本地状态，调用 API 失败后回滚并提示错误
+ */
 const handleStatusChange = async (record: ButtonInfo, checked: boolean) => {
+  const oldStatus = record.status
+  record.status = checked ? 1 : 0
   try {
     await changeButtonStatus(record.id, checked ? 1 : 0)
     message.success(checked ? '按钮已启用' : '按钮已禁用')
-    fetchData()
   } catch (error: unknown) {
+    record.status = oldStatus
+    message.error('状态变更失败，请重试')
     if (import.meta.env.DEV) console.error('[ButtonPage] handleStatusChange failed:', error)
   }
 }
@@ -367,90 +393,4 @@ onMounted(() => {
 })
 </script>
 
-<style lang="less" scoped>
-.page-container {
-  .search-card {
-    background: var(--ant-color-bg-container, #fff);
-    border-radius: var(--ant-border-radius, 8px);
-    padding: 16px;
-    margin-bottom: 16px;
-
-    :deep(.ant-form-item) {
-      margin-bottom: 0;
-    }
-  }
-
-  .s-table-wrapper {
-    background: var(--ant-color-bg-container, #fff);
-    border-radius: var(--ant-border-radius, 8px);
-    padding: 16px;
-  }
-
-  .s-table-header {
-    margin-bottom: 16px;
-  }
-
-  .table-header-container {
-    width: 100%;
-    padding: 0;
-  }
-
-  .table-header-toolbar {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-
-    div > * {
-      margin-right: 8px;
-    }
-  }
-
-  .table-header__toolbar-desktop {
-    margin-left: auto;
-  }
-
-  &.fullscreen-table {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 9999;
-    background: var(--ant-color-bg-container, #fff);
-    padding: 16px;
-    display: flex;
-    flex-direction: column;
-    overflow: visible;
-
-    .search-card {
-      flex-shrink: 0;
-    }
-
-    .s-table-wrapper {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      min-height: 0;
-    }
-
-    .s-table-header {
-      flex-shrink: 0;
-    }
-
-    :deep(.ant-table-wrapper) {
-      flex: 1;
-      overflow: auto;
-    }
-  }
-}
-
-@media (max-width: 480px) {
-  .page-container {
-    :deep(.ant-table) {
-      width: 100%;
-      overflow-x: auto;
-    }
-  }
-}
-</style>
+<style lang="less" scoped></style>

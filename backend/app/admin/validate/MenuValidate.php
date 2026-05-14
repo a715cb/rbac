@@ -51,5 +51,6 @@ class MenuValidate extends BaseValidate
     protected $scene = [
         'store' => ['name', 'code', 'menu_type', 'parent_id', 'path', 'icon', 'component', 'sort', 'visible', 'status', 'keep_alive', 'always_show', 'breadcrumb', 'is_external', 'is_frame', 'active_menu', 'remark'],
         'update' => ['name', 'code', 'menu_type', 'parent_id', 'path', 'icon', 'component', 'sort', 'visible', 'status', 'keep_alive', 'always_show', 'breadcrumb', 'is_external', 'is_frame', 'active_menu', 'remark'],
+        'change_status' => ['status'],
     ];
 }

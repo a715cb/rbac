@@ -30,9 +30,10 @@ class AdminAuthTest extends TestCase
         return $reflection->invokeArgs($object, $parameters);
     }
 
-    private function setPrivateProperty(object $object, string $propertyName, $value): void
+    private function setPrivateProperty(object $object, string $propertyName, $value, ?string $declaringClass = null): void
     {
-        $reflection = new ReflectionProperty($object, $propertyName);
+        $class = $declaringClass ?? $object;
+        $reflection = new ReflectionProperty($class, $propertyName);
         $reflection->setAccessible(true);
         $reflection->setValue($object, $value);
     }
@@ -315,5 +316,102 @@ class AdminAuthTest extends TestCase
         $this->assertEmpty($menus, '用户2不应继承用户1的菜单权限码');
         $this->assertEmpty($permissions, '用户2不应继承用户1的API权限码');
         $this->assertEmpty($buttonCodes, '用户2不应继承用户1的按钮权限码');
+    }
+
+    /** 多部门用户 data_scope=2：应返回所有关联部门ID */
+    public function testGetScopedDeptIdsReturnsAllUserDeptIdsForDataScope2(): void
+    {
+        $auth = new class extends AdminAuth {
+            public function isSuperAdmin(): bool { return false; }
+            public function getUserDeptIds(): array { return [10, 20, 30]; }
+        };
+        $this->setPrivateProperty($auth, 'dataScope', 2, AdminAuth::class);
+
+        $result = $auth->getScopedDeptIds();
+
+        $this->assertEquals([10, 20, 30], $result, '多部门用户 data_scope=2 应返回所有关联部门ID');
+    }
+
+    /** 单部门用户 data_scope=2：返回单个部门ID */
+    public function testGetScopedDeptIdsReturnsSingleDeptIdForDataScope2(): void
+    {
+        $auth = new class extends AdminAuth {
+            public function isSuperAdmin(): bool { return false; }
+            public function getUserDeptIds(): array { return [5]; }
+        };
+        $this->setPrivateProperty($auth, 'dataScope', 2, AdminAuth::class);
+
+        $result = $auth->getScopedDeptIds();
+
+        $this->assertEquals([5], $result, '单部门用户 data_scope=2 应返回该部门ID');
+    }
+
+    /** 无部门用户 data_scope=2：用户无任何部门关联时返回空数组 */
+    public function testGetScopedDeptIdsReturnsEmptyWhenNoDeptsForDataScope2(): void
+    {
+        $auth = new class extends AdminAuth {
+            public function isSuperAdmin(): bool { return false; }
+            public function getUserDeptIds(): array { return []; }
+        };
+        $this->setPrivateProperty($auth, 'dataScope', 2, AdminAuth::class);
+
+        $result = $auth->getScopedDeptIds();
+
+        $this->assertEquals([], $result, '无部门用户 data_scope=2 应返回空数组');
+    }
+
+    /** data_scope=3 多部门递归：返回所有关联部门及其子部门（去重） */
+    public function testGetScopedDeptIdsReturnsDescendantDeptsForDataScope3(): void
+    {
+        $auth = new class extends AdminAuth {
+            public function isSuperAdmin(): bool { return false; }
+            public function getUserDeptIds(): array { return [10, 20]; }
+        };
+        $this->setPrivateProperty($auth, 'dataScope', 3, AdminAuth::class);
+
+        $result = $auth->getScopedDeptIds();
+
+        $this->assertContains(10, $result, '应包含部门10');
+        $this->assertContains(20, $result, '应包含部门20');
+        $this->assertNotEmpty($result, '递归查询应返回子部门');
+    }
+
+    /** 默认 data_scope 行为：未匹配任何 case 时返回空数组 */
+    public function testGetScopedDeptIdsReturnsEmptyForDefaultCase(): void
+    {
+        $auth = new class extends AdminAuth {
+            public function isSuperAdmin(): bool { return false; }
+        };
+        $this->setPrivateProperty($auth, 'dataScope', 99, AdminAuth::class);
+
+        $result = $auth->getScopedDeptIds();
+
+        $this->assertEquals([], $result, '未知 data_scope 应返回空数组');
+    }
+
+    /** getUserDeptIds 主部门冗余回退：sys_user_dept 为空时回退到 user.dept_id */
+    public function testGetUserDeptIdsFallsBackToUserDeptIdWhenNoUserDeptRecords(): void
+    {
+        $this->setPrivateProperty($this->auth, 'userId', 100);
+        $user = new \app\model\User();
+        $user->id = 100;
+        $user->dept_id = 5;
+
+        $this->setPrivateProperty($this->auth, 'user', $user);
+
+        $result = $this->auth->getUserDeptIds();
+
+        $this->assertEquals([5], $result, 'sys_user_dept 无记录时应回退到 user.dept_id');
+    }
+
+    /** getUserDeptIds 用户不存在时返回空数组 */
+    public function testGetUserDeptIdsReturnsEmptyWhenNoUser(): void
+    {
+        $this->setPrivateProperty($this->auth, 'userId', 0);
+        $this->setPrivateProperty($this->auth, 'user', null);
+
+        $result = $this->auth->getUserDeptIds();
+
+        $this->assertEquals([], $result, '无有效用户时应返回空数组');
     }
 }

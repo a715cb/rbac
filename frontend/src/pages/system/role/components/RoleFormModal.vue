@@ -104,8 +104,8 @@ const props = defineProps<Props>()
 const emit = defineEmits<{
   /** 更新 visible 状态，实现弹窗关闭 */
   (e: 'update:visible', value: boolean): void
-  /** 操作成功后触发，通知父组件刷新数据 */
-  (e: 'success'): void
+  /** 操作成功后触发，传递保存后的完整记录，供父组件局部更新 */
+  (e: 'success', record: RoleInfo): void
 }>()
 
 /** 表单实例引用，用于调用 validate 等方法 */
@@ -175,19 +175,14 @@ const handleSubmit = async () => {
   loading.value = true
   try {
     if (isEdit.value && props.record) {
-      await updateRole(props.record.id, {
-        name: formState.name,
-        code: formState.code,
-        sort: formState.sort,
-        status: formState.status,
-        remark: formState.remark
-      })
+      await updateRole(props.record.id, formState)
       message.success('更新成功')
+      emit('success', { ...formState, id: props.record.id } as RoleInfo)
     } else {
-      await createRole(formState)
+      const res = await createRole(formState)
       message.success('创建成功')
+      emit('success', { ...formState, id: res.data.id } as RoleInfo)
     }
-    emit('success')
     emit('update:visible', false)
     resetForm()
   } catch (error: unknown) {

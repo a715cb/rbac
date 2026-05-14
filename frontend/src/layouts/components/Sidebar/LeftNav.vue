@@ -40,7 +40,7 @@ import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { Logo } from '../Widget'
 import { useSetting } from '@/layouts/composables'
-import { getMatchedMenuPath, getMenuIcon, getMenuTitle } from '../menuUtils'
+import { getMatchedMenuPath, getMenuIcon, getMenuTitle, isMenuVisible } from '../menuUtils'
 
 /** 从全局设置获取菜单数据、主题和路由跳转方法 */
 const { menus, theme, routerTo } = useSetting()
@@ -49,11 +49,8 @@ const route = useRoute()
 /** 当前激活的一级菜单路径，用于高亮显示 */
 const currentPath = computed(() => getMatchedMenuPath(route, menus.value))
 
-/** 完整菜单列表 */
-const menuList = computed(() => menus.value)
-
-/** 过滤隐藏菜单后的可见菜单列表 */
-const visibleMenuList = computed(() => menuList.value.filter((item) => !item.hidden))
+/** 过滤隐藏菜单后的可见菜单列表，综合判断 hidden、visible、status、meta.hidden 等字段 */
+const visibleMenuList = computed(() => menus.value.filter((item) => isMenuVisible(item)))
 </script>
 
 <style lang="less" scoped>

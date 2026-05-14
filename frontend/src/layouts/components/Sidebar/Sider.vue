@@ -8,18 +8,18 @@
   @核心逻辑:
     1. 根据 layout 模式决定是否显示 LeftNav（仅 left 布局 + 非移动端）
     2. sideMenus 计算当前应显示的菜单数据（mix/left 布局下为子菜单）
-    3. stuffWidth 计算侧边栏占位宽度（left 布局 = leftNavWidth + sideWidth）
+    3. sidebarOccupiedWidth 计算侧边栏占位宽度（left 布局 = leftNavWidth + sideWidth）
     4. siderLeft 计算 Sider 的 left 偏移（left 布局下需偏移 leftNavWidth）
 -->
 <template>
   <div class="sider-container">
     <!-- 占位元素：在文档流中占据与固定侧边栏相同的宽度，防止内容被遮挡 -->
     <div
-      :style="{ width: `${stuffWidth}px`, flex: `0 0 ${stuffWidth}px` }"
+      :style="{ width: `${sidebarOccupiedWidth}px`, flex: `0 0 ${sidebarOccupiedWidth}px` }"
       class="ant-fixed-stuff"
     ></div>
     <!-- 左侧一级导航：仅在 left 布局且非移动端时显示 -->
-    <left-nav v-if="isLeftNotMobile" />
+    <left-nav v-if="showLeftNav" />
     <!-- 侧边栏菜单区域：有菜单数据时才渲染 -->
     <a-layout-sider
       v-if="sideMenus.length"
@@ -42,14 +42,13 @@
       <Logo :show-title="sidebarOpened" />
       <!-- 菜单列表：可滚动区域，使用 base-menu 递归渲染 -->
       <div style="flex: 1 1 0%; overflow: hidden auto">
-        <base-menu :menus="menuList" :theme="navTheme" :collapsed="!sidebarOpened" />
+        <base-menu :menus="sideMenus" :theme="navTheme" :collapsed="!sidebarOpened" />
       </div>
     </a-layout-sider>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
 import BaseMenu from '../Menu/index'
 import LeftNav from './LeftNav.vue'
 import { Logo, LayoutTrigger } from '../Widget'
@@ -59,17 +58,14 @@ import { useSetting } from '@/layouts/composables'
 const {
   sideWidth,
   sidebarOpened,
-  stuffWidth,
+  sidebarOccupiedWidth,
   navTheme,
   siderLeft,
-  isLeftNotMobile,
+  showLeftNav,
   sideMenus,
   toggleSidebar,
   showSideTrigger
 } = useSetting()
-
-/** 当前侧边栏菜单数据列表 */
-const menuList = computed(() => sideMenus.value)
 
 /** 切换侧边栏折叠/展开状态 */
 const toggle = () => {

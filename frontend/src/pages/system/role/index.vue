@@ -83,7 +83,11 @@
     </div>
 
     <!-- 新增/编辑角色弹窗 -->
-    <RoleFormModal v-model:visible="modalVisible" :record="currentRecord" @success="handleSearch" />
+    <RoleFormModal
+      v-model:visible="modalVisible"
+      :record="currentRecord"
+      @success="handleSuccess"
+    />
 
     <!-- 权限分配弹窗：为角色分配菜单/按钮权限 -->
     <RolePermissionModal
@@ -157,12 +161,7 @@ const searchForm = reactive<RoleQuery>({
 /** 分页配置，由 createPagination 工具函数创建默认值 */
 const pagination = reactive(createPagination())
 
-/**
- * 字典数据加载
- * 通过 useDict 组合式函数按字典编码加载选项数据，支持全局缓存避免重复请求。
- * - dataScopeDict：数据权限范围字典（data_scope），用于表格数据范围列的标签渲染
- *   状态筛选的字典数据由模板中 DictSelect 组件（dict-code="role_status"）自行加载，无需额外声明
- */
+/** 数据权限范围字典（data_scope），用于表格数据范围列的标签渲染 */
 const dataScopeDict = useDict({ code: 'data_scope' })
 
 /**
@@ -341,28 +340,48 @@ const handleEdit = (record: RoleInfo) => {
   modalVisible.value = true
 }
 
-/** 删除角色：调用删除接口成功后刷新列表 */
+/**
+ * 表单提交成功回调（局部数据更新）
+ * @param record - 提交后的角色数据
+ * @description 编辑模式：更新匹配行；新增模式：插入到开头
+ */
+const handleSuccess = (record: RoleInfo) => {
+  const normalized = { ...record, id: Number(record.id) }
+  const index = tableData.value.findIndex((item) => item.id === normalized.id)
+  if (index !== -1) {
+    tableData.value[index] = { ...tableData.value[index], ...normalized }
+  } else {
+    tableData.value.unshift(normalized)
+    pagination.total = (pagination.total ?? 0) + 1
+  }
+}
+
+/** 删除角色：调用删除接口成功后局部移除数据 */
 const handleDelete = async (record: RoleInfo) => {
   try {
     await deleteRole(record.id)
     message.success('删除成功')
-    fetchData()
+    tableData.value = tableData.value.filter((item) => item.id !== record.id)
+    pagination.total = Math.max(0, (pagination.total ?? 0) - 1)
   } catch (error: unknown) {
     if (import.meta.env.DEV) console.error('[RolePage] handleDelete failed:', error)
   }
 }
 
 /**
- * 切换角色状态
+ * 切换角色状态（乐观更新）
  * @param record 目标角色
  * @param checked 开关状态，true-启用(1)，false-禁用(0)
  */
 const handleStatusChange = async (record: RoleInfo, checked: boolean) => {
+  const oldStatus = record.status
+  record.status = checked ? 1 : 0
   try {
     await changeRoleStatus(record.id, checked ? 1 : 0)
     message.success(checked ? '角色已启用' : '角色已禁用')
-    fetchData()
   } catch (error: unknown) {
+    record.status = oldStatus
+    message.error('状态变更失败，请重试')
     if (import.meta.env.DEV) console.error('[RolePage] handleStatusChange failed:', error)
   }
 }
@@ -385,92 +404,4 @@ onMounted(() => {
 })
 </script>
 
-<style lang="less" scoped>
-.page-container {
-  .search-card {
-    background: var(--ant-color-bg-container, #fff);
-    border-radius: var(--ant-border-radius, 8px);
-    padding: 16px;
-    margin-bottom: 16px;
-
-    :deep(.ant-form-item) {
-      margin-bottom: 0;
-    }
-  }
-
-  .s-table-wrapper {
-    background: var(--ant-color-bg-container, #fff);
-    border-radius: var(--ant-border-radius, 8px);
-    padding: 16px;
-  }
-
-  .s-table-header {
-    margin-bottom: 16px;
-  }
-
-  .table-header-container {
-    width: 100%;
-    padding: 0;
-  }
-
-  .table-header-toolbar {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-
-    div > * {
-      margin-right: 8px;
-    }
-  }
-
-  .table-header__toolbar-desktop {
-    margin-left: auto;
-  }
-
-  /* 全屏表格模式：覆盖整个视口，表格区域自适应填充剩余空间 */
-  &.fullscreen-table {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 9999;
-    background: var(--ant-color-bg-container, #fff);
-    padding: 16px;
-    display: flex;
-    flex-direction: column;
-    overflow: visible;
-
-    .search-card {
-      flex-shrink: 0;
-    }
-
-    .s-table-wrapper {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      min-height: 0;
-    }
-
-    .s-table-header {
-      flex-shrink: 0;
-    }
-
-    :deep(.ant-table-wrapper) {
-      flex: 1;
-      overflow: auto;
-    }
-  }
-}
-
-/* 移动端小屏适配：表格横向可滚动 */
-@media (max-width: 480px) {
-  .page-container {
-    :deep(.ant-table) {
-      width: 100%;
-      overflow-x: auto;
-    }
-  }
-}
-</style>
+<style lang="less" scoped></style>

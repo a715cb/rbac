@@ -124,7 +124,7 @@ const isEdit = computed(() => !!props.record)
 const formState = reactive<ButtonForm>({
   name: '',
   code: '',
-  menu_id: undefined as unknown as number,
+  menu_id: undefined,
   icon: '',
   sort: 0,
   status: 1
@@ -139,7 +139,7 @@ const rules = {
 const resetForm = () => {
   formState.name = ''
   formState.code = ''
-  formState.menu_id = undefined as unknown as number
+  formState.menu_id = undefined
   formState.icon = ''
   formState.sort = 0
   formState.status = 1
@@ -177,7 +177,7 @@ const handleSubmit = async () => {
       })
       message.success('更新成功')
     } else {
-      await createMenuButton(formState.menu_id, {
+      await createMenuButton(formState.menu_id!, {
         name: formState.name,
         code: formState.code,
         icon: formState.icon || '',

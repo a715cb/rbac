@@ -117,8 +117,8 @@ const props = defineProps<Props>()
 const emit = defineEmits<{
   /** 更新弹窗可见状态（支持 v-model:visible 双向绑定） */
   (e: 'update:visible', value: boolean): void
-  /** 操作成功后触发，通知父组件刷新列表数据 */
-  (e: 'success'): void
+  /** 操作成功后触发，传递保存后的完整记录，供父组件局部更新 */
+  (e: 'success', record: DictTypeInfo): void
 }>()
 
 /** 表单实例引用，用于调用表单校验方法 */
@@ -200,11 +200,12 @@ const handleSubmit = async () => {
     if (isEdit.value && props.record) {
       await updateDictType(props.record.id, formState)
       message.success('更新成功')
+      emit('success', { ...formState, id: props.record.id } as DictTypeInfo)
     } else {
-      await createDictType(formState)
+      const res = await createDictType(formState)
       message.success('创建成功')
+      emit('success', { ...formState, id: res.data.id } as DictTypeInfo)
     }
-    emit('success')
     emit('update:visible', false)
     resetForm()
   } catch (error: unknown) {

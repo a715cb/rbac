@@ -67,6 +67,11 @@ import { useUserStore } from '@/stores/user'
 import { useSetting } from '@/layouts/composables'
 import { storeToRefs } from 'pinia'
 import { LoadingOutlined } from '@ant-design/icons-vue'
+import { TokenManager } from '@/utils/token'
+import { StorageManager } from '@/utils/storage'
+import { AppConfig } from '@/config/app'
+import { clearTabsStorage } from '@/layouts/components/TagsView/useTabs'
+import { removeDynamicRoutes } from '@/router/dynamic'
 
 /** 退出登录按钮的加载指示器 */
 const indicator = h(LoadingOutlined, {
@@ -94,14 +99,21 @@ const spinning = ref(false)
 /**
  * 退出登录
  * @description 调用 userStore.logout() 清除用户状态，
- *              无论成功或失败均跳转到登录页
+ *              失败时兜底清除本地认证状态，最终均跳转到登录页
  */
 const logout = async () => {
   spinning.value = true
   try {
     await store.logout()
   } catch (error) {
-    if (import.meta.env.DEV) console.error('退出登录失败:', error)
+    console.error('退出登录失败:', error)
+    TokenManager.clearToken()
+    StorageManager.removeItem('session', AppConfig.userInfoKey)
+    StorageManager.removeItem('session', AppConfig.menusKey)
+    StorageManager.removeItem('local', AppConfig.refreshTokenKey)
+    StorageManager.removeItem('local', AppConfig.tokenExpiresKey)
+    clearTabsStorage()
+    removeDynamicRoutes()
   } finally {
     spinning.value = false
     router.push('/login')
@@ -117,6 +129,13 @@ const toAccount = () => {
 const localPrevTheme = ref<'light' | 'dark'>('light')
 
 /**
+ * 检测浏览器是否支持 View Transition API
+ * @description 通过检查 document.startViewTransition 方法是否存在来判断
+ */
+const supportsViewTransition = (): boolean =>
+  'startViewTransition' in document && typeof (document as any).startViewTransition === 'function'
+
+/**
  * 主题切换动画
  * @param event - 鼠标事件，用于获取点击坐标作为动画圆心
  * @param isDark - 是否切换到暗黑模式
@@ -125,7 +144,7 @@ const localPrevTheme = ref<'light' | 'dark'>('light')
  *              不支持 View Transition API 的浏览器直接执行回调。
  */
 const themeAnimation = (event: MouseEvent, isDark: boolean, callback: () => void) => {
-  if (!(document as any).startViewTransition) return callback()
+  if (!supportsViewTransition()) return callback()
   const x = event.clientX
   const y = event.clientY
   /* 计算动画结束半径：从点击位置到视口四角的最大距离 */

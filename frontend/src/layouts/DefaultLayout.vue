@@ -38,6 +38,7 @@
 </template>
 
 <script setup lang="ts">
+defineOptions({ name: 'DefaultLayout' })
 import { computed, provide, ref, nextTick } from 'vue'
 import { LayoutSidebar, LayoutHeader, LayoutFooter, LayoutTabs, SettingDrawer } from './components'
 import { useSetting } from './composables'

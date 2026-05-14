@@ -60,7 +60,14 @@
               placeholder="搜索菜单名称"
               :value="selectedKeys[0]"
               style="width: 188px; margin-bottom: 8px; display: block"
-              @change="(e: any) => setSelectedKeys(e.target.value ? [e.target.value] : [])"
+              @change="
+                (e: Event) =>
+                  setSelectedKeys(
+                    (e.target as HTMLInputElement).value
+                      ? [(e.target as HTMLInputElement).value]
+                      : []
+                  )
+              "
               @press-enter="handleFilterSearch(selectedKeys, confirm)"
             />
             <a-button
@@ -125,8 +132,8 @@ import {
   ShrinkOutlined,
   CaretRightOutlined
 } from '@ant-design/icons-vue'
-import { message, Tag, Popconfirm, Space, Button } from 'ant-design-vue'
-import { getMenuList, deleteMenu } from '@/api/menu'
+import { message, Tag, Popconfirm, Space, Button, Switch } from 'ant-design-vue'
+import { getMenuList, deleteMenu, changeMenuStatus } from '@/api/menu'
 import type { MenuInfo } from '@/api/menu'
 import MenuFormModal from './components/MenuFormModal.vue'
 import SIcon from '@/components/Icon'
@@ -152,7 +159,7 @@ const modalVisible = ref(false) // 表单弹窗可见性
 const currentRecord = ref<MenuInfo | null>(null) // 当前编辑的菜单记录，null 表示新增模式
 const parentId = ref<number | undefined>(undefined) // 新增子菜单时的父级 ID
 const wrapRef = ref<HTMLElement | null>(null) // 页面容器引用，用于全屏等功能
-const searchInput = ref() // 搜索输入框引用，用于自动聚焦
+const searchInput = ref<HTMLInputElement | null>(null) // 搜索输入框引用，用于自动聚焦
 
 // 树形搜索组合式函数：基于 name 字段进行搜索、高亮、展开匹配节点
 const { searchText, expandedRowKeys, highlightText, doSearch, resetSearch } = useTreeSearch('name')
@@ -262,14 +269,14 @@ const { tableSettingState, visibleColumns: baseColumns } = usePageTable({
 /** 计算最终可见列配置，为各列添加自定义渲染逻辑 */
 const visibleColumns = computed(() =>
   baseColumns.value.map((col) => {
-    const base: Record<string, any> = { ...col }
+    const base = { ...col } as Record<string, unknown>
     if (col.key === 'name') {
       // 菜单名称列：启用自定义筛选下拉框，搜索时高亮匹配文本
       base.customFilterDropdown = true
       base.onFilter = () => true
       base.onFilterDropdownOpenChange = (visible: boolean) => {
         if (visible) {
-          setTimeout(() => (searchInput.value as any)?.focus?.(), 100)
+          setTimeout(() => searchInput.value?.focus(), 100)
         }
       }
       base.customRender = ({ text }: { text: string }) => {
@@ -291,12 +298,14 @@ const visibleColumns = computed(() =>
         )
       }
     } else if (col.key === 'status') {
-      // 菜单状态列：0-禁用(红色)，1-正常
+      // 菜单状态列：Switch 开关切换启用/禁用
       base.customRender = ({ record }: { record: MenuInfo }) => {
-        if (record.status === 0) {
-          return h('span', { class: 'text-red-500' }, '禁用')
-        }
-        return h('span', {}, '正常')
+        return h(Switch, {
+          checked: record.status === 1,
+          checkedChildren: '启用',
+          unCheckedChildren: '禁用',
+          onChange: (checked) => handleStatusChange(record, checked as boolean)
+        })
       }
     } else if (col.key === 'action') {
       // 操作列：添加子菜单(PlusOutlined)、修改(EditOutlined)、删除(DeleteOutlined)
@@ -356,6 +365,24 @@ const handleDelete = async (record: MenuInfo) => {
   }
 }
 
+/**
+ * 切换菜单启用/禁用状态
+ * @param record - 当前菜单记录
+ * @param checked - 开关目标状态，true 为启用
+ */
+const handleStatusChange = async (record: MenuInfo, checked: boolean) => {
+  const newStatus = checked ? 1 : 0
+  try {
+    await changeMenuStatus(record.id, newStatus)
+    message.success(newStatus === 1 ? '已启用' : '已禁用')
+    record.status = newStatus
+    refreshMenuCache()
+  } catch (error) {
+    message.error('状态更新失败')
+    if (import.meta.env.DEV) console.error('[Menu] Status change failed:', error)
+  }
+}
+
 /** 表单弹窗操作成功：刷新列表和菜单缓存 */
 const handleModalSuccess = () => {
   fetchData()
@@ -369,38 +396,6 @@ onMounted(() => {
 
 <style lang="less" scoped>
 .page-container {
-  /* 表格容器：白色背景、圆角、内边距 */
-  .s-table-wrapper {
-    background: var(--ant-color-bg-container, #fff);
-    border-radius: var(--ant-border-radius, 8px);
-    padding: 16px;
-  }
-
-  .s-table-header {
-    margin-bottom: 16px;
-  }
-
-  .table-header-container {
-    width: 100%;
-    padding: 0;
-  }
-
-  /* 工具栏：弹性布局，操作按钮左对齐，表格设置右对齐 */
-  .table-header-toolbar {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-
-    div > * {
-      margin-right: 8px;
-    }
-  }
-
-  .table-header__toolbar-desktop {
-    margin-left: auto;
-  }
-
   /* 表格深度样式覆盖 */
   :deep(.ant-table) {
     .ant-table-thead > tr > th {
@@ -449,55 +444,9 @@ onMounted(() => {
       }
     }
   }
-
-  /* 全屏模式样式 */
-  &.fullscreen-table {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 9999;
-    background: var(--ant-color-bg-container, #fff);
-    padding: 16px;
-    display: flex;
-    flex-direction: column;
-    overflow: visible;
-
-    .s-table-wrapper {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      min-height: 0;
-    }
-
-    .s-table-header {
-      flex-shrink: 0;
-    }
-
-    :deep(.ant-table-wrapper) {
-      flex: 1;
-      overflow: auto;
-    }
-  }
 }
 
-/* 移动端适配：小屏幕下表格横向滚动 */
-@media (max-width: 480px) {
-  .page-container {
-    :deep(.ant-table) {
-      width: 100%;
-      overflow-x: auto;
-    }
-  }
-}
-
-/* 禁用状态红色文本 */
-.text-red-500 {
-  color: #ff4d4f;
-}
-
-/* 暗色主题样式覆盖 */
+/* 暗色主题适配 */
 [data-theme='dark'] {
   .page-container {
     .s-table-header {
@@ -527,11 +476,6 @@ onMounted(() => {
         }
       }
     }
-  }
-
-  /* 暗色主题下禁用状态红色文本（使用更亮的红色以保证可读性） */
-  .text-red-500 {
-    color: #ff7875;
   }
 }
 </style>

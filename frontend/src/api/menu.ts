@@ -86,6 +86,11 @@ export function updateMenu(id: number, data: MenuForm): Promise<ApiResponse<void
   return request.put(`/admin/menus/${id}`, data)
 }
 
+/** 切换菜单启用/禁用状态 */
+export function changeMenuStatus(id: number, status: number): Promise<ApiResponse<void>> {
+  return request.put(`/admin/menus/${id}/status`, { status })
+}
+
 export function deleteMenu(id: number): Promise<ApiResponse<void>> {
   return request.delete(`/admin/menus/${id}`)
 }

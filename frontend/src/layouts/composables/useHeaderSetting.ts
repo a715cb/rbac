@@ -30,7 +30,7 @@ import { useSetting } from './useSetting'
 export function useHeaderSetting() {
   const {
     layoutConfig,
-    showBreadcrumb: showBreadcrumbSetting,
+    showBreadcrumb: globalShowBreadcrumb,
     navTheme,
     layout,
     isMobile,
@@ -80,7 +80,7 @@ export function useHeaderSetting() {
    */
   const showBreadcrumb = computed(() => {
     if (isMobile.value) return false
-    if (['side', 'left'].includes(layout.value) && showBreadcrumbSetting.value) {
+    if (['side', 'left'].includes(layout.value) && globalShowBreadcrumb.value) {
       return true
     }
     return false

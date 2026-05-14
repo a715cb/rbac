@@ -54,6 +54,7 @@ Route::group('admin', function () {
         Route::get('', '\\app\\admin\\controller\\MenuController@index');
         Route::get('tree', '\\app\\admin\\controller\\MenuController@tree');
         Route::post('', '\\app\\admin\\controller\\MenuController@store');
+        Route::put(':id/status', '\\app\\admin\\controller\\MenuController@changeStatus');
         Route::get(':id/buttons', '\\app\\admin\\controller\\MenuController@getButtons');
         Route::post(':id/buttons', '\\app\\admin\\controller\\MenuController@storeButton');
         Route::put(':id/buttons/:buttonId', '\\app\\admin\\controller\\MenuController@updateButton');

@@ -16,7 +16,7 @@ export interface ButtonQuery {
 export interface ButtonForm {
   name: string
   code: string
-  menu_id: number
+  menu_id: number | undefined
   icon?: string
   sort?: number
   status?: number

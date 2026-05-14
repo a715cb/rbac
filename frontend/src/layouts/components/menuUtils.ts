@@ -91,8 +91,10 @@ export const getMenuTitle = (item: RouteMenu): string => {
  * @returns 过滤后的 RouteMenu 数组
  * @description 过滤掉空值、非对象和缺少 path 属性的项，确保数据合法性
  */
-export function asRouteMenuList(routes: any[]): RouteMenu[] {
-  return routes.filter((item) => item && typeof item === 'object' && 'path' in item) as RouteMenu[]
+export function asRouteMenuList(routes: unknown[]): RouteMenu[] {
+  return routes.filter(
+    (item): item is RouteMenu => item != null && typeof item === 'object' && 'path' in item
+  )
 }
 
 /**

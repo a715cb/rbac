@@ -139,8 +139,8 @@ const props = defineProps<Props>()
 const emit = defineEmits<{
   /** 更新弹窗可见状态（支持 v-model:visible） */
   (e: 'update:visible', value: boolean): void
-  /** 操作成功后触发，通知父组件刷新数据 */
-  (e: 'success'): void
+  /** 操作成功后触发，传递保存后的完整记录，供父组件局部更新 */
+  (e: 'success', record: ApiInfo): void
 }>()
 
 /** 表单实例引用，用于调用校验和重置方法 */
@@ -242,11 +242,12 @@ const handleSubmit = async () => {
     if (isEdit.value && props.record) {
       await updateApi(props.record.id, formState)
       message.success('更新成功')
+      emit('success', { ...formState, id: props.record.id } as ApiInfo)
     } else {
-      await createApi(formState)
+      const res = await createApi(formState)
       message.success('创建成功')
+      emit('success', { ...formState, id: res.data.id } as ApiInfo)
     }
-    emit('success')
     emit('update:visible', false)
     resetForm()
   } catch (error: unknown) {

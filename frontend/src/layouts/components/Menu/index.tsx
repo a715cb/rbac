@@ -77,16 +77,8 @@
  * 3. 折叠状态由父组件通过 props.collapsed 控制
  * 4. emit select 和 click 事件供父组件监听菜单交互
  */
-import {
-  defineComponent,
-  resolveComponent,
-  reactive,
-  watch,
-  onMounted,
-  computed,
-  type PropType
-} from 'vue'
-import { useRoute } from 'vue-router'
+import { defineComponent, reactive, watch, onMounted, computed, type PropType } from 'vue'
+import { useRoute, RouterLink } from 'vue-router'
 import Menu from 'ant-design-vue/es/menu'
 import type { MenuTheme, MenuMode } from 'ant-design-vue/es/menu'
 import type { MenuInfo } from 'ant-design-vue/es/menu/src/interface'
@@ -134,12 +126,9 @@ const renderSubMenu = (item: RouteMenu) => {
 }
 
 const renderMenuItem = (item: RouteMenu) => {
-  const CustomTag = 'router-link'
-  const props = { to: item.path }
-  const Widget = resolveComponent(CustomTag) as any
   return (
     <MenuItem key={item.path} icon={renderIcon(getMenuIcon(item))}>
-      {() => <Widget {...props}>{renderTitle(getMenuTitle(item))}</Widget>}
+      {() => <RouterLink to={item.path}>{renderTitle(getMenuTitle(item))}</RouterLink>}
     </MenuItem>
   )
 }
@@ -241,7 +230,7 @@ const RouteMenus = defineComponent({
     const onOpenChange = (openKeys: Key[]) => {
       if (!openKeys.length) return
 
-      const namePath = route.meta.namePath as Array<string>
+      const namePath = route.meta.namePath
       if (props.mode === 'horizontal') {
         state.openKeys = openKeys
         return
@@ -271,13 +260,13 @@ const RouteMenus = defineComponent({
      */
     const activateMenu = () => {
       const routes = route.matched.concat()
-      const { hidden }: { hidden?: boolean } = route.meta as any
-      let { active_key }: { active_key?: string } = route.meta as any
+      const hidden = route.meta.hidden
+      let active_key = route.meta.active_key
       if (routes.length >= 2 && hidden) {
         routes.pop()
         state.selectedKeys = [routes[routes.length - 1].path]
       } else {
-        state.selectedKeys = [(routes as Array<any>).pop().path]
+        state.selectedKeys = [routes[routes.length - 1].path]
       }
       if (active_key) {
         if (!active_key.startsWith('/')) {
@@ -325,30 +314,32 @@ const RouteMenus = defineComponent({
 
     onMounted(() => activateMenu())
 
-    return () => {
-      const menuProps = reactive({
-        mode: props.mode,
-        theme: props.theme,
-        openKeys: state.openKeys,
-        selectedKeys: state.selectedKeys,
-        onSelect: (menu: MenuInfo) => {
-          emit('select', menu)
-          state.selectedKeys = [menu.key as string]
-        },
-        onClick: (menu: MenuInfo) => {
-          emit('click', menu)
-        },
-        onOpenChange: onOpenChange
-      })
+    const menuProps = computed(() => ({
+      mode: props.mode,
+      theme: props.theme,
+      openKeys: state.openKeys,
+      selectedKeys: state.selectedKeys,
+      onSelect: (menu: MenuInfo) => {
+        emit('select', menu)
+        state.selectedKeys = [menu.key as string]
+      },
+      onClick: (menu: MenuInfo) => {
+        emit('click', menu)
+      },
+      onOpenChange: onOpenChange
+    }))
 
-      const menuItems = props.menus.map((item) => {
+    const menuItems = computed(() =>
+      props.menus.map((item) => {
         if (!isMenuVisible(item)) return null
         return renderMenu(item)
       })
+    )
 
+    return () => {
       return (
-        <Menu class="s-menu" {...menuProps}>
-          {() => menuItems}
+        <Menu class="s-menu" {...menuProps.value}>
+          {() => menuItems.value}
         </Menu>
       )
     }

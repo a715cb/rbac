@@ -116,7 +116,6 @@
               <a-checkbox id="login-remember" v-model:checked="formState.remember" name="remember">
                 记住密码
               </a-checkbox>
-              <a class="forgot-link" @click.prevent="handleForgotPassword">忘记密码？</a>
             </div>
           </a-form-item>
 
@@ -136,11 +135,12 @@
           </a-form-item>
         </a-form>
 
-        <!-- 底部：注册引导 -->
+        <!-- 底部：注册引导
         <div class="login-footer">
           <span>还没有账号？</span>
           <a class="register-link" @click.prevent="handleRegister">立即注册</a>
         </div>
+        -->
       </div>
     </div>
   </div>
@@ -291,22 +291,6 @@ const handleLogin = async () => {
  */
 const handleLoginFailed = () => {
   message.warning('请检查表单填写是否正确')
-}
-
-/**
- * 忘记密码处理
- * @description 功能待上线，展示提示信息
- */
-const handleForgotPassword = () => {
-  message.info('忘记密码功能即将上线')
-}
-
-/**
- * 注册引导处理
- * @description 功能待上线，展示提示信息
- */
-const handleRegister = () => {
-  message.info('注册功能即将上线')
 }
 
 /**

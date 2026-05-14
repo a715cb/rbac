@@ -9,7 +9,7 @@
     2. 点击时 emit click 事件，由父组件调用 toggleSidebar
 -->
 <template>
-  <div class="trigger-container" @click="$emit('click')">
+  <div class="trigger-container" @click="handleClick">
     <s-icon
       class="trigger-icon"
       :type="sidebarOpened ? 'menu-fold-outlined' : 'menu-unfold-outlined'"
@@ -21,7 +21,10 @@
 import { useSetting } from '@/layouts/composables'
 
 /** 点击事件，由父组件监听处理折叠逻辑 */
-defineEmits(['click'])
+const emit = defineEmits<{ (e: 'click'): void }>()
+
+/** 点击触发，向父组件 emit click 事件 */
+const handleClick = () => emit('click')
 
 /** 侧边栏展开状态，用于切换图标方向 */
 const { sidebarOpened } = useSetting()

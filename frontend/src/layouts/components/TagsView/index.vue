@@ -84,6 +84,7 @@
  * - useHeaderSetting: 获取头部高度，用于计算固定标签页的占位空间
  * - TabsProps: Ant Design Vue Tabs 组件的事件类型定义
  */
+defineOptions({ name: 'LayoutTagsView' })
 import { useTabs } from './useTabs'
 import { useSetting, useHeaderSetting } from '@/layouts/composables'
 import { DEFAULT_MENU_ICON } from '../menuUtils'

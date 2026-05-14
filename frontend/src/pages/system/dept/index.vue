@@ -3,11 +3,8 @@
   @用途: 部门管理主页面
   @描述: 系统管理模块下的部门管理页面，以树形表格展示部门层级结构。
          支持部门的增删改查、状态切换、展开/折叠、名称搜索高亮、
-         查看部门成员等操作。
-  @主要组件:
-    - DeptFormModal: 部门新增/编辑弹窗
-    - DeptUsersModal: 部门成员查看弹窗
-    - TableSetting: 表格列设置组件
+         查看部门成员等操作。依赖组件：DeptFormModal（新增/编辑弹窗）、
+         DeptUsersModal（成员查看弹窗）、TableSetting（表格列设置）。
   @核心逻辑:
     - 树形表格展示部门层级数据，支持展开/折叠控制
     - 名称列支持自定义筛选下拉搜索，搜索关键词高亮显示
@@ -67,7 +64,14 @@
               :placeholder="`搜索 ${column.title}`"
               :value="selectedKeys[0]"
               style="width: 188px; margin-bottom: 8px; display: block"
-              @change="(e: any) => setSelectedKeys(e.target.value ? [e.target.value] : [])"
+              @change="
+                (e: Event) =>
+                  setSelectedKeys(
+                    (e.target as HTMLInputElement).value
+                      ? [(e.target as HTMLInputElement).value]
+                      : []
+                  )
+              "
               @press-enter="handleFilterSearch(selectedKeys, confirm)"
             />
             <a-button
@@ -115,7 +119,7 @@
       :record="currentRecord"
       :parent-id="parentId"
       :tree-data="treeData"
-      @success="fetchData"
+      @success="handleSuccess"
     />
 
     <!-- 部门成员查看弹窗 -->
@@ -140,7 +144,7 @@ import {
   ShrinkOutlined,
   CaretRightOutlined
 } from '@ant-design/icons-vue'
-import { message, Space, Button, Popconfirm } from 'ant-design-vue'
+import { message, Space, Button, Popconfirm, Switch } from 'ant-design-vue'
 import { getDeptList, deleteDept, changeDeptStatus } from '@/api/dept'
 import type { DeptInfo } from '@/api/dept'
 import DeptFormModal from './components/DeptFormModal.vue'
@@ -169,7 +173,7 @@ const parentId = ref<number | undefined>(undefined)
 const wrapRef = ref<HTMLElement | null>(null)
 
 /** 搜索输入框引用，用于筛选下拉打开时自动聚焦 */
-const searchInput = ref()
+const searchInput = ref<HTMLInputElement | null>(null)
 
 /** 部门树形数据：与 tableData 同步，供 DeptFormModal 的上级部门选择器使用 */
 const treeData = ref<DeptInfo[]>([])
@@ -321,13 +325,13 @@ const { tableSettingState, visibleColumns: baseColumns } = usePageTable({
  */
 const visibleColumns = computed(() =>
   baseColumns.value.map((col) => {
-    const base: Record<string, any> = { ...col }
+    const base = { ...col } as Record<string, unknown>
     if (col.key === 'name') {
       base.customFilterDropdown = true
       base.onFilter = () => true
       base.onFilterDropdownOpenChange = (visible: boolean) => {
         if (visible) {
-          setTimeout(() => (searchInput.value as any)?.focus?.(), 100)
+          setTimeout(() => searchInput.value?.focus(), 100)
         }
       }
       base.customRender = ({ text }: { text: string }) => {
@@ -336,9 +340,10 @@ const visibleColumns = computed(() =>
     }
     if (col.key === 'status') {
       base.customRender = ({ record }: { record: DeptInfo }) => {
-        return h('a-switch', {
+        return h(Switch, {
           checked: record.status === 1,
-          'onUpdate:checked': (checked: boolean) => handleStatusChange(record, checked)
+          onChange: (checked: boolean | string | number) =>
+            handleStatusChange(record, Boolean(checked))
         })
       }
     }
@@ -412,32 +417,104 @@ const handleEdit = (record: DeptInfo) => {
 }
 
 /**
+ * 递归在树中查找并更新节点
+ * @param list - 树节点列表
+ * @param id - 目标节点 ID
+ * @param updater - 更新函数，返回新节点
+ * @returns 是否已找到并更新
+ */
+const updateTreeNode = (
+  list: DeptInfo[],
+  id: number,
+  updater: (node: DeptInfo) => DeptInfo
+): boolean => {
+  for (let i = 0; i < list.length; i++) {
+    if (list[i].id === id) {
+      list[i] = updater(list[i])
+      return true
+    }
+    if (list[i].children?.length) {
+      if (updateTreeNode(list[i].children!, id, updater)) return true
+    }
+  }
+  return false
+}
+
+/**
+ * 递归在树中删除节点
+ * @param list - 树节点列表
+ * @param id - 目标节点 ID
+ * @returns 是否已找到并删除
+ */
+const removeTreeNode = (list: DeptInfo[], id: number): boolean => {
+  for (let i = 0; i < list.length; i++) {
+    if (list[i].id === id) {
+      list.splice(i, 1)
+      return true
+    }
+    if (list[i].children?.length) {
+      if (removeTreeNode(list[i].children!, id)) return true
+    }
+  }
+  return false
+}
+
+/**
+ * 表单提交成功回调（局部树数据更新）
+ * @param record - 提交后的部门数据
+ * @description 编辑模式：递归查找并更新树中对应节点；
+ *              新增子部门：递归查找父节点并将新记录插入其 children；
+ *              新增顶级部门：直接添加到列表末尾
+ */
+const handleSuccess = (record: DeptInfo) => {
+  const normalized = { ...record, id: Number(record.id) }
+  if (currentRecord.value) {
+    updateTreeNode(tableData.value, normalized.id, (node) => ({
+      ...node,
+      ...normalized
+    }))
+  } else if (parentId.value !== undefined) {
+    updateTreeNode(tableData.value, parentId.value, (parent) => ({
+      ...parent,
+      children: [...(parent.children || []), normalized]
+    }))
+  } else {
+    tableData.value.push(normalized)
+  }
+  treeData.value = tableData.value
+}
+
+/**
  * 删除部门
  * @param record - 待删除的部门记录
- * @description 调用删除 API，成功后刷新列表数据
+ * @description 调用删除 API，成功后局部移除树节点
  */
 const handleDelete = async (record: DeptInfo) => {
   try {
     await deleteDept(record.id)
     message.success('删除成功')
-    fetchData()
+    removeTreeNode(tableData.value, record.id)
+    treeData.value = tableData.value
   } catch (error) {
     if (import.meta.env.DEV) console.error('[Dept] Delete dept failed:', error)
   }
 }
 
 /**
- * 切换部门状态
+ * 切换部门状态（乐观更新）
  * @param record - 部门记录
  * @param checked - 开关状态，true 为启用，false 为禁用
- * @description 调用状态切换 API，成功后刷新列表数据
+ * @description 先更新本地状态，调用 API 失败后回滚并提示错误
  */
 const handleStatusChange = async (record: DeptInfo, checked: boolean) => {
+  const oldStatus = record.status
+  record.status = checked ? 1 : 0
   try {
     await changeDeptStatus(record.id, checked ? 1 : 0)
     message.success(checked ? '部门已启用' : '部门已禁用')
-    fetchData()
-  } catch (error) {
+  } catch (error: unknown) {
+    record.status = oldStatus
+    message.error('状态变更失败，请重试')
     if (import.meta.env.DEV) console.error('[Dept] Change dept status failed:', error)
   }
 }
@@ -461,36 +538,6 @@ onMounted(() => {
 
 <style lang="less" scoped>
 .page-container {
-  .s-table-wrapper {
-    background: var(--ant-color-bg-container, #fff);
-    border-radius: var(--ant-border-radius, 8px);
-    padding: 16px;
-  }
-
-  .s-table-header {
-    margin-bottom: 16px;
-  }
-
-  .table-header-container {
-    width: 100%;
-    padding: 0;
-  }
-
-  .table-header-toolbar {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-
-    div > * {
-      margin-right: 8px;
-    }
-  }
-
-  .table-header__toolbar-desktop {
-    margin-left: auto;
-  }
-
   :deep(.ant-table) {
     .ant-table-thead > tr > th {
       font-weight: 500;
@@ -533,45 +580,6 @@ onMounted(() => {
         padding-left: 8px;
         padding-right: 8px;
       }
-    }
-  }
-
-  &.fullscreen-table {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 9999;
-    background: var(--ant-color-bg-container, #fff);
-    padding: 16px;
-    display: flex;
-    flex-direction: column;
-    overflow: visible;
-
-    .s-table-wrapper {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      min-height: 0;
-    }
-
-    .s-table-header {
-      flex-shrink: 0;
-    }
-
-    :deep(.ant-table-wrapper) {
-      flex: 1;
-      overflow: auto;
-    }
-  }
-}
-
-@media (max-width: 480px) {
-  .page-container {
-    :deep(.ant-table) {
-      width: 100%;
-      overflow-x: auto;
     }
   }
 }
