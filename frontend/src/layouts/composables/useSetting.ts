@@ -115,7 +115,7 @@ export const useSetting = createSharedComposable(() => {
   })
 
   /** 设置项映射表 */
-  const settingMap: Record<SettingKey, { ref: any; apply?: (val: any) => void }> = {
+  const settingMap: Record<SettingKey, { ref: unknown; apply?: (val: unknown) => void }> = {
     sidebarOpened: { ref: sidebarOpened },
     theme: { ref: appearance.theme, apply: appearance.applyTheme },
     primaryColor: { ref: appearance.primaryColor, apply: appearance.applyPrimaryColor },
@@ -142,7 +142,7 @@ export const useSetting = createSharedComposable(() => {
    * @description 通过 settingMap 查找对应的 ref 和副作用函数，
    *              更新值并执行副作用（如 applyTheme、applyPrimaryColor）
    */
-  const changeSetting = (key: SettingKey, value: any) => {
+  const changeSetting = (key: SettingKey, value: unknown) => {
     if (key === 'theme' && appearance.theme.value !== 'realDark') {
       appearance.prevTheme.value = appearance.theme.value
     }
@@ -171,7 +171,7 @@ export const useSetting = createSharedComposable(() => {
    * @param data - 菜单点击数据，包含 key 或 path 属性
    * @description 仅处理以 '/' 开头的路径，执行 router.push 跳转
    */
-  const routerTo = (data: Record<string, any>) => {
+  const routerTo = (data: Record<string, unknown>) => {
     const path = data.key || data.path
     if (path && String(path).startsWith('/')) {
       router.push({ path: String(path) })

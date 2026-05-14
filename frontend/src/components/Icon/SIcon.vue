@@ -21,10 +21,12 @@ export default defineComponent({
       required: true
     },
     size: {
-      type: [String, Number]
+      type: [String, Number],
+      default: ''
     },
     color: {
-      type: String
+      type: String,
+      default: ''
     }
   },
   setup(props) {

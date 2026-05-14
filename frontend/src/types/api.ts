@@ -1,10 +1,10 @@
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   code: number
   msg: string
   data: T
 }
 
-export interface PageResult<T = any> {
+export interface PageResult<T = unknown> {
   list: T[]
   total: number
   page: number
@@ -14,5 +14,5 @@ export interface PageResult<T = any> {
 export interface PageParams {
   page: number
   page_size: number
-  [key: string]: any
+  [key: string]: unknown
 }

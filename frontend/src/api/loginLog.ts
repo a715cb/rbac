@@ -37,10 +37,20 @@ export function getLoginLogList(params?: LoginLogQuery): Promise<ApiResponse<Log
   return request.get('/admin/login-logs', { params })
 }
 
+export interface LoginLogStats {
+  total: number
+  success_count: number
+  fail_count: number
+  daily_stats: Array<{
+    date: string
+    count: number
+  }>
+}
+
 export function getLoginLogStats(params?: {
   start_date?: string
   end_date?: string
-}): Promise<ApiResponse<any>> {
+}): Promise<ApiResponse<LoginLogStats>> {
   return request.get('/admin/login-logs/stats', { params })
 }
 

@@ -23,7 +23,7 @@ const axiosConfig = {
     'Content-Type': 'application/json'
   },
   transformResponse: [
-    (data: any) => {
+    (data: string) => {
       try {
         return JSON.parse(data)
       } catch {
@@ -127,7 +127,7 @@ request.interceptors.request.use(
 )
 
 request.interceptors.response.use(
-  (response: AxiosResponse<ApiResponse>): any => {
+  (response: AxiosResponse<ApiResponse>): ApiResponse<unknown> => {
     const res = response.data
 
     if (res.code !== 200) {

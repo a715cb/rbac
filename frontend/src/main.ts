@@ -23,7 +23,7 @@ migrateUnprefixedKeys()
 
 const app = createApp(App)
 
-app.use(Antd as any, { locale: zhCN })
+app.use(Antd as unknown as typeof Antd, { locale: zhCN })
 app.use(router)
 app.use(pinia)
 app.use(hljsVuePlugin)

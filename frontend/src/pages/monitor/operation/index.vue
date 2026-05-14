@@ -343,7 +343,7 @@ const methodColor = (method: string) => {
 const fetchUserOptions = async () => {
   try {
     const res = await getUserList({ page: 1, limit: 1000 })
-    userOptions.value = (res.data.list || []).map((u: any) => ({
+    userOptions.value = (res.data.list || []).map((u: { id: number; username: string }) => ({
       id: u.id,
       username: u.username
     }))

@@ -1,4 +1,5 @@
 export { useMenuTree, useDeptTree } from './useTreeData'
+export type { TreeNode } from './useTreeData'
 export { useTreeSearch } from './useTreeSearch'
 export { usePageTable } from './usePageTable'
 export { useSortable } from './useSortable'

@@ -114,7 +114,7 @@ const props = defineProps<Props>()
 
 const emit = defineEmits<{
   (e: 'update:visible', value: boolean): void
-  (e: 'success'): void
+  (e: 'success', record: ButtonInfo): void
 }>()
 
 const formRef = ref<FormInstance>()
@@ -176,8 +176,13 @@ const handleSubmit = async () => {
         status: formState.status ?? 1
       })
       message.success('更新成功')
+      emit('success', {
+        ...formState,
+        id: props.record.id,
+        menu_name: props.record.menu_name
+      } as ButtonInfo)
     } else {
-      await createMenuButton(formState.menu_id!, {
+      const res = await createMenuButton(formState.menu_id!, {
         name: formState.name,
         code: formState.code,
         icon: formState.icon || '',
@@ -185,8 +190,11 @@ const handleSubmit = async () => {
         status: formState.status ?? 1
       })
       message.success('创建成功')
+      emit('success', {
+        ...formState,
+        id: res.data.id
+      } as ButtonInfo)
     }
-    emit('success')
     emit('update:visible', false)
     resetForm()
   } catch (error: unknown) {

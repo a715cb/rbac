@@ -93,7 +93,7 @@ import {
 } from '@ant-design/icons-vue'
 import { Empty } from 'ant-design-vue'
 import { useDeptTree } from '@/composables/useTreeData'
-import type { DeptInfo } from '@/api/dept'
+import type { TreeNode } from '@/composables/useTreeData'
 
 /** Empty 组件的简约图片引用，用于 a-empty 的 image 属性 */
 const simpleImage = Empty.PRESENTED_IMAGE_SIMPLE
@@ -145,9 +145,9 @@ const emit = defineEmits<{
  * @param keyword - 搜索关键词，为空时直接返回原始节点
  * @returns 过滤后的部门树节点数组
  */
-const filterTree = (nodes: DeptInfo[], keyword: string): DeptInfo[] => {
+const filterTree = (nodes: TreeNode[], keyword: string): TreeNode[] => {
   if (!keyword) return nodes
-  const result: DeptInfo[] = []
+  const result: TreeNode[] = []
   for (const node of nodes) {
     const children = node.children ? filterTree(node.children, keyword) : []
     const selfMatch = node.name.includes(keyword)
@@ -179,7 +179,7 @@ const filteredTreeData = computed(() => filterTree(treeData.value, searchValue.v
  * @param nodes - 部门树节点数组
  * @returns 所有节点的 ID 数组（深度优先顺序）
  */
-const collectAllKeys = (nodes: DeptInfo[]): number[] => {
+const collectAllKeys = (nodes: TreeNode[]): number[] => {
   const keys: number[] = []
   for (const node of nodes) {
     keys.push(node.id)
@@ -246,7 +246,7 @@ const handleSearch = () => {
 /** 部门树数据加载后自动展开所有节点 */
 watch(treeData, (newData) => {
   if (newData.length > 0) {
-    expandedKeys.value = collectAllKeys(newData as DeptInfo[])
+    expandedKeys.value = collectAllKeys(newData)
   }
 })
 /**

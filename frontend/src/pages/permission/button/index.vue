@@ -324,7 +324,7 @@ const handleSuccess = (record: ButtonInfo) => {
     tableData.value[index] = { ...tableData.value[index], ...normalized }
   } else {
     tableData.value.unshift(normalized)
-    pagination.total += 1
+    pagination.total = (pagination.total ?? 0) + 1
   }
 }
 
@@ -338,7 +338,7 @@ const handleDelete = async (record: ButtonInfo) => {
     await batchDeleteButtons([record.id])
     message.success('删除成功')
     tableData.value = tableData.value.filter((item) => item.id !== record.id)
-    pagination.total = Math.max(0, pagination.total - 1)
+    pagination.total = Math.max(0, (pagination.total ?? 0) - 1)
   } catch (error: unknown) {
     if (import.meta.env.DEV) console.error('[ButtonPage] handleDelete failed:', error)
   }

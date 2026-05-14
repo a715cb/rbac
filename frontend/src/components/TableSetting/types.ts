@@ -10,7 +10,7 @@ export interface ColumnItem {
   width?: number | string
   fixed?: 'left' | 'right' | boolean
   align?: 'left' | 'center' | 'right'
-  [key: string]: any
+  [key: string]: unknown
 }
 
 export interface TableSettingState {

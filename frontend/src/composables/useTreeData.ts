@@ -2,7 +2,7 @@ import { ref, type Ref } from 'vue'
 import { getMenuTree } from '@/api/menu'
 import { getDeptTree } from '@/api/dept'
 
-type TreeNode = { id: number; name: string; children?: TreeNode[] }
+export type TreeNode = { id: number; name: string; children?: TreeNode[] }
 
 const normalizeTreeIds = <T extends { id: string | number; name: string; children?: T[] }>(
   tree: T[]

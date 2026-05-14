@@ -3,7 +3,7 @@ import { ref, type Ref } from 'vue'
 export interface TreeNode {
   id: string | number
   children?: TreeNode[]
-  [key: string]: any
+  [key: string]: unknown
 }
 
 const escapeHtml = (str: string): string => {

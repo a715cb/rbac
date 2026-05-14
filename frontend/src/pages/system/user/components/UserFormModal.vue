@@ -200,6 +200,7 @@ import { createUser, updateUser } from '@/api/user'
 import type { UserInfo, UserForm, UserDeptItem } from '@/api/user'
 import { getRoleList } from '@/api/role'
 import { useDeptTree } from '@/composables/useTreeData'
+import type { TreeNode } from '@/composables/useTreeData'
 import { DictSelect, DictRadio } from '@/components/Dict'
 import { getPasswordRules, getConfirmPasswordRules } from '@/utils/validators'
 
@@ -432,11 +433,7 @@ const handleSetPrimary = (index: number) => {
 
 /** 递归在部门树中查找节点名称，用于添加部门时显示名称 */
 const findDeptName = (
-  tree: {
-    id: number
-    name: string
-    children?: { id: number; name: string; children?: unknown[] }[]
-  }[],
+  tree: TreeNode[],
   id: number
 ): string => {
   for (const node of tree) {

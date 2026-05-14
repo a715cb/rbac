@@ -132,8 +132,16 @@ const localPrevTheme = ref<'light' | 'dark'>('light')
  * 检测浏览器是否支持 View Transition API
  * @description 通过检查 document.startViewTransition 方法是否存在来判断
  */
-const supportsViewTransition = (): boolean =>
-  'startViewTransition' in document && typeof (document as any).startViewTransition === 'function'
+interface DocumentWithViewTransition extends Document {
+  startViewTransition?: (callback: () => void) => {
+    ready: Promise<void>
+  }
+}
+
+const supportsViewTransition = (): boolean => {
+  const doc = document as DocumentWithViewTransition
+  return 'startViewTransition' in doc && typeof doc.startViewTransition === 'function'
+}
 
 /**
  * 主题切换动画
@@ -149,7 +157,8 @@ const themeAnimation = (event: MouseEvent, isDark: boolean, callback: () => void
   const y = event.clientY
   /* 计算动画结束半径：从点击位置到视口四角的最大距离 */
   const endRadius = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y))
-  const transition = (document as any).startViewTransition(callback)
+  const doc = document as DocumentWithViewTransition
+  const transition = doc.startViewTransition!(callback)
   transition.ready.then(() => {
     const clipPath = [`circle(0px at ${x}px ${y}px)`, `circle(${endRadius}px at ${x}px ${y}px)`]
     document.documentElement.animate(

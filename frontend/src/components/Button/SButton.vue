@@ -20,7 +20,7 @@ const props = defineProps<{
   iconSize?: string | number
   color?: Color
   disabled?: boolean
-  [key: string]: any
+  [key: string]: unknown
 }>()
 
 const getButtonClass = computed(() => {

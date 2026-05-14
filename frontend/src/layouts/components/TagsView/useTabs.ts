@@ -31,7 +31,7 @@ interface Tabs {
   /** 是否固定标签页（固定标签不可关闭） */
   affix?: boolean
   /** 路由查询参数，跳转时保留原始 query */
-  query?: Record<string, any>
+  query?: Record<string, unknown>
 }
 
 /** 路由跳转参数 */
@@ -39,7 +39,7 @@ interface RouteParams {
   /** 目标路径 */
   path: string
   /** 路由查询参数 */
-  query?: Record<string, any>
+  query?: Record<string, unknown>
 }
 
 /** 仪表盘固定标签配置，始终显示在标签页首位 */
@@ -129,7 +129,7 @@ export function useTabs() {
       if (!isTabAllowed(route)) return
       const title = route.meta.title as string
       const icon = route.meta.icon as string
-      const query: Record<string, any> = route.query
+      const query: Record<string, unknown> = route.query
       const affix = route.meta.affix as boolean | undefined
       create({ title, path, icon, affix, query })
     },

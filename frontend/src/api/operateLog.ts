@@ -45,10 +45,18 @@ export function getOperateLogList(
   return request.get('/admin/operation-logs', { params })
 }
 
+export interface OperateLogStats {
+  total: number
+  daily_stats: Array<{
+    date: string
+    count: number
+  }>
+}
+
 export function getOperateLogStats(params?: {
   start_date?: string
   end_date?: string
-}): Promise<ApiResponse<any>> {
+}): Promise<ApiResponse<OperateLogStats>> {
   return request.get('/admin/operation-logs/stats', { params })
 }
 
@@ -66,6 +74,11 @@ export function deleteOperateLog(ids: number[]): Promise<ApiResponse<{ deleted_c
   return request.post('/admin/operation-logs/delete', { ids })
 }
 
-export function exportOperateLog(params?: OperateLogQuery): Promise<ApiResponse<any>> {
+export interface ExportResult {
+  download_url: string
+  filename: string
+}
+
+export function exportOperateLog(params?: OperateLogQuery): Promise<ApiResponse<ExportResult>> {
   return request.get('/admin/operation-logs/export', { params })
 }

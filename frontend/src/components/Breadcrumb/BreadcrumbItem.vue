@@ -28,7 +28,8 @@ const props = defineProps({
     default: '/'
   },
   to: {
-    type: String
+    type: String,
+    default: ''
   },
   replace: Boolean
 })

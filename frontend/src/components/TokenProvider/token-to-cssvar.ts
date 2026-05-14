@@ -27,7 +27,7 @@ const colorKey = [
 ]
 
 export const registerTokenToCSSVar = (token: GlobalToken) => {
-  const variables: Record<string, any> = {}
+  const variables: Record<string, string | number> = {}
   if (!token) return
   for (const key in token) {
     const val = token[key as keyof GlobalToken]
