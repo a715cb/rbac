@@ -1,6 +1,7 @@
 <?php
 namespace app\admin\controller;
 
+use app\common\BaseController;
 use app\model\MenuButton as MenuButtonModel;
 use app\model\Menu as MenuModel;
 use app\admin\validate\MenuButtonValidate;
@@ -145,7 +146,7 @@ class MenuButtonController extends BaseController
         Db::startTrans();
         try {
             MenuButtonModel::destroy($ids);
-            Db::name('sys_role_menu_button')->where('menu_button_id', 'in', $ids)->delete();
+            Db::name('role_menu_button')->where('menu_button_id', 'in', $ids)->delete();
 
             $this->clearAllMenuCache();
             Db::commit();
@@ -158,7 +159,7 @@ class MenuButtonController extends BaseController
 
     private function clearAllMenuCache(): void
     {
-        $userIds = Db::name('sys_user')->where('status', 1)->column('id');
+        $userIds = Db::name('user')->where('status', 1)->column('id');
         foreach ($userIds as $userId) {
             SimpleCache::delete('user_menu_tree_' . $userId);
             SimpleCache::delete('user_menu_codes_' . $userId);

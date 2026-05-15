@@ -6,8 +6,7 @@ use think\facade\Db;
 
 class Role extends BaseModel
 {
-    protected $table = 'sys_role';
-
+    protected $name = 'role';
     protected $pk = 'id';
 
     protected $autoWriteTimestamp = true;
@@ -32,9 +31,9 @@ class Role extends BaseModel
 
     public function getUserRoles(int $userId): array
     {
-        return Db::name('sys_role')
+        return Db::name('role')
             ->alias('role')
-            ->join('sys_user_role user_role', 'role.id = user_role.role_id', 'INNER')
+            ->join('user_role user_role', 'role.id = user_role.role_id', 'INNER')
             ->where('user_role.user_id', $userId)
             ->where('role.status', 1)
             ->whereNull('role.delete_time')
@@ -44,14 +43,14 @@ class Role extends BaseModel
 
     public function getUserRoleIds(int $userId): array
     {
-        return Db::name('sys_user_role')
+        return Db::name('user_role')
             ->where('user_id', $userId)
             ->column('role_id');
     }
 
     public function getRoleMenus(int $roleId): array
     {
-        return Db::name('sys_role_menu')
+        return Db::name('role_menu')
             ->where('role_id', $roleId)
             ->column('menu_id');
     }
@@ -62,7 +61,7 @@ class Role extends BaseModel
             return [];
         }
 
-        return Db::name('sys_role_menu')
+        return Db::name('role_menu')
             ->whereIn('role_id', $roleIds)
             ->distinct(true)
             ->column('menu_id');
@@ -88,7 +87,7 @@ class Role extends BaseModel
 
     public function getRoleButtons(int $roleId): array
     {
-        return Db::name('sys_role_menu_button')
+        return Db::name('role_menu_button')
             ->where('role_id', $roleId)
             ->column('menu_button_id');
     }
@@ -99,7 +98,7 @@ class Role extends BaseModel
             return [];
         }
 
-        return Db::name('sys_role_menu_button')
+        return Db::name('role_menu_button')
             ->whereIn('role_id', $roleIds)
             ->distinct(true)
             ->column('menu_button_id');
@@ -118,7 +117,7 @@ class Role extends BaseModel
             ->toArray();
 
         foreach ($menus as &$menu) {
-            $menu['buttons'] = Db::name('sys_menu_button')
+            $menu['buttons'] = Db::name('menu_button')
                 ->where('menu_id', $menu['id'])
                 ->whereIn('id', $buttonIds)
                 ->where('status', 1)
@@ -132,7 +131,7 @@ class Role extends BaseModel
 
     public function getRoleApis(int $roleId): array
     {
-        return Db::name('sys_role_api')
+        return Db::name('role_api')
             ->where('role_id', $roleId)
             ->column('api_id');
     }
@@ -143,7 +142,7 @@ class Role extends BaseModel
             return [];
         }
 
-        return Db::name('sys_role_api')
+        return Db::name('role_api')
             ->whereIn('role_id', $roleIds)
             ->distinct(true)
             ->column('api_id');
@@ -153,7 +152,7 @@ class Role extends BaseModel
     {
         Db::startTrans();
         try {
-            Db::name('sys_role_menu')
+            Db::name('role_menu')
                 ->where('role_id', $roleId)
                 ->delete();
 
@@ -166,7 +165,7 @@ class Role extends BaseModel
                     ];
                 }, $menuIds);
 
-                Db::name('sys_role_menu')->insertAll($insertData);
+                Db::name('role_menu')->insertAll($insertData);
             }
 
             Db::commit();
@@ -181,7 +180,7 @@ class Role extends BaseModel
     {
         Db::startTrans();
         try {
-            Db::name('sys_role_menu_button')
+            Db::name('role_menu_button')
                 ->where('role_id', $roleId)
                 ->delete();
 
@@ -194,7 +193,7 @@ class Role extends BaseModel
                     ];
                 }, $buttonIds);
 
-                Db::name('sys_role_menu_button')->insertAll($insertData);
+                Db::name('role_menu_button')->insertAll($insertData);
             }
 
             Db::commit();
@@ -209,7 +208,7 @@ class Role extends BaseModel
     {
         Db::startTrans();
         try {
-            Db::name('sys_role_api')
+            Db::name('role_api')
                 ->where('role_id', $roleId)
                 ->delete();
 
@@ -222,7 +221,7 @@ class Role extends BaseModel
                     ];
                 }, $apiIds);
 
-                Db::name('sys_role_api')->insertAll($insertData);
+                Db::name('role_api')->insertAll($insertData);
             }
 
             Db::commit();

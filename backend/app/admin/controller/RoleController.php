@@ -1,6 +1,7 @@
 <?php
 namespace app\admin\controller;
 
+use app\common\BaseController;
 use app\model\Role as RoleModel;
 use app\common\AdminAuth;
 use app\admin\validate\RoleValidate;
@@ -36,7 +37,7 @@ class RoleController extends BaseController
             ->toArray();
 
         foreach ($list as &$item) {
-            $userCount = Db::name('sys_user_role')->where('role_id', $item['id'])->count();
+            $userCount = Db::name('user_role')->where('role_id', $item['id'])->count();
             $item['user_count'] = $userCount;
         }
 
@@ -62,7 +63,7 @@ class RoleController extends BaseController
         $roleData['menu_ids'] = (new RoleModel())->getRoleMenus($id);
         $roleData['button_ids'] = (new RoleModel())->getRoleButtons($id);
         $roleData['api_ids'] = (new RoleModel())->getRoleApis($id);
-        $roleData['user_count'] = Db::name('sys_user_role')->where('role_id', $id)->count();
+        $roleData['user_count'] = Db::name('user_role')->where('role_id', $id)->count();
 
         return $this->success($roleData, '获取成功');
     }
@@ -171,7 +172,7 @@ class RoleController extends BaseController
             return $this->error('角色不存在', 404);
         }
 
-        $userCount = Db::name('sys_user_role')->where('role_id', $id)->count();
+        $userCount = Db::name('user_role')->where('role_id', $id)->count();
         if ($userCount > 0) {
             return $this->error('该角色仍有 ' . $userCount . ' 个用户关联，无法删除，请先解除用户关联', 422);
         }
@@ -179,9 +180,9 @@ class RoleController extends BaseController
         Db::startTrans();
         try {
             RoleModel::destroy($id);
-            Db::name('sys_role_menu')->where('role_id', $id)->delete();
-            Db::name('sys_role_menu_button')->where('role_id', $id)->delete();
-            Db::name('sys_role_api')->where('role_id', $id)->delete();
+            Db::name('role_menu')->where('role_id', $id)->delete();
+            Db::name('role_menu_button')->where('role_id', $id)->delete();
+            Db::name('role_api')->where('role_id', $id)->delete();
 
             Db::commit();
             $this->clearRoleCache($id);
@@ -211,7 +212,7 @@ class RoleController extends BaseController
         $menuIds = $data['menu_ids'] ?? [];
 
         if (!empty($menuIds)) {
-            $existMenuIds = Db::name('sys_menu')
+            $existMenuIds = Db::name('menu')
                 ->whereIn('id', $menuIds)
                 ->where('status', 1)
                 ->whereNull('delete_time')
@@ -250,7 +251,7 @@ class RoleController extends BaseController
         $buttonIds = $data['button_ids'] ?? [];
 
         if (!empty($buttonIds)) {
-            $existButtonIds = Db::name('sys_menu_button')
+            $existButtonIds = Db::name('menu_button')
                 ->whereIn('id', $buttonIds)
                 ->where('status', 1)
                 ->whereNull('delete_time')
@@ -289,7 +290,7 @@ class RoleController extends BaseController
         $apiIds = $data['api_ids'] ?? [];
 
         if (!empty($apiIds)) {
-            $existApiIds = Db::name('sys_api')
+            $existApiIds = Db::name('api')
                 ->whereIn('id', $apiIds)
                 ->where('status', 1)
                 ->whereNull('delete_time')
@@ -371,7 +372,7 @@ class RoleController extends BaseController
 
     protected function clearRoleCache(int $roleId): void
     {
-        $userIds = Db::name('sys_user_role')->where('role_id', $roleId)->column('user_id');
+        $userIds = Db::name('user_role')->where('role_id', $roleId)->column('user_id');
 
         foreach ($userIds as $userId) {
             $auth = AdminAuth::instance();

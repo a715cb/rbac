@@ -5,8 +5,7 @@ use think\Model;
 
 class WxConfig extends Model
 {
-    protected $table = 'wx_config';
-
+    protected $name = 'wx_config';
     protected $pk = 'id';
 
     protected $autoWriteTimestamp = true;

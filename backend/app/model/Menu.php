@@ -6,8 +6,7 @@ use think\facade\Db;
 
 class Menu extends BaseModel
 {
-    protected $table = 'sys_menu';
-
+    protected $name = 'menu';
     protected $pk = 'id';
 
     protected $autoWriteTimestamp = true;
@@ -58,9 +57,9 @@ class Menu extends BaseModel
             return [];
         }
 
-        return Db::name('sys_api')
+        return Db::name('api')
             ->alias('api')
-            ->join('sys_role_api role_api', 'api.id = role_api.api_id', 'LEFT')
+            ->join('role_api role_api', 'api.id = role_api.api_id', 'LEFT')
             ->whereIn('role_api.role_id', $roleIds)
             ->where('api.status', 1)
             ->whereNull('api.delete_time')
@@ -123,7 +122,7 @@ class Menu extends BaseModel
             return [];
         }
 
-        return Db::name('sys_role_menu')
+        return Db::name('role_menu')
             ->whereIn('role_id', $roleIds)
             ->distinct(true)
             ->column('menu_id');
@@ -190,7 +189,7 @@ class Menu extends BaseModel
 
     public function getMenuButtons(int $menuId): array
     {
-        return Db::name('sys_menu_button')
+        return Db::name('menu_button')
             ->where('menu_id', $menuId)
             ->where('status', 1)
             ->order('sort', 'asc')

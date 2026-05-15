@@ -64,6 +64,7 @@ export interface ProfileResponse {
   roles: { id: number; name: string; code: string }[]
   menus: Record<string, unknown>[]
   permissions: string[]
+  button_codes: string[]
 }
 
 /**

@@ -1,6 +1,7 @@
 <?php
 namespace app\admin\controller;
 
+use app\common\BaseController;
 use app\model\Menu as MenuModel;
 use app\model\MenuButton;
 use app\admin\validate\MenuValidate;
@@ -13,14 +14,15 @@ class MenuController extends BaseController
 {
     private MenuButton $menuButton;
 
-    public function __construct()
+    public function __construct(\think\App $app)
     {
+        parent::__construct($app);
         $this->menuButton = new MenuButton();
     }
 
     private function clearAllMenuCache(): void
     {
-        $userIds = Db::name('sys_user')->where('status', 1)->column('id');
+        $userIds = Db::name('user')->where('status', 1)->column('id');
         foreach ($userIds as $userId) {
             SimpleCache::delete('user_menu_tree_' . $userId);
             SimpleCache::delete('user_menu_codes_' . $userId);
@@ -252,13 +254,13 @@ class MenuController extends BaseController
         Db::startTrans();
         try {
             MenuModel::destroy($id);
-            Db::name('sys_role_menu')->where('menu_id', $id)->delete();
-            Db::name('sys_role_menu_button')
+            Db::name('role_menu')->where('menu_id', $id)->delete();
+            Db::name('role_menu_button')
                 ->where('menu_button_id', 'in', function ($query) use ($id) {
                     $query->name('sys_menu_button')->where('menu_id', $id)->field('id');
                 })
                 ->delete();
-            Db::name('sys_menu_button')->where('menu_id', $id)->delete();
+            Db::name('menu_button')->where('menu_id', $id)->delete();
 
             $this->clearAllMenuCache();
             Db::commit();
@@ -374,7 +376,7 @@ class MenuController extends BaseController
         Db::startTrans();
         try {
             MenuButton::destroy($buttonId);
-            Db::name('sys_role_menu_button')->where('menu_button_id', $buttonId)->delete();
+            Db::name('role_menu_button')->where('menu_button_id', $buttonId)->delete();
 
             $this->clearAllMenuCache();
             Db::commit();

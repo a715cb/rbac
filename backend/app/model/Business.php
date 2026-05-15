@@ -5,8 +5,7 @@ use app\common\BaseModel;
 
 class Business extends BaseModel
 {
-    protected $table = 'business';
-
+    protected $name = 'business';
     protected $pk = 'id';
 
     protected $autoWriteTimestamp = true;

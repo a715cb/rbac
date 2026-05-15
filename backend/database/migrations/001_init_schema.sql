@@ -386,8 +386,8 @@ CREATE TABLE `sys_config` (
 --   - 从 004_wx_tables.sql 合并
 --   - 移除 delete_time 字段（实际数据库无此字段，WxUser模型未使用软删除）
 -- =============================================
-DROP TABLE IF EXISTS `wx_user`;
-CREATE TABLE `wx_user` (
+DROP TABLE IF EXISTS `sys_wx_user`;
+CREATE TABLE `sys_wx_user` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '主键ID',
   `openid` VARCHAR(64) NOT NULL COMMENT '微信openid',
   `unionid` VARCHAR(64) DEFAULT NULL COMMENT '微信unionid',
@@ -415,8 +415,8 @@ CREATE TABLE `wx_user` (
 --   - 从 004_wx_tables.sql 合并
 --   - WxConfig 模型不使用软删除，无 delete_time 字段
 -- =============================================
-DROP TABLE IF EXISTS `wx_config`;
-CREATE TABLE `wx_config` (
+DROP TABLE IF EXISTS `sys_wx_config`;
+CREATE TABLE `sys_wx_config` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '主键ID',
   `app_id` VARCHAR(50) NOT NULL COMMENT '小程序AppID',
   `app_secret` VARCHAR(100) DEFAULT NULL COMMENT '小程序AppSecret',
@@ -438,8 +438,8 @@ CREATE TABLE `wx_config` (
 --   - 原迁移文件中缺失，但代码中已有完整模型/控制器/服务/路由
 --   - 字段基于 Business 模型推断
 -- =============================================
-DROP TABLE IF EXISTS `business`;
-CREATE TABLE `business` (
+DROP TABLE IF EXISTS `sys_business`;
+CREATE TABLE `sys_business` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '主键ID',
   `title` VARCHAR(200) NOT NULL COMMENT '标题',
   `category` VARCHAR(50) DEFAULT NULL COMMENT '分类',
@@ -467,8 +467,8 @@ CREATE TABLE `business` (
 --   - 字段基于 BusinessInteraction 模型推断
 --   - 无 update_time/delete_time（模型中设置 updateTime=false, deleteTime=false）
 -- =============================================
-DROP TABLE IF EXISTS `business_interaction`;
-CREATE TABLE `business_interaction` (
+DROP TABLE IF EXISTS `sys_business_interaction`;
+CREATE TABLE `sys_business_interaction` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '主键ID',
   `wx_user_id` BIGINT UNSIGNED NOT NULL COMMENT '微信用户ID',
   `business_id` BIGINT UNSIGNED NOT NULL COMMENT '商务内容ID',

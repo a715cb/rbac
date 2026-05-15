@@ -8,8 +8,7 @@ use app\common\BaseModel;
 
 class MenuButton extends BaseModel
 {
-    protected $table = 'sys_menu_button';
-
+    protected $name = 'menu_button';
     protected $pk = 'id';
 
     protected $autoWriteTimestamp = true;

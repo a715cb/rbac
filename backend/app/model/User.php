@@ -5,8 +5,7 @@ use app\common\BaseModel;
 
 class User extends BaseModel
 {
-    protected $table = 'sys_user';
-
+    protected $name = 'user';
     protected $pk = 'id';
 
     protected $autoWriteTimestamp = true;

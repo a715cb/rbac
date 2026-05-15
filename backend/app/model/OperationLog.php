@@ -8,8 +8,7 @@ use app\common\BaseModel;
 
 class OperationLog extends BaseModel
 {
-    protected $table = 'sys_operation_log';
-
+    protected $name = 'operation_log';
     protected $pk = 'id';
 
     protected $autoWriteTimestamp = false;

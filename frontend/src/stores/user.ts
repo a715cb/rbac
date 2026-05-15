@@ -25,6 +25,8 @@ export const useUserStore = defineStore('user', () => {
   const permissions = ref<string[]>([])
   const roleList = ref<RoleInfo[]>([])
   const dynamicRoutesAdded = ref(false)
+  /** 当前用户是否无菜单权限（已认证、有角色但菜单为空） */
+  const noMenuPermission = ref(false)
 
   const isLoggedIn = computed(() => !!token.value)
   const username = computed(() => userInfo.value?.username || '')
@@ -103,9 +105,11 @@ export const useUserStore = defineStore('user', () => {
       setMenus((data.menus || []) as unknown as MenuRoute[])
       setPermissions([...(data.permissions || []), ...(data.button_codes || [])])
       setRoles((data.roles || []).map((r: RoleInfo) => ({ ...r, id: Number(r.id) })))
+
+      noMenuPermission.value = !data.menus || data.menus.length === 0
     } catch (error) {
       if (import.meta.env.DEV) console.error('[UserStore] Fetch user info failed:', error)
-      // error handled by request interceptor
+      throw error
     }
   }
 
@@ -146,6 +150,7 @@ export const useUserStore = defineStore('user', () => {
     permissions.value = []
     roleList.value = []
     dynamicRoutesAdded.value = false
+    noMenuPermission.value = false
 
     TokenManager.clearToken()
     StorageManager.removeItem('session', AppConfig.userInfoKey)
@@ -162,6 +167,7 @@ export const useUserStore = defineStore('user', () => {
     permissions,
     roleList,
     dynamicRoutesAdded,
+    noMenuPermission,
     isLoggedIn,
     username,
     avatar,

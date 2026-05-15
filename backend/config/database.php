@@ -26,7 +26,7 @@ return [
             // 数据库编码默认 UTF8
             'charset' => env('DB_CHARSET', 'utf8mb4'),
             // 数据库表前缀
-            'prefix' => env('DB_PREFIX', ''),
+            'prefix' => env('DB_PREFIX', 'sys_'),
             // 数据库部署方式：1 集中式 2 分布式
             'deploy' => 0,
             // 数据库读写是否分离 主从式有效

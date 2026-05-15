@@ -3,13 +3,27 @@
   @用途: 系统仪表盘首页
   @描述: 系统登录后的默认着陆页，展示系统核心统计数据（用户总数、角色总数、菜单总数、部门总数）
          和系统简介信息。统计数据通过后端 API 实时获取，支持暗色主题适配。
+         当用户已认证但无菜单权限时，显示权限提示横幅。
   @核心逻辑:
     - 页面挂载时调用 getDashboardStats API 获取统计数据
     - 使用 a-statistic 组件展示带图标的统计卡片
     - 响应式布局：xs 单列、sm 双列、lg 四列
+    - 无菜单权限时显示 Alert 提示，引导用户联系管理员
 -->
 <template>
   <div class="page-container dashboard">
+    <!-- 无菜单权限提示：已登录但角色未分配菜单权限时显示 -->
+    <a-alert v-if="userStore.noMenuPermission" type="warning" show-icon class="no-permission-alert">
+      <template #message>
+        <span>当前账户暂无可用菜单权限</span>
+      </template>
+      <template #description>
+        <span>
+          您的账户已成功登录，但所分配的角色尚未配置菜单访问权限。请联系系统管理员为您分配相应的菜单权限。
+        </span>
+      </template>
+    </a-alert>
+
     <!-- 统计卡片区域：响应式栅格布局 -->
     <a-row :gutter="[16, 16]">
       <!-- 用户总数卡片 -->
@@ -107,6 +121,10 @@ import { ref, reactive, onMounted } from 'vue'
 import { UserOutlined, TeamOutlined, MenuOutlined, WifiOutlined } from '@ant-design/icons-vue'
 import { getDashboardStats } from '@/api/dashboard'
 import { message } from 'ant-design-vue'
+import { useUserStore } from '@/stores/user'
+
+/** 用户状态 store，用于检测无菜单权限状态 */
+const userStore = useUserStore()
 
 /** 统计数据：存储仪表盘四项核心指标 */
 const stats = reactive({
@@ -154,6 +172,11 @@ onMounted(() => {
  * - 不设置背景色（由 DefaultLayout 统一控制）
  */
 .dashboard {
+  /* 无菜单权限提示横幅 */
+  .no-permission-alert {
+    margin-bottom: 16px;
+  }
+
   /* 统计卡片样式 */
   .stat-card {
     margin-bottom: 0;

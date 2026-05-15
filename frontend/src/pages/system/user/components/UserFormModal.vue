@@ -432,10 +432,7 @@ const handleSetPrimary = (index: number) => {
 }
 
 /** 递归在部门树中查找节点名称，用于添加部门时显示名称 */
-const findDeptName = (
-  tree: TreeNode[],
-  id: number
-): string => {
+const findDeptName = (tree: TreeNode[], id: number): string => {
   for (const node of tree) {
     if (node.id === id) return node.name
     if (node.children) {

@@ -8,8 +8,7 @@ use app\common\BaseModel;
 
 class LoginLog extends BaseModel
 {
-    protected $table = 'sys_login_log';
-
+    protected $name = 'login_log';
     protected $pk = 'id';
 
     protected $autoWriteTimestamp = false;

@@ -9,8 +9,7 @@ use think\facade\Db;
 
 class Api extends BaseModel
 {
-    protected $table = 'sys_api';
-
+    protected $name = 'api';
     protected $pk = 'id';
 
     protected $autoWriteTimestamp = true;
@@ -101,9 +100,9 @@ class Api extends BaseModel
 
     public function getRoleApis(int $roleId): array
     {
-        return Db::name('sys_role_api')
+        return Db::name('role_api')
             ->alias('role_api')
-            ->join('sys_api api', 'api.id = role_api.api_id', 'INNER')
+            ->join('api api', 'api.id = role_api.api_id', 'INNER')
             ->where('role_api.role_id', $roleId)
             ->where('api.status', 1)
             ->whereNull('api.delete_time')

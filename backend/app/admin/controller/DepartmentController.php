@@ -1,66 +1,97 @@
 <?php
 namespace app\admin\controller;
 
-use app\model\Department as DepartmentModel;
-use app\common\AdminAuth;
+use app\common\BaseController;
+use app\admin\service\DepartmentService;
 use app\admin\validate\DepartmentValidate;
 use think\Request;
-use think\facade\Db;
 
+/**
+ * 部门管理控制器
+ *
+ * 负责部门（组织架构）管理的请求接收与响应格式化。
+ * 所有业务逻辑委托给 DepartmentService 处理，控制器仅负责：
+ *   - 请求参数提取与预处理
+ *   - 数据验证（通过 DepartmentValidate）
+ *   - 调用 DepartmentService 方法
+ *   - 格式化统一响应
+ *
+ * @see \app\common\BaseController 继承的基类，提供 success()/error() 统一响应方法
+ * @see \app\admin\service\DepartmentService 部门管理服务层，处理全部业务逻辑
+ * @see \app\admin\validate\DepartmentValidate 部门数据验证器
+ */
 class DepartmentController extends BaseController
 {
+    private DepartmentService $departmentService;
+
+    public function __construct(\think\App $app)
+    {
+        parent::__construct($app);
+        $this->departmentService = DepartmentService::getInstance();
+    }
+
+    /**
+     * 获取部门列表（树形结构，支持搜索和状态筛选）
+     *
+     * @param Request $request HTTP 请求对象
+     * @return \think\response\Json
+     */
     public function index(Request $request)
     {
         $keyword = $request->get('keyword', '');
-        if (mb_strlen($keyword) > 200) {
-            return $this->error('搜索关键词长度不能超过200个字符', 422);
-        }
-        $keyword = trim($keyword);
-        if (mb_strlen($keyword) > 50) {
-            return $this->error('搜索关键词长度不能超过50个字符', 422);
-        }
         $status = $request->get('status');
 
-        $tree = (new DepartmentModel())->getDepartmentTree(
-            $status !== null && $status !== '' ? (int) $status : null,
-            $keyword
-        );
+        $result = $this->departmentService->getDepartmentList($keyword, $status);
 
-        return $this->success([
-            'list' => $tree,
-        ], '获取成功');
+        if (!$result['success']) {
+            return $this->error($result['error'], $result['code']);
+        }
+
+        return $this->success($result['data'], '获取成功');
     }
 
+    /**
+     * 获取部门树形数据（轻量接口，仅支持状态筛选）
+     *
+     * @param Request $request HTTP 请求对象
+     * @return \think\response\Json
+     */
     public function tree(Request $request)
     {
         $status = $request->get('status');
 
-        $tree = (new DepartmentModel())->getDepartmentTree($status !== null && $status !== '' ? (int) $status : null);
+        $result = $this->departmentService->getDepartmentTree($status);
 
-        return $this->success([
-            'tree' => $tree,
-        ], '获取成功');
+        if (!$result['success']) {
+            return $this->error($result['error'], $result['code']);
+        }
+
+        return $this->success($result['data'], '获取成功');
     }
 
+    /**
+     * 获取单个部门详情
+     *
+     * @param int $id 部门ID
+     * @return \think\response\Json
+     */
     public function show(int $id)
     {
-        $department = DepartmentModel::find($id);
-        if (!$department) {
-            return $this->error('部门不存在', 404);
+        $result = $this->departmentService->getDepartmentDetail($id);
+
+        if (!$result['success']) {
+            return $this->error($result['error'], $result['code']);
         }
 
-        $deptData = $department->toArray();
-
-        if ($deptData['parent_id'] > 0) {
-            $parentDept = DepartmentModel::find($deptData['parent_id']);
-            $deptData['parent_name'] = $parentDept ? $parentDept->name : '';
-        } else {
-            $deptData['parent_name'] = '';
-        }
-
-        return $this->success($deptData, '获取成功');
+        return $this->success($result['data'], '获取成功');
     }
 
+    /**
+     * 创建部门
+     *
+     * @param Request $request HTTP 请求对象
+     * @return \think\response\Json
+     */
     public function store(Request $request)
     {
         $data = $request->post();
@@ -72,43 +103,24 @@ class DepartmentController extends BaseController
             return $this->error($e->getMessage(), 422);
         }
 
-        if (DepartmentModel::where('code', $data['code'])->find()) {
-            return $this->error('部门编码已存在', 422);
+        $result = $this->departmentService->createDepartment($data, $request->userInfo['id'] ?? null);
+
+        if (!$result['success']) {
+            return $this->error($result['error'], $result['code']);
         }
 
-        if ($data['parent_id'] > 0) {
-            $parentDept = DepartmentModel::find($data['parent_id']);
-            if (!$parentDept) {
-                return $this->error('父部门不存在', 422);
-            }
-        }
-
-        try {
-            $department = new DepartmentModel();
-            $department->parent_id = $data['parent_id'] ?? 0;
-            $department->name = $data['name'];
-            $department->code = $data['code'];
-            $department->leader = $data['leader'] ?? '';
-            $department->phone = $data['phone'] ?? '';
-            $department->email = $data['email'] ?? '';
-            $department->sort = $data['sort'] ?? 0;
-            $department->status = $data['status'] ?? 1;
-            $department->created_by = $request->userInfo['id'] ?? null;
-            $department->save();
-
-            return $this->success(['id' => $department->id], '创建成功');
-        } catch (\Exception $e) {
-            return $this->error('创建部门失败：' . $e->getMessage());
-        }
+        return $this->success($result['data'], '创建成功');
     }
 
+    /**
+     * 更新部门信息
+     *
+     * @param Request $request HTTP 请求对象
+     * @param int $id 部门ID
+     * @return \think\response\Json
+     */
     public function update(Request $request, int $id)
     {
-        $department = DepartmentModel::find($id);
-        if (!$department) {
-            return $this->error('部门不存在', 404);
-        }
-
         $data = $request->put();
 
         try {
@@ -118,96 +130,42 @@ class DepartmentController extends BaseController
             return $this->error($e->getMessage(), 422);
         }
 
-        if (DepartmentModel::where('code', $data['code'])->where('id', '<>', $id)->find()) {
-            return $this->error('部门编码已存在', 422);
+        $result = $this->departmentService->updateDepartment($id, $data, $request->userInfo['id'] ?? null);
+
+        if (!$result['success']) {
+            return $this->error($result['error'], $result['code']);
         }
 
-        if ($data['parent_id'] > 0) {
-            if ($data['parent_id'] == $id) {
-                return $this->error('不能将自己设置为父部门', 422);
-            }
-
-            $descendantIds = (new DepartmentModel())->getDescendantDeptIds($id);
-            if (in_array($data['parent_id'], $descendantIds)) {
-                return $this->error('不能将父部门设置为自己的子部门', 422);
-            }
-
-            $parentDept = DepartmentModel::find($data['parent_id']);
-            if (!$parentDept) {
-                return $this->error('父部门不存在', 422);
-            }
-        }
-
-        try {
-            if (isset($data['parent_id'])) $department->parent_id = $data['parent_id'];
-            if (isset($data['name'])) $department->name = $data['name'];
-            if (isset($data['code'])) $department->code = $data['code'];
-            if (isset($data['leader'])) $department->leader = $data['leader'];
-            if (isset($data['phone'])) $department->phone = $data['phone'];
-            if (isset($data['email'])) $department->email = $data['email'];
-            if (isset($data['sort'])) $department->sort = (int) $data['sort'];
-            if (isset($data['status'])) $department->status = (int) $data['status'];
-
-            $department->updated_by = $request->userInfo['id'] ?? null;
-            $department->save();
-
-            AdminAuth::instance()->clearCache();
-            return $this->success([], '更新成功');
-        } catch (\Exception $e) {
-            return $this->error('更新部门失败：' . $e->getMessage());
-        }
+        return $this->success($result['data'], '更新成功');
     }
 
+    /**
+     * 删除部门
+     *
+     * @param Request $request HTTP 请求对象
+     * @param int $id 部门ID
+     * @return \think\response\Json
+     */
     public function destroy(Request $request, int $id)
     {
-        if ($id <= 0) {
-            return $this->error('参数错误', 422);
+        $result = $this->departmentService->deleteDepartment($id);
+
+        if (!$result['success']) {
+            return $this->error($result['error'], $result['code']);
         }
 
-        $department = DepartmentModel::find($id);
-        if (!$department) {
-            return $this->error('部门不存在', 404);
-        }
-
-        $children = DepartmentModel::where('parent_id', $id)->count();
-        if ($children > 0) {
-            return $this->error('该部门存在子部门，无法删除', 422);
-        }
-
-        // 检查是否存在主部门用户
-        $primaryUserCount = Db::name('sys_user_dept')
-            ->where('dept_id', $id)
-            ->where('is_primary', 1)
-            ->count();
-        if ($primaryUserCount > 0) {
-            return $this->error('该部门下存在主部门用户，请先转移', 422);
-        }
-
-        Db::startTrans();
-        try {
-            // 移除兼职用户的关联关系
-            Db::name('sys_user_dept')
-                ->where('dept_id', $id)
-                ->where('is_primary', 0)
-                ->delete();
-
-            DepartmentModel::destroy($id);
-            Db::commit();
-            AdminAuth::instance()->clearCache();
-            return $this->success([], '删除成功');
-        } catch (\Exception $e) {
-            Db::rollback();
-            return $this->error('删除部门失败：' . $e->getMessage());
-        }
+        return $this->success($result['data'], '删除成功');
     }
 
+    /**
+     * 切换部门状态（启用/禁用）
+     *
+     * @param Request $request HTTP 请求对象
+     * @param int $id 部门ID
+     * @return \think\response\Json
+     */
     public function setStatus(Request $request, int $id)
     {
-        $department = DepartmentModel::find($id);
-        if (!$department) {
-            return $this->error('部门不存在', 404);
-        }
-
         $data = $request->put();
 
         try {
@@ -217,20 +175,25 @@ class DepartmentController extends BaseController
             return $this->error($e->getMessage(), 422);
         }
 
-        $department->status = (int) $data['status'];
-        $department->save();
+        $result = $this->departmentService->changeStatus($id, (int) $data['status']);
 
-        AdminAuth::instance()->clearCache();
-        return $this->success([], $data['status'] == 1 ? '部门已启用' : '部门已禁用');
-    }
-
-    public function setSort(Request $request, int $id)
-    {
-        $department = DepartmentModel::find($id);
-        if (!$department) {
-            return $this->error('部门不存在', 404);
+        if (!$result['success']) {
+            return $this->error($result['error'], $result['code']);
         }
 
+        $message = $result['message'] ?? '操作成功';
+        return $this->success($result['data'], $message);
+    }
+
+    /**
+     * 设置部门排序值
+     *
+     * @param Request $request HTTP 请求对象
+     * @param int $id 部门ID
+     * @return \think\response\Json
+     */
+    public function setSort(Request $request, int $id)
+    {
         $data = $request->put();
 
         try {
@@ -240,48 +203,29 @@ class DepartmentController extends BaseController
             return $this->error($e->getMessage(), 422);
         }
 
-        $department->sort = (int) $data['sort'];
-        $department->save();
+        $result = $this->departmentService->changeSort($id, (int) $data['sort']);
 
-        return $this->success([], '排序更新成功');
+        if (!$result['success']) {
+            return $this->error($result['error'], $result['code']);
+        }
+
+        return $this->success($result['data'], '排序更新成功');
     }
 
+    /**
+     * 获取部门下的用户列表（含主部门与兼职用户）
+     *
+     * @param int $id 部门ID
+     * @return \think\response\Json
+     */
     public function getUsers(int $id)
     {
-        $department = DepartmentModel::find($id);
-        if (!$department) {
-            return $this->error('部门不存在', 404);
+        $result = $this->departmentService->getDepartmentUsers($id);
+
+        if (!$result['success']) {
+            return $this->error($result['error'], $result['code']);
         }
 
-        // 从 sys_user_dept 查询所有关联用户（含兼职）
-        $userDepts = Db::name('sys_user_dept')
-            ->where('dept_id', $id)
-            ->select()
-            ->toArray();
-
-        if (empty($userDepts)) {
-            return $this->success(['list' => []], '获取成功');
-        }
-
-        $userIds = array_column($userDepts, 'user_id');
-        $isPrimaryMap = [];
-        foreach ($userDepts as $ud) {
-            $isPrimaryMap[$ud['user_id']] = $ud['is_primary'];
-        }
-
-        $users = (new \app\model\User())
-            ->whereIn('id', $userIds)
-            ->where('status', 1)
-            ->whereNull('delete_time')
-            ->select()
-            ->toArray();
-
-        foreach ($users as &$user) {
-            $user['is_primary'] = $isPrimaryMap[$user['id']] ?? 0;
-        }
-
-        return $this->success([
-            'list' => $users,
-        ], '获取成功');
+        return $this->success($result['data'], '获取成功');
     }
 }

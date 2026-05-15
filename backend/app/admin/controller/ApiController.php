@@ -1,96 +1,85 @@
 <?php
 namespace app\admin\controller;
 
-use app\model\Api as ApiModel;
-use app\model\Menu;
+use app\common\BaseController;
+use app\admin\service\ApiService;
 use app\admin\validate\ApiValidate;
 use think\Request;
 
+/**
+ * 接口管理控制器
+ *
+ * 负责 API 接口管理的请求接收与响应格式化。
+ * 所有业务逻辑委托给 ApiService 处理，控制器仅负责：
+ *   - 请求参数提取与预处理
+ *   - 数据验证（通过 ApiValidate）
+ *   - 调用 ApiService 方法
+ *   - 格式化统一响应
+ *
+ * @see \app\common\BaseController 继承的基类，提供 success()/error() 统一响应方法
+ * @see \app\admin\service\ApiService 接口管理服务层，处理全部业务逻辑
+ * @see \app\admin\validate\ApiValidate 接口数据验证器
+ */
 class ApiController extends BaseController
 {
+    private ApiService $apiService;
+
+    public function __construct(\think\App $app)
+    {
+        parent::__construct($app);
+        $this->apiService = ApiService::getInstance();
+    }
+
+    /**
+     * 获取接口列表（分页）
+     *
+     * @param Request $request HTTP 请求对象
+     * @return \think\response\Json
+     */
     public function index(Request $request)
     {
-        $page = (int) $request->get('page', 1);
-        $limit = (int) $request->get('limit', 15);
-        $keyword = $request->get('keyword', '');
-        $status = $request->get('status');
-        $menuId = $request->get('menu_id');
-        $method = $request->get('method', '');
-        $group = $request->get('group', '');
+        $params = [
+            'page'    => $request->get('page', 1),
+            'limit'   => $request->get('limit', 15),
+            'keyword' => $request->get('keyword', ''),
+            'status'  => $request->get('status'),
+            'menu_id' => $request->get('menu_id'),
+            'method'  => $request->get('method', ''),
+            'group'   => $request->get('group', ''),
+        ];
 
-        $where = [];
+        $result = $this->apiService->getApiList($params);
 
-        if (!empty($keyword)) {
-            $where[] = ['name|code|path', 'like', "%{$keyword}%"];
+        if (!$result['success']) {
+            return $this->error($result['error'], $result['code']);
         }
 
-        if ($status !== null && $status !== '') {
-            $where[] = ['status', '=', (int) $status];
-        }
-
-        if ($menuId !== null && $menuId !== '') {
-            $where[] = ['menu_id', '=', (int) $menuId];
-        }
-
-        if (!empty($method)) {
-            $where[] = ['method', '=', strtoupper($method)];
-        }
-
-        if (!empty($group)) {
-            $where[] = ['group', '=', $group];
-        }
-
-        $total = ApiModel::where($where)->count();
-        $totalPages = $limit > 0 ? (int) ceil($total / $limit) : 1;
-
-        $list = ApiModel::where($where)
-            ->order('id', 'desc')
-            ->page($page, $limit)
-            ->select()
-            ->toArray();
-
-        foreach ($list as &$item) {
-            if (!empty($item['menu_id'])) {
-                $menu = Menu::find($item['menu_id']);
-                $item['menu_name'] = $menu ? $menu->name : '';
-            } else {
-                $item['menu_name'] = '';
-            }
-        }
-
-        $groups = (new ApiModel())->getAllGroups();
-
-        return $this->success([
-            'list' => $list,
-            'groups' => $groups,
-            'pagination' => [
-                'page' => $page,
-                'page_size' => $limit,
-                'total' => $total,
-                'total_pages' => $totalPages,
-            ],
-        ], '获取成功');
+        return $this->success($result['data'], '获取成功');
     }
 
+    /**
+     * 获取单个接口详情
+     *
+     * @param int $id 接口 ID
+     * @return \think\response\Json
+     */
     public function show(int $id)
     {
-        $api = ApiModel::find($id);
-        if (!$api) {
-            return $this->error('接口不存在', 404);
+        $result = $this->apiService->getApiDetail($id);
+
+        if (!$result['success']) {
+            return $this->error($result['error'], $result['code']);
         }
 
-        $apiData = $api->toArray();
-
-        if (!empty($apiData['menu_id'])) {
-            $menu = Menu::find($apiData['menu_id']);
-            $apiData['menu_name'] = $menu ? $menu->name : '';
-        } else {
-            $apiData['menu_name'] = '';
-        }
-
-        return $this->success($apiData, '获取成功');
+        return $this->success($result['data'], '获取成功');
     }
 
+    /**
+     * 创建接口
+     *
+     * @param Request $request HTTP 请求对象
+     * @return \think\response\Json
+     */
     public function store(Request $request)
     {
         $data = $request->post();
@@ -102,48 +91,24 @@ class ApiController extends BaseController
             return $this->error($e->getMessage(), 422);
         }
 
-        if (ApiModel::where('code', $data['code'])->find()) {
-            return $this->error('接口标识已存在', 422);
+        $result = $this->apiService->createApi($data, $request->userInfo['id'] ?? null);
+
+        if (!$result['success']) {
+            return $this->error($result['error'], $result['code']);
         }
 
-        if (ApiModel::where('method', strtoupper($data['method']))
-            ->where('path', $data['path'])
-            ->find()) {
-            return $this->error('该接口路径已存在', 422);
-        }
-
-        if (!empty($data['menu_id'])) {
-            $menu = Menu::find($data['menu_id']);
-            if (!$menu) {
-                return $this->error('所属菜单不存在', 422);
-            }
-        }
-
-        try {
-            $api = new ApiModel();
-            $api->menu_id = $data['menu_id'] ?? null;
-            $api->name = $data['name'];
-            $api->code = $data['code'];
-            $api->method = strtoupper($data['method']);
-            $api->path = $data['path'];
-            $api->group = $data['group'] ?? '';
-            $api->status = $data['status'] ?? 1;
-            $api->created_by = $request->userInfo['id'] ?? null;
-            $api->save();
-
-            return $this->success(['id' => $api->id], '创建成功');
-        } catch (\Exception $e) {
-            return $this->error('创建接口失败：' . $e->getMessage());
-        }
+        return $this->success($result['data'], '创建成功');
     }
 
+    /**
+     * 更新接口
+     *
+     * @param Request $request HTTP 请求对象
+     * @param int     $id      接口 ID
+     * @return \think\response\Json
+     */
     public function update(Request $request, int $id)
     {
-        $api = ApiModel::find($id);
-        if (!$api) {
-            return $this->error('接口不存在', 404);
-        }
-
         $data = $request->put();
 
         try {
@@ -153,68 +118,42 @@ class ApiController extends BaseController
             return $this->error($e->getMessage(), 422);
         }
 
-        if (ApiModel::where('code', $data['code'])->where('id', '<>', $id)->find()) {
-            return $this->error('接口标识已存在', 422);
+        $result = $this->apiService->updateApi($id, $data, $request->userInfo['id'] ?? null);
+
+        if (!$result['success']) {
+            return $this->error($result['error'], $result['code']);
         }
 
-        if (ApiModel::where('method', strtoupper($data['method']))
-            ->where('path', $data['path'])
-            ->where('id', '<>', $id)
-            ->find()) {
-            return $this->error('该接口路径已存在', 422);
-        }
-
-        if (!empty($data['menu_id'])) {
-            $menu = Menu::find($data['menu_id']);
-            if (!$menu) {
-                return $this->error('所属菜单不存在', 422);
-            }
-        }
-
-        try {
-            if (isset($data['menu_id'])) $api->menu_id = $data['menu_id'];
-            if (isset($data['name'])) $api->name = $data['name'];
-            if (isset($data['code'])) $api->code = $data['code'];
-            if (isset($data['method'])) $api->method = strtoupper($data['method']);
-            if (isset($data['path'])) $api->path = $data['path'];
-            if (isset($data['group'])) $api->group = $data['group'];
-            if (isset($data['status'])) $api->status = (int) $data['status'];
-
-            $api->updated_by = $request->userInfo['id'] ?? null;
-            $api->save();
-
-            return $this->success([], '更新成功');
-        } catch (\Exception $e) {
-            return $this->error('更新接口失败：' . $e->getMessage());
-        }
+        return $this->success($result['data'], '更新成功');
     }
 
+    /**
+     * 删除接口
+     *
+     * @param Request $request HTTP 请求对象
+     * @param int     $id      接口 ID
+     * @return \think\response\Json
+     */
     public function destroy(Request $request, int $id)
     {
-        if ($id <= 0) {
-            return $this->error('参数错误', 422);
+        $result = $this->apiService->deleteApi($id);
+
+        if (!$result['success']) {
+            return $this->error($result['error'], $result['code']);
         }
 
-        $api = ApiModel::find($id);
-        if (!$api) {
-            return $this->error('接口不存在', 404);
-        }
-
-        try {
-            ApiModel::destroy($id);
-            return $this->success([], '删除成功');
-        } catch (\Exception $e) {
-            return $this->error('删除接口失败：' . $e->getMessage());
-        }
+        return $this->success($result['data'], '删除成功');
     }
 
+    /**
+     * 切换接口状态（启用/禁用）
+     *
+     * @param Request $request HTTP 请求对象
+     * @param int     $id      接口 ID
+     * @return \think\response\Json
+     */
     public function setStatus(Request $request, int $id)
     {
-        $api = ApiModel::find($id);
-        if (!$api) {
-            return $this->error('接口不存在', 404);
-        }
-
         $data = $request->put();
 
         try {
@@ -224,32 +163,46 @@ class ApiController extends BaseController
             return $this->error($e->getMessage(), 422);
         }
 
-        $api->status = (int) $data['status'];
-        $api->save();
+        $result = $this->apiService->changeStatus($id, (int) $data['status']);
 
-        return $this->success([], $data['status'] == 1 ? '接口已启用' : '接口已禁用');
-    }
-
-    public function getGroups()
-    {
-        $groups = (new ApiModel())->getAllGroups();
-
-        return $this->success([
-            'groups' => $groups,
-        ], '获取成功');
-    }
-
-    public function getByMenu(int $menuId)
-    {
-        $menu = Menu::find($menuId);
-        if (!$menu) {
-            return $this->error('菜单不存在', 404);
+        if (!$result['success']) {
+            return $this->error($result['error'], $result['code']);
         }
 
-        $apis = (new ApiModel())->getApiListByMenu($menuId);
+        $message = $result['message'] ?? '操作成功';
+        return $this->success($result['data'], $message);
+    }
 
-        return $this->success([
-            'list' => $apis,
-        ], '获取成功');
+    /**
+     * 获取所有接口分组列表
+     *
+     * @return \think\response\Json
+     */
+    public function getGroups()
+    {
+        $result = $this->apiService->getGroups();
+
+        if (!$result['success']) {
+            return $this->error($result['error'], $result['code']);
+        }
+
+        return $this->success($result['data'], '获取成功');
+    }
+
+    /**
+     * 根据菜单 ID 获取关联接口列表
+     *
+     * @param int $menuId 菜单 ID
+     * @return \think\response\Json
+     */
+    public function getByMenu(int $menuId)
+    {
+        $result = $this->apiService->getApisByMenu($menuId);
+
+        if (!$result['success']) {
+            return $this->error($result['error'], $result['code']);
+        }
+
+        return $this->success($result['data'], '获取成功');
     }
 }

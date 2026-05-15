@@ -25,8 +25,18 @@ return [
         'redis' => [
             // 驱动类型
             'type' => 'redis',
-            // 缓存连接
-            'select' => env('CACHE_REDIS_DATABASE', 0),
+            // Redis 服务器地址
+            'host' => env('REDIS_HOST', '127.0.0.1'),
+            // Redis 服务器端口
+            'port' => env('REDIS_PORT', 6379),
+            // Redis 连接密码
+            'password' => env('REDIS_PASSWORD', ''),
+            // 缓存连接数据库编号
+            'select' => env('REDIS_DB', 0),
+            // 连接超时时间（秒）
+            'timeout' => env('REDIS_TIMEOUT', 0),
+            // 是否持久化连接
+            'persistent' => false,
             // 缓存前缀
             'prefix' => env('CACHE_PREFIX', ''),
             // 缓存有效期 0 为永久

@@ -116,6 +116,14 @@ async function loadAndApplyDynamicRoutes(
   const storedMenus = StorageManager.getItem('session', AppConfig.menusKey)
   if (storedMenus) {
     const menuData = JSON.parse(storedMenus) as MenuRoute[]
+
+    if (menuData.length === 0) {
+      userStore.noMenuPermission = true
+      userStore.dynamicRoutesAdded = true
+      next({ path: '/dashboard', replace: true })
+      return
+    }
+
     const { addDynamicRoutes, transformMenusToRoutes } = await import('./dynamic')
     const routes = transformMenusToRoutes(menuData)
     userStore.setMenuRoutes(routes)
@@ -138,8 +146,8 @@ async function loadAndApplyDynamicRoutes(
   }
 
   if (!userStore.menus || userStore.menus.length === 0) {
-    userStore.logout()
-    next({ path: '/login', replace: true })
+    userStore.dynamicRoutesAdded = true
+    next({ path: '/dashboard', replace: true })
     return
   }
 

@@ -126,8 +126,13 @@ request.interceptors.request.use(
   }
 )
 
+interface BusinessError extends Error {
+  response: AxiosResponse<ApiResponse>
+  isBusinessError: boolean
+}
+
 request.interceptors.response.use(
-  (response: AxiosResponse<ApiResponse>): ApiResponse<unknown> => {
+  (response: AxiosResponse<ApiResponse>) => {
     const res = response.data
 
     if (res.code !== 200) {
@@ -144,16 +149,24 @@ request.interceptors.response.use(
         window.location.href = '/login'
       }
 
-      return Promise.reject(new Error(errorMsg))
+      const error = new Error(errorMsg) as BusinessError
+      error.response = response
+      error.isBusinessError = true
+      throw error
     }
 
     if (response.config.url) {
       pendingRequests.delete(response.config.url)
     }
 
-    return res
+    return res as unknown as AxiosResponse
   },
   async (error: AxiosError) => {
+    const businessError = error as unknown as BusinessError
+    if (businessError.isBusinessError) {
+      return Promise.reject(error)
+    }
+
     const originalRequest = error.config as AxiosRequestConfig & { _retry?: boolean }
 
     if (originalRequest?.url) {
@@ -241,7 +254,7 @@ export function get<T = unknown>(
   params?: Record<string, unknown>,
   config?: AxiosRequestConfig
 ): Promise<ApiResponse<T>> {
-  return request.get(url, { params, ...config })
+  return request.get(url, { params, ...config }) as Promise<ApiResponse<T>>
 }
 
 export function post<T = unknown>(
@@ -249,7 +262,7 @@ export function post<T = unknown>(
   data?: Record<string, unknown>,
   config?: AxiosRequestConfig
 ): Promise<ApiResponse<T>> {
-  return request.post(url, data, config)
+  return request.post(url, data, config) as Promise<ApiResponse<T>>
 }
 
 export function put<T = unknown>(
@@ -257,14 +270,14 @@ export function put<T = unknown>(
   data?: Record<string, unknown>,
   config?: AxiosRequestConfig
 ): Promise<ApiResponse<T>> {
-  return request.put(url, data, config)
+  return request.put(url, data, config) as Promise<ApiResponse<T>>
 }
 
 export function del<T = unknown>(
   url: string,
   config?: AxiosRequestConfig
 ): Promise<ApiResponse<T>> {
-  return request.delete(url, config)
+  return request.delete(url, config) as Promise<ApiResponse<T>>
 }
 
 export default request

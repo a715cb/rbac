@@ -160,7 +160,8 @@ class MiniappAuthService
         $accessToken = JwtToken::generate($payload);
 
         $refreshPayload = array_merge($payload, ['type' => 'refresh_miniapp']);
-        $refreshToken = JwtToken::generate($refreshPayload);
+        $refreshTtl = (int) (Config::get('jwt.refresh_ttl') ?: env('JWT_REFRESH_TTL', 10080));
+        $refreshToken = JwtToken::generate($refreshPayload, $refreshTtl);
 
         return [
             'access_token' => $accessToken,

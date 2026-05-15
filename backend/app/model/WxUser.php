@@ -5,8 +5,7 @@ use app\common\BaseModel;
 
 class WxUser extends BaseModel
 {
-    protected $table = 'wx_user';
-
+    protected $name = 'wx_user';
     protected $pk = 'id';
 
     protected $autoWriteTimestamp = true;

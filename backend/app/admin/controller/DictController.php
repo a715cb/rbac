@@ -1,6 +1,7 @@
 <?php
 namespace app\admin\controller;
 
+use app\common\BaseController;
 use app\model\DictType as DictTypeModel;
 use app\model\DictData as DictDataModel;
 use app\admin\validate\DictTypeValidate;

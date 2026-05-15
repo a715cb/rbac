@@ -1,6 +1,7 @@
 <?php
 namespace app\admin\controller;
 
+use app\common\BaseController;
 use app\model\OperationLog as OperationLogModel;
 use app\admin\validate\LogValidate;
 use app\common\AdminAuth;
@@ -173,7 +174,7 @@ class OperationLogController extends BaseController
 
         try {
             Db::startTrans();
-            $count = Db::name('sys_operation_log')->delete(true);
+            $count = Db::name('operation_log')->delete(true);
             Db::commit();
         } catch (\Exception $e) {
             Db::rollback();

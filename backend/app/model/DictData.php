@@ -6,8 +6,7 @@ use think\facade\Db;
 
 class DictData extends BaseModel
 {
-    protected $table = 'sys_dict_data';
-
+    protected $name = 'dict_data';
     protected $pk = 'id';
 
     protected $autoWriteTimestamp = true;

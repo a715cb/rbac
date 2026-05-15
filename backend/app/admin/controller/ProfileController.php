@@ -1,6 +1,7 @@
 <?php
 namespace app\admin\controller;
 
+use app\common\BaseController;
 use app\model\User as UserModel;
 use app\model\Role;
 use app\model\Department;

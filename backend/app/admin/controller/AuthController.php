@@ -1,19 +1,81 @@
 <?php
+/**
+ * 认证控制器
+ *
+ * @类名: AuthController
+ * @功能: 后台用户认证与授权管理（请求入口层）
+ * @描述: 负责处理后台管理系统的HTTP请求和响应，业务逻辑委托给AdminAuthService处理
+ *
+ * @职责:
+ *   1. HTTP请求参数接收与验证
+ *   2. 调用服务层处理业务逻辑
+ *   3. 格式化HTTP响应
+ *   4. 异常处理与错误返回
+ *
+ * @设计思路:
+ *   - 控制器仅负责请求/响应处理，不包含业务逻辑
+ *   - 所有业务逻辑委托给AdminAuthService
+ *   - 遵循单一职责原则，保持代码清晰
+ *
+ * @依赖服务:
+ *   - AdminAuthService: 认证核心服务
+ *
+ * @使用示例:
+ *   POST /admin/auth/login
+ *   { "username": "admin", "password": "xxx" }
+ *
+ *   GET /admin/auth/profile
+ *   Header: Authorization: Bearer {access_token}
+ */
+
 namespace app\admin\controller;
 
-use app\common\JwtToken;
-use app\common\AdminAuth;
-use app\common\SimpleCache;
-use app\model\User;
-use app\model\Role;
-use app\model\LoginLog;
+use app\admin\service\AdminAuthService;
 use app\admin\validate\LoginValidate;
 use app\admin\validate\ChangePasswordValidate;
-use think\facade\Config;
+use app\common\BaseController;
 use think\Request;
 
 class AuthController extends BaseController
 {
+    private AdminAuthService $authService;
+
+    public function __construct(\think\App $app)
+    {
+        parent::__construct($app);
+        $this->authService = AdminAuthService::getInstance();
+    }
+
+    /**
+     * 用户登录
+     *
+     * @请求方式: POST
+     * @请求路径: /admin/auth/login
+     * @功能描述: 接收用户名和密码，调用服务层验证并返回Token
+     *
+     * @请求参数:
+     *   - username (string, required): 用户名，长度3-20字符
+     *   - password (string, required): 密码，长度6-20字符
+     *
+     * @返回数据:
+     *   {
+     *     "code": 200,
+     *     "msg": "登录成功",
+     *     "data": {
+     *       "access_token": "string",
+     *       "refresh_token": "string",
+     *       "token_type": "Bearer",
+     *       "expires_in": 86400,
+     *       "user_info": {...}
+     *     }
+     *   }
+     *
+     * @异常处理:
+     *   - 422: 参数校验失败
+     *   - 403: 账户已锁定
+     *   - 401: 用户名或密码错误
+     *   - 403: 账户已被禁用
+     */
     public function login(Request $request)
     {
         $data = $request->post();
@@ -27,87 +89,66 @@ class AuthController extends BaseController
 
         $username = $data['username'] ?? '';
         $password = $data['password'] ?? '';
+        $ip = $request->ip();
+        $userAgent = $request->header('user-agent', '');
 
-        $lockDuration = Config::get('auth.login_lock_duration', 900);
-        if ($lockDuration > 0 && SimpleCache::get('login_lock_' . $username)) {
-            $this->recordLoginLog($username, 0, '账户已锁定', $request);
-            $lockMinutes = ceil($lockDuration / 60);
-            return $this->error("账户已锁定，请{$lockMinutes}分钟后重试", 403);
+        $result = $this->authService->login($username, $password, $ip, $userAgent);
+
+        if (!$result['success']) {
+            return $this->error($result['error'], $result['code']);
         }
 
-        $user = User::where('username', $username)->find();
-        if (!$user) {
-            $this->recordLoginLog($username, 0, '用户不存在', $request);
-            return $this->error('用户名或密码错误', 401);
-        }
-
-        if ($user->status !== 1) {
-            $this->recordLoginLog($username, 0, '用户已被禁用', $request);
-            return $this->error('账户已被禁用，请联系管理员', 403);
-        }
-
-        if (!password_verify($password, $user->password)) {
-            $this->recordLoginLog($username, 0, '密码错误', $request);
-            $this->checkLoginFailTimes($username, $request);
-            return $this->error('用户名或密码错误', 401);
-        }
-
-        if (password_needs_rehash($user->password, PASSWORD_DEFAULT)) {
-            $user->password = password_hash($password, PASSWORD_DEFAULT);
-            $user->save();
-        }
-
-        $roles = (new Role())->getUserRoles($user->id);
-        $roleCodes = array_column($roles, 'code');
-
-        $payload = [
-            'user_id' => $user->id,
-            'username' => $user->username,
-            'realname' => $user->nickname ?? '',
-            'roles' => $roleCodes,
-        ];
-
-        $accessToken = JwtToken::generate($payload);
-
-        $refreshPayload = array_merge($payload, ['type' => 'refresh']);
-        $refreshToken = JwtToken::generate($refreshPayload);
-
-        $user->last_login_ip = $request->ip();
-        $user->last_login_time = date('Y-m-d H:i:s');
-        $user->save();
-
-        $this->clearLoginFailTimes($username);
-        $this->recordLoginLog($username, 1, '登录成功', $request);
-
-        return $this->success([
-            'access_token' => $accessToken,
-            'refresh_token' => $refreshToken,
-            'token_type' => 'Bearer',
-            'expires_in' => (int) Config::get('jwt.ttl', 1440) * 60,
-            'user_info' => [
-                'id' => $user->id,
-                'username' => $user->username,
-                'nickname' => $user->nickname,
-                'email' => $user->email,
-                'mobile' => $user->mobile,
-                'avatar' => $user->avatar,
-            ],
-        ], '登录成功');
+        return $this->success($result['data'], '登录成功');
     }
 
+    /**
+     * 用户登出
+     *
+     * @请求方式: POST
+     * @请求路径: /admin/auth/logout
+     * @认证要求: 需要有效的Access Token
+     * @功能描述: 调用服务层清除用户权限缓存
+     *
+     * @返回数据:
+     *   {
+     *     "code": 200,
+     *     "msg": "登出成功",
+     *     "data": {}
+     *   }
+     */
     public function logout(Request $request)
     {
         $userId = $request->userInfo['id'] ?? 0;
-
-        if ($userId > 0) {
-            $auth = AdminAuth::instance();
-            $auth->setUser($userId);
-            $auth->clearCache();
-        }
-
+        $this->authService->logout($userId);
         return $this->success([], '登出成功');
     }
 
+    /**
+     * 刷新访问令牌
+     *
+     * @请求方式: POST
+     * @请求路径: /admin/auth/refreshToken
+     * @功能描述: 使用刷新令牌获取新的访问令牌
+     *
+     * @请求参数:
+     *   - refresh_token (string, required): 刷新令牌
+     *
+     * @返回数据:
+     *   {
+     *     "code": 200,
+     *     "msg": "Token 刷新成功",
+     *     "data": {
+     *       "access_token": "string",
+     *       "refresh_token": "string",
+     *       "token_type": "Bearer",
+     *       "expires_in": 86400
+     *     }
+     *   }
+     *
+     * @异常处理:
+     *   - 400: refresh_token为空
+     *   - 401: Token无效或已过期
+     */
     public function refreshToken(Request $request)
     {
         $data = $request->post();
@@ -117,36 +158,49 @@ class AuthController extends BaseController
             return $this->error('Refresh Token 不能为空', 400);
         }
 
-        try {
-            $payload = JwtToken::parse($refreshToken);
+        $result = $this->authService->refreshToken($refreshToken);
 
-            if (!isset($payload['type']) || $payload['type'] !== 'refresh') {
-                return $this->error('无效的 Refresh Token', 401);
-            }
-
-            $userId = $payload['user_id'] ?? 0;
-            $user = User::find($userId);
-            if (!$user || $user->status !== 1) {
-                return $this->error('用户已被禁用', 401);
-            }
-
-            unset($payload['type'], $payload['exp'], $payload['nbf']);
-
-            $newAccessToken = JwtToken::generate($payload);
-            $newRefreshPayload = array_merge($payload, ['type' => 'refresh']);
-            $newRefreshToken = JwtToken::generate($newRefreshPayload);
-
-            return $this->success([
-                'access_token' => $newAccessToken,
-                'refresh_token' => $newRefreshToken,
-                'token_type' => 'Bearer',
-                'expires_in' => (int) Config::get('jwt.ttl', 1440) * 60,
-            ], 'Token 刷新成功');
-        } catch (\Exception $e) {
-            return $this->error('Token 刷新失败：' . $e->getMessage(), 401);
+        if (!$result['success']) {
+            return $this->error($result['error'], $result['code']);
         }
+
+        return $this->success($result['data'], 'Token 刷新成功');
     }
 
+    /**
+     * 获取用户个人资料
+     *
+     * @请求方式: GET
+     * @请求路径: /admin/auth/profile
+     * @认证要求: 需要有效的Access Token
+     * @功能描述: 调用服务层获取用户详细信息和权限数据
+     *
+     * @返回数据:
+     *   {
+     *     "code": 200,
+     *     "msg": "获取成功",
+     *     "data": {
+     *       "id": 1,
+     *       "username": "admin",
+     *       "nickname": "管理员",
+     *       "email": "admin@example.com",
+     *       "mobile": "13800138000",
+     *       "avatar": "url",
+     *       "gender": 1,
+     *       "dept_id": 1,
+     *       "last_login_ip": "127.0.0.1",
+     *       "last_login_time": "2024-01-01 12:00:00",
+     *       "roles": [...],
+     *       "menus": [...],
+     *       "permissions": [...],
+     *       "button_codes": [...]
+     *     }
+     *   }
+     *
+     * @异常处理:
+     *   - 401: 用户未登录
+     *   - 404: 用户不存在
+     */
     public function profile(Request $request)
     {
         $userId = $request->userInfo['id'] ?? 0;
@@ -154,35 +208,41 @@ class AuthController extends BaseController
             return $this->error('用户未登录', 401);
         }
 
-        $user = User::find($userId);
-        if (!$user) {
-            return $this->error('用户不存在', 404);
+        $result = $this->authService->getProfile($userId);
+
+        if (!$result['success']) {
+            return $this->error($result['error'], $result['code']);
         }
 
-        $auth = AdminAuth::instance();
-        $auth->setUser($userId);
-
-        $roles = (new Role())->getUserRoles($userId);
-        $menus = $auth->getMenuTree();
-
-        return $this->success([
-            'id' => $user->id,
-            'username' => $user->username,
-            'nickname' => $user->nickname,
-            'email' => $user->email,
-            'mobile' => $user->mobile,
-            'avatar' => $user->avatar,
-            'gender' => $user->gender,
-            'dept_id' => $user->dept_id,
-            'last_login_ip' => $user->last_login_ip,
-            'last_login_time' => $user->last_login_time,
-            'roles' => $roles,
-            'menus' => $menus,
-            'permissions' => $auth->getMenuCodes(),
-            'button_codes' => $auth->getButtonCodes(),
-        ], '获取成功');
+        return $this->success($result['data'], '获取成功');
     }
 
+    /**
+     * 修改密码
+     *
+     * @请求方式: PUT
+     * @请求路径: /admin/auth/changePassword
+     * @认证要求: 需要有效的Access Token
+     * @功能描述: 验证原密码后调用服务层修改密码
+     *
+     * @请求参数:
+     *   - old_password (string, required): 原密码，长度6-20字符
+     *   - password (string, required): 新密码，长度6-20字符
+     *   - password_confirm (string, required): 确认密码
+     *
+     * @返回数据:
+     *   {
+     *     "code": 200,
+     *     "msg": "密码修改成功",
+     *     "data": {}
+     *   }
+     *
+     * @异常处理:
+     *   - 401: 用户未登录
+     *   - 422: 参数校验失败
+     *   - 404: 用户不存在
+     *   - 400: 原密码错误
+     */
     public function changePassword(Request $request)
     {
         $userId = $request->userInfo['id'] ?? 0;
@@ -199,89 +259,15 @@ class AuthController extends BaseController
             return $this->error($e->getMessage(), 422);
         }
 
-        $user = User::find($userId);
-        if (!$user) {
-            return $this->error('用户不存在', 404);
+        $oldPassword = $data['old_password'] ?? '';
+        $newPassword = $data['password'] ?? '';
+
+        $result = $this->authService->changePassword($userId, $oldPassword, $newPassword);
+
+        if (!$result['success']) {
+            return $this->error($result['error'], $result['code']);
         }
-
-        if (!password_verify($data['old_password'], $user->password)) {
-            return $this->error('原密码错误', 400);
-        }
-
-        $user->password = password_hash($data['password'], PASSWORD_DEFAULT);
-        $user->save();
-
-        AdminAuth::instance()->clearCache();
 
         return $this->success([], '密码修改成功');
-    }
-
-    protected function recordLoginLog(string $username, int $status, string $msg, Request $request): void
-    {
-        $loginLog = new LoginLog();
-        $loginLog->recordLogin(
-            $username,
-            $status,
-            $msg,
-            $request->ip(),
-            '',
-            $request->header('user-agent', ''),
-            $this->parseOs($request->header('user-agent', '')),
-            $this->parseBrowser($request->header('user-agent', ''))
-        );
-    }
-
-    protected function checkLoginFailTimes(string $username, Request $request): void
-    {
-        $key = 'login_fail_' . $username;
-        $maxTimes = Config::get('auth.max_login_fail_times', 5);
-        $lockDuration = Config::get('auth.login_lock_duration', 900);
-
-        if ($lockDuration <= 0) {
-            return;
-        }
-
-        $currentTimes = SimpleCache::get($key, 0);
-        if ($currentTimes === 0) {
-            SimpleCache::set($key, 1, $lockDuration);
-            $times = 1;
-        } else {
-            $times = SimpleCache::increment($key, 1, $lockDuration);
-        }
-
-        if ($times >= $maxTimes) {
-            SimpleCache::setIfNotExists('login_lock_' . $username, 1, $lockDuration);
-            $this->recordLoginLog($username, 0, '登录失败超过次数，已锁定', $request);
-        }
-    }
-
-    protected function clearLoginFailTimes(string $username): void
-    {
-        SimpleCache::delete('login_fail_' . $username);
-        SimpleCache::delete('login_lock_' . $username);
-    }
-
-    protected function parseOs(string $userAgent): string
-    {
-        if (preg_match('/Windows NT 10/i', $userAgent)) return 'Windows 10';
-        if (preg_match('/Windows NT 6.3/i', $userAgent)) return 'Windows 8.1';
-        if (preg_match('/Windows NT 6.2/i', $userAgent)) return 'Windows 8';
-        if (preg_match('/Windows NT 6.1/i', $userAgent)) return 'Windows 7';
-        if (preg_match('/Mac OS X/i', $userAgent)) return 'macOS';
-        if (preg_match('/Linux/i', $userAgent)) return 'Linux';
-        if (preg_match('/iPhone/i', $userAgent)) return 'iOS';
-        if (preg_match('/Android/i', $userAgent)) return 'Android';
-        return 'Unknown';
-    }
-
-    protected function parseBrowser(string $userAgent): string
-    {
-        if (preg_match('/MSIE/i', $userAgent) || preg_match('/Trident/i', $userAgent)) return 'IE';
-        if (preg_match('/Edge/i', $userAgent)) return 'Edge';
-        if (preg_match('/Firefox/i', $userAgent)) return 'Firefox';
-        if (preg_match('/Chrome/i', $userAgent)) return 'Chrome';
-        if (preg_match('/Safari/i', $userAgent) && !preg_match('/Chrome/i', $userAgent)) return 'Safari';
-        if (preg_match('/Opera/i', $userAgent)) return 'Opera';
-        return 'Unknown';
     }
 }

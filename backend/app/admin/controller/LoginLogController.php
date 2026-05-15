@@ -1,6 +1,7 @@
 <?php
 namespace app\admin\controller;
 
+use app\common\BaseController;
 use app\model\LoginLog as LoginLogModel;
 use app\admin\validate\LogValidate;
 use app\common\AdminAuth;
@@ -125,7 +126,7 @@ class LoginLogController extends BaseController
 
         try {
             Db::startTrans();
-            $count = Db::name('sys_login_log')->delete(true);
+            $count = Db::name('login_log')->delete(true);
             Db::commit();
         } catch (\Exception $e) {
             Db::rollback();

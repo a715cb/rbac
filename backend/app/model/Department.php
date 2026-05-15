@@ -5,8 +5,7 @@ use app\common\BaseModel;
 
 class Department extends BaseModel
 {
-    protected $table = 'sys_department';
-
+    protected $name = 'department';
     protected $pk = 'id';
 
     protected $autoWriteTimestamp = true;
