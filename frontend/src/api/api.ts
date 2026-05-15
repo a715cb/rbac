@@ -2,7 +2,7 @@
  * 接口管理 API
  */
 
-import request from '@/utils/request'
+import { get, post, put, del } from '@/utils/request'
 import type { ApiResponse } from '@/types/api'
 
 export const HTTP_METHODS = [
@@ -58,33 +58,33 @@ export interface ApiPagination {
 }
 
 export function getApiList(params?: ApiQuery): Promise<ApiResponse<ApiPagination>> {
-  return request.get('/admin/apis', { params })
+  return get('/admin/apis', params)
 }
 
 export function getApiDetail(id: number): Promise<ApiResponse<ApiInfo>> {
-  return request.get(`/admin/apis/${id}`)
+  return get(`/admin/apis/${id}`)
 }
 
 export function createApi(data: ApiForm): Promise<ApiResponse<{ id: number }>> {
-  return request.post('/admin/apis', data)
+  return post('/admin/apis', data)
 }
 
 export function updateApi(id: number, data: ApiForm): Promise<ApiResponse<void>> {
-  return request.put(`/admin/apis/${id}`, data)
+  return put(`/admin/apis/${id}`, data)
 }
 
 export function deleteApi(id: number): Promise<ApiResponse<void>> {
-  return request.delete(`/admin/apis/${id}`)
+  return del(`/admin/apis/${id}`)
 }
 
 export function changeApiStatus(id: number, status: number): Promise<ApiResponse<void>> {
-  return request.put(`/admin/apis/${id}/status`, { status })
+  return put(`/admin/apis/${id}/status`, { status })
 }
 
 export function getApiGroups(): Promise<ApiResponse<{ groups: string[] }>> {
-  return request.get('/admin/apis/groups')
+  return get('/admin/apis/groups')
 }
 
 export function getApisByMenu(menuId: number): Promise<ApiResponse<{ list: ApiInfo[] }>> {
-  return request.get(`/admin/apis/menu/${menuId}`)
+  return get(`/admin/apis/menu/${menuId}`)
 }

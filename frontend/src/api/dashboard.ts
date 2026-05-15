@@ -2,7 +2,7 @@
  * 仪表盘 API
  */
 
-import request from '@/utils/request'
+import { get } from '@/utils/request'
 import type { ApiResponse } from '@/types/api'
 
 export interface DashboardStats {
@@ -17,5 +17,5 @@ export interface DashboardStats {
  * @returns Promise<ApiResponse<DashboardStats>>
  */
 export function getDashboardStats(): Promise<ApiResponse<DashboardStats>> {
-  return request.get('/admin/dashboard/statistics')
+  return get('/admin/dashboard/statistics')
 }

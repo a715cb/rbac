@@ -2,7 +2,7 @@
  * 按钮管理 API
  */
 
-import request from '@/utils/request'
+import { get, post, put } from '@/utils/request'
 import type { ApiResponse } from '@/types/api'
 
 export interface ButtonQuery {
@@ -47,21 +47,21 @@ export interface ButtonPagination {
 }
 
 export function getButtonList(params?: ButtonQuery): Promise<ApiResponse<ButtonPagination>> {
-  return request.get('/admin/menu-buttons', { params })
+  return get('/admin/menu-buttons', params)
 }
 
 export function getButtonDetail(id: number): Promise<ApiResponse<ButtonInfo>> {
-  return request.get(`/admin/menu-buttons/${id}`)
+  return get(`/admin/menu-buttons/${id}`)
 }
 
 export function changeButtonStatus(id: number, status: number): Promise<ApiResponse<void>> {
-  return request.put(`/admin/menu-buttons/${id}/status`, { status })
+  return put(`/admin/menu-buttons/${id}/status`, { status })
 }
 
 export function batchButtonStatus(ids: number[], status: number): Promise<ApiResponse<void>> {
-  return request.post('/admin/menu-buttons/batch-status', { ids, status })
+  return post('/admin/menu-buttons/batch-status', { ids, status })
 }
 
 export function batchDeleteButtons(ids: number[]): Promise<ApiResponse<void>> {
-  return request.post('/admin/menu-buttons/batch-delete', { ids })
+  return post('/admin/menu-buttons/batch-delete', { ids })
 }

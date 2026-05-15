@@ -1,4 +1,4 @@
-import request from '@/utils/request'
+import { get, post } from '@/utils/request'
 import type { ApiResponse } from '@/types/api'
 
 export interface LoginLogQuery {
@@ -34,7 +34,7 @@ export interface LoginLogPagination {
 }
 
 export function getLoginLogList(params?: LoginLogQuery): Promise<ApiResponse<LoginLogPagination>> {
-  return request.get('/admin/login-logs', { params })
+  return get('/admin/login-logs', params)
 }
 
 export interface LoginLogStats {
@@ -51,19 +51,19 @@ export function getLoginLogStats(params?: {
   start_date?: string
   end_date?: string
 }): Promise<ApiResponse<LoginLogStats>> {
-  return request.get('/admin/login-logs/stats', { params })
+  return get('/admin/login-logs/stats', params)
 }
 
 export function cleanLoginLog(data?: {
   before_date?: string
 }): Promise<ApiResponse<{ deleted_count: number }>> {
-  return request.post('/admin/login-logs/clean', data)
+  return post('/admin/login-logs/clean', data)
 }
 
 export function clearLoginLog(): Promise<ApiResponse<{ deleted_count: number }>> {
-  return request.post('/admin/login-logs/clear')
+  return post('/admin/login-logs/clear')
 }
 
 export function deleteLoginLog(ids: number[]): Promise<ApiResponse<{ deleted_count: number }>> {
-  return request.post('/admin/login-logs/delete', { ids })
+  return post('/admin/login-logs/delete', { ids })
 }

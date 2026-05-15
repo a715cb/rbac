@@ -95,6 +95,10 @@ class LoginSecurityService
         $key = 'login_fail_' . $username;
         $times = SimpleCache::increment($key, 1, $this->loginLockDuration);
 
+        if ($times === 1) {
+            SimpleCache::delete('login_lock_' . $username);
+        }
+
         $locked = false;
         if ($times >= $this->maxLoginFailTimes) {
             SimpleCache::setIfNotExists('login_lock_' . $username, 1, $this->loginLockDuration);
@@ -132,7 +136,13 @@ class LoginSecurityService
             return false;
         }
 
-        return SimpleCache::get('login_lock_' . $username, false) !== false;
+        $locked = SimpleCache::get('login_lock_' . $username, false) !== false;
+        if ($locked && SimpleCache::get('login_fail_' . $username, 0) === 0) {
+            SimpleCache::delete('login_lock_' . $username);
+            return false;
+        }
+
+        return $locked;
     }
 
     /**

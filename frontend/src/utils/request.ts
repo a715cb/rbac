@@ -159,7 +159,8 @@ request.interceptors.response.use(
       pendingRequests.delete(response.config.url)
     }
 
-    return res as unknown as AxiosResponse
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return res as any
   },
   async (error: AxiosError) => {
     const businessError = error as unknown as BusinessError
@@ -249,35 +250,35 @@ request.interceptors.response.use(
   }
 )
 
-export function get<T = unknown>(
+export function get<T = unknown, P = Record<string, unknown>>(
   url: string,
-  params?: Record<string, unknown>,
+  params?: P,
   config?: AxiosRequestConfig
 ): Promise<ApiResponse<T>> {
-  return request.get(url, { params, ...config }) as Promise<ApiResponse<T>>
+  return request.get(url, { params, ...config }) as unknown as Promise<ApiResponse<T>>
 }
 
-export function post<T = unknown>(
+export function post<T = unknown, D = Record<string, unknown>>(
   url: string,
-  data?: Record<string, unknown>,
+  data?: D,
   config?: AxiosRequestConfig
 ): Promise<ApiResponse<T>> {
-  return request.post(url, data, config) as Promise<ApiResponse<T>>
+  return request.post(url, data, config) as unknown as Promise<ApiResponse<T>>
 }
 
-export function put<T = unknown>(
+export function put<T = unknown, D = Record<string, unknown>>(
   url: string,
-  data?: Record<string, unknown>,
+  data?: D,
   config?: AxiosRequestConfig
 ): Promise<ApiResponse<T>> {
-  return request.put(url, data, config) as Promise<ApiResponse<T>>
+  return request.put(url, data, config) as unknown as Promise<ApiResponse<T>>
 }
 
 export function del<T = unknown>(
   url: string,
   config?: AxiosRequestConfig
 ): Promise<ApiResponse<T>> {
-  return request.delete(url, config) as Promise<ApiResponse<T>>
+  return request.delete(url, config) as unknown as Promise<ApiResponse<T>>
 }
 
 export default request

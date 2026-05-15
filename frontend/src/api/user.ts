@@ -2,7 +2,7 @@
  * 用户管理 API
  */
 
-import request from '@/utils/request'
+import { get, post, put, del } from '@/utils/request'
 import type { ApiResponse } from '@/types/api'
 
 export interface UserDeptItem {
@@ -65,49 +65,49 @@ export interface UserPagination {
 }
 
 export function getUserList(params: UserQuery): Promise<ApiResponse<UserPagination>> {
-  return request.get('/admin/users', { params })
+  return get('/admin/users', params)
 }
 
 export function getUserDetail(id: number): Promise<ApiResponse<UserInfo>> {
-  return request.get(`/admin/users/${id}`)
+  return get(`/admin/users/${id}`)
 }
 
 export function createUser(data: UserForm): Promise<ApiResponse<{ id: number }>> {
-  return request.post('/admin/users', data)
+  return post('/admin/users', data)
 }
 
 export function updateUser(id: number, data: UserForm): Promise<ApiResponse<void>> {
-  return request.put(`/admin/users/${id}`, data)
+  return put(`/admin/users/${id}`, data)
 }
 
 export function deleteUser(id: number): Promise<ApiResponse<void>> {
-  return request.delete(`/admin/users/${id}`)
+  return del(`/admin/users/${id}`)
 }
 
 export function assignRoles(id: number, roleIds: number[]): Promise<ApiResponse<void>> {
-  return request.post(`/admin/users/${id}/assign-roles`, { role_ids: roleIds })
+  return post(`/admin/users/${id}/assign-roles`, { role_ids: roleIds })
 }
 
 export function resetPassword(id: number, password: string): Promise<ApiResponse<void>> {
-  return request.post(`/admin/users/${id}/reset-password`, { password })
+  return post(`/admin/users/${id}/reset-password`, { password })
 }
 
 export function changeUserStatus(id: number, status: number): Promise<ApiResponse<void>> {
-  return request.put(`/admin/users/${id}/status`, { status })
+  return put(`/admin/users/${id}/status`, { status })
 }
 
 export function exportUsers(params: UserQuery): Promise<ApiResponse<Record<string, unknown>[]>> {
-  return request.get('/admin/users/export', { params })
+  return get('/admin/users/export', params)
 }
 
 export function updateUserDepts(id: number, depts: UserDeptItem[]): Promise<ApiResponse<void>> {
-  return request.put(`/admin/users/${id}/depts`, { depts })
+  return put(`/admin/users/${id}/depts`, { depts })
 }
 
 export function addUserDepts(id: number, depts: UserDeptItem[]): Promise<ApiResponse<void>> {
-  return request.post(`/admin/users/${id}/depts`, { depts })
+  return post(`/admin/users/${id}/depts`, { depts })
 }
 
 export function removeUserDept(id: number, deptId: number): Promise<ApiResponse<void>> {
-  return request.delete(`/admin/users/${id}/depts/${deptId}`)
+  return del(`/admin/users/${id}/depts/${deptId}`)
 }
