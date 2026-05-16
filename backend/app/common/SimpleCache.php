@@ -10,7 +10,7 @@
  *   1. 所有缓存操作委托 ThinkPHP Cache 门面，遵循 CACHE_DRIVER 配置
  *   2. increment 操作：Redis 驱动使用 INCRBY 原子递增，其他驱动使用读-改-写
  *   3. setIfNotExists 操作：Redis 驱动使用 SET NX EX 原子命令，其他驱动使用 has+set
- *   4. remember 操作：互斥锁保护缓存回填，锁失败时等待重试，超时降级直接执行回调
+ *   4. remember 操作：互斥锁保护缓存回填，锁失败时等待重试，超时降级执行回调并尝试写入缓存
  *   5. 标签缓存：tagSet 写入带标签缓存，clearTag 按标签批量清除
  *   6. TTL 为 0 表示永不过期，传递给 Cache 时使用 0 而非 null
  */
@@ -143,7 +143,7 @@ class SimpleCache
      * @param string|null $tag 缓存标签，用于批量清除
      * @return mixed 缓存值或回调返回值
      * @description 先尝试缓存命中；未命中时获取互斥锁后执行回调写入缓存；
-     *              获取锁失败则等待重试读取，超时后降级直接执行回调（不写缓存）
+     *              获取锁失败则等待重试读取，超时后降级执行回调并尝试写入缓存
      */
     public static function remember(string $key, int $ttl, callable $callback, ?string $tag = null): mixed
     {
@@ -191,7 +191,11 @@ class SimpleCache
             }
         }
 
-        return $callback();
+        $value = $callback();
+        if ($value !== null) {
+            self::tagSet($key, $value, $ttl, $tag);
+        }
+        return $value;
     }
 
     /**
