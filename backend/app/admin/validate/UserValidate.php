@@ -47,19 +47,4 @@ class UserValidate extends BaseValidate
         'change_status' => ['status'],
     ];
 
-    protected function mobile($value): bool
-    {
-        if (empty($value)) {
-            return true;
-        }
-        return (bool) preg_match('/^1[3-9]\d{9}$/', $value);
-    }
-
-    protected function email($value): bool
-    {
-        if (empty($value)) {
-            return true;
-        }
-        return (bool) filter_var($value, FILTER_VALIDATE_EMAIL) !== false;
-    }
 }

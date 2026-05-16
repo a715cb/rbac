@@ -32,11 +32,4 @@ class ProfileValidate extends BaseValidate
         'change_password' => ['old_password', 'password'],
     ];
 
-    protected function mobile($value): bool
-    {
-        if (empty($value)) {
-            return true;
-        }
-        return (bool) preg_match('/^1[3-9]\d{9}$/', $value);
-    }
 }

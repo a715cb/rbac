@@ -65,49 +65,49 @@ export interface UserPagination {
 }
 
 export function getUserList(params: UserQuery): Promise<ApiResponse<UserPagination>> {
-  return get('/admin/users', params)
+  return get('/api/admin/users', params)
 }
 
 export function getUserDetail(id: number): Promise<ApiResponse<UserInfo>> {
-  return get(`/admin/users/${id}`)
+  return get(`/api/admin/users/${id}`)
 }
 
 export function createUser(data: UserForm): Promise<ApiResponse<{ id: number }>> {
-  return post('/admin/users', data)
+  return post('/api/admin/users', data)
 }
 
 export function updateUser(id: number, data: UserForm): Promise<ApiResponse<void>> {
-  return put(`/admin/users/${id}`, data)
+  return put(`/api/admin/users/${id}`, data)
 }
 
 export function deleteUser(id: number): Promise<ApiResponse<void>> {
-  return del(`/admin/users/${id}`)
+  return del(`/api/admin/users/${id}`)
 }
 
 export function assignRoles(id: number, roleIds: number[]): Promise<ApiResponse<void>> {
-  return post(`/admin/users/${id}/assign-roles`, { role_ids: roleIds })
+  return post(`/api/admin/users/${id}/assign-roles`, { role_ids: roleIds })
 }
 
 export function resetPassword(id: number, password: string): Promise<ApiResponse<void>> {
-  return post(`/admin/users/${id}/reset-password`, { password })
+  return post(`/api/admin/users/${id}/reset-password`, { password })
 }
 
 export function changeUserStatus(id: number, status: number): Promise<ApiResponse<void>> {
-  return put(`/admin/users/${id}/status`, { status })
+  return put(`/api/admin/users/${id}/status`, { status })
 }
 
 export function exportUsers(params: UserQuery): Promise<ApiResponse<Record<string, unknown>[]>> {
-  return get('/admin/users/export', params)
+  return get('/api/admin/users/export', params)
 }
 
 export function updateUserDepts(id: number, depts: UserDeptItem[]): Promise<ApiResponse<void>> {
-  return put(`/admin/users/${id}/depts`, { depts })
+  return put(`/api/admin/users/${id}/depts`, { depts })
 }
 
 export function addUserDepts(id: number, depts: UserDeptItem[]): Promise<ApiResponse<void>> {
-  return post(`/admin/users/${id}/depts`, { depts })
+  return post(`/api/admin/users/${id}/depts`, { depts })
 }
 
 export function removeUserDept(id: number, deptId: number): Promise<ApiResponse<void>> {
-  return del(`/admin/users/${id}/depts/${deptId}`)
+  return del(`/api/admin/users/${id}/depts/${deptId}`)
 }

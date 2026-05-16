@@ -17,5 +17,5 @@ export interface DashboardStats {
  * @returns Promise<ApiResponse<DashboardStats>>
  */
 export function getDashboardStats(): Promise<ApiResponse<DashboardStats>> {
-  return get('/admin/dashboard/statistics')
+  return get('/api/admin/dashboard/statistics')
 }

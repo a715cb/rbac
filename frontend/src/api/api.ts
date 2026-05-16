@@ -58,33 +58,33 @@ export interface ApiPagination {
 }
 
 export function getApiList(params?: ApiQuery): Promise<ApiResponse<ApiPagination>> {
-  return get('/admin/apis', params)
+  return get('/api/admin/apis', params)
 }
 
 export function getApiDetail(id: number): Promise<ApiResponse<ApiInfo>> {
-  return get(`/admin/apis/${id}`)
+  return get(`/api/admin/apis/${id}`)
 }
 
 export function createApi(data: ApiForm): Promise<ApiResponse<{ id: number }>> {
-  return post('/admin/apis', data)
+  return post('/api/admin/apis', data)
 }
 
 export function updateApi(id: number, data: ApiForm): Promise<ApiResponse<void>> {
-  return put(`/admin/apis/${id}`, data)
+  return put(`/api/admin/apis/${id}`, data)
 }
 
 export function deleteApi(id: number): Promise<ApiResponse<void>> {
-  return del(`/admin/apis/${id}`)
+  return del(`/api/admin/apis/${id}`)
 }
 
 export function changeApiStatus(id: number, status: number): Promise<ApiResponse<void>> {
-  return put(`/admin/apis/${id}/status`, { status })
+  return put(`/api/admin/apis/${id}/status`, { status })
 }
 
 export function getApiGroups(): Promise<ApiResponse<{ groups: string[] }>> {
-  return get('/admin/apis/groups')
+  return get('/api/admin/apis/groups')
 }
 
 export function getApisByMenu(menuId: number): Promise<ApiResponse<{ list: ApiInfo[] }>> {
-  return get(`/admin/apis/menu/${menuId}`)
+  return get(`/api/admin/apis/menu/${menuId}`)
 }

@@ -3,6 +3,10 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 const mockGet = vi.fn()
 
 vi.mock('@/utils/request', () => ({
+  get: mockGet,
+  post: vi.fn(),
+  put: vi.fn(),
+  del: vi.fn(),
   default: {
     get: mockGet,
     post: vi.fn(),
@@ -43,7 +47,7 @@ describe('getApiList 参数传递', () => {
 
     await getApiList(params)
 
-    expect(mockGet).toHaveBeenCalledWith('/admin/apis', { params })
+    expect(mockGet).toHaveBeenCalledWith('/api/admin/apis', { params })
   })
 
   it('应正确处理 undefined 参数', async () => {
@@ -60,7 +64,7 @@ describe('getApiList 参数传递', () => {
 
     await getApiList(params)
 
-    expect(mockGet).toHaveBeenCalledWith('/admin/apis', { params })
+    expect(mockGet).toHaveBeenCalledWith('/api/admin/apis', { params })
   })
 
   it('应正确处理空参数调用', async () => {
@@ -68,7 +72,7 @@ describe('getApiList 参数传递', () => {
 
     await getApiList()
 
-    expect(mockGet).toHaveBeenCalledWith('/admin/apis', { params: undefined })
+    expect(mockGet).toHaveBeenCalledWith('/api/admin/apis', { params: undefined })
   })
 
   it('不应将 params 直接作为 AxiosRequestConfig 传递', async () => {
@@ -166,7 +170,7 @@ describe('getApiList 响应数据处理', () => {
     const result = await getApiList({ page: 1, limit: 10, method: 'GET' })
 
     expect(result.data.pagination.total).toBe(5)
-    expect(mockGet).toHaveBeenCalledWith('/admin/apis', {
+    expect(mockGet).toHaveBeenCalledWith('/api/admin/apis', {
       params: { page: 1, limit: 10, method: 'GET' }
     })
   })

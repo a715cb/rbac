@@ -42,7 +42,7 @@ export interface OperateLogPagination {
 export function getOperateLogList(
   params?: OperateLogQuery
 ): Promise<ApiResponse<OperateLogPagination>> {
-  return get('/admin/operation-logs', params)
+  return get('/api/admin/operation-logs', params)
 }
 
 export interface OperateLogStats {
@@ -57,21 +57,21 @@ export function getOperateLogStats(params?: {
   start_date?: string
   end_date?: string
 }): Promise<ApiResponse<OperateLogStats>> {
-  return get('/admin/operation-logs/stats', params)
+  return get('/api/admin/operation-logs/stats', params)
 }
 
 export function cleanOperateLog(data?: {
   before_date?: string
 }): Promise<ApiResponse<{ deleted_count: number }>> {
-  return post('/admin/operation-logs/clean', data)
+  return post('/api/admin/operation-logs/clean', data)
 }
 
 export function clearAllOperateLog(): Promise<ApiResponse<{ deleted_count: number }>> {
-  return post('/admin/operation-logs/clear')
+  return post('/api/admin/operation-logs/clear')
 }
 
 export function deleteOperateLog(ids: number[]): Promise<ApiResponse<{ deleted_count: number }>> {
-  return post('/admin/operation-logs/delete', { ids })
+  return post('/api/admin/operation-logs/delete', { ids })
 }
 
 export interface ExportResult {
@@ -80,5 +80,5 @@ export interface ExportResult {
 }
 
 export function exportOperateLog(params?: OperateLogQuery): Promise<ApiResponse<ExportResult>> {
-  return get('/admin/operation-logs/export', params)
+  return get('/api/admin/operation-logs/export', params)
 }

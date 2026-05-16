@@ -53,35 +53,35 @@ export interface RolePagination {
 }
 
 export function getRoleList(params?: RoleQuery): Promise<ApiResponse<RolePagination>> {
-  return get('/admin/roles', params)
+  return get('/api/admin/roles', params)
 }
 
 export function getRoleDetail(id: number): Promise<ApiResponse<RoleInfo>> {
-  return get(`/admin/roles/${id}`)
+  return get(`/api/admin/roles/${id}`)
 }
 
 export function createRole(data: RoleForm): Promise<ApiResponse<{ id: number }>> {
-  return post('/admin/roles', data)
+  return post('/api/admin/roles', data)
 }
 
 export function updateRole(id: number, data: RoleForm): Promise<ApiResponse<void>> {
-  return put(`/admin/roles/${id}`, data)
+  return put(`/api/admin/roles/${id}`, data)
 }
 
 export function deleteRole(id: number): Promise<ApiResponse<void>> {
-  return del(`/admin/roles/${id}`)
+  return del(`/api/admin/roles/${id}`)
 }
 
 export function assignRoleMenus(id: number, menuIds: number[]): Promise<ApiResponse<void>> {
-  return post(`/admin/roles/${id}/assign-menus`, { menu_ids: menuIds })
+  return post(`/api/admin/roles/${id}/assign-menus`, { menu_ids: menuIds })
 }
 
 export function assignRoleButtons(id: number, buttonIds: number[]): Promise<ApiResponse<void>> {
-  return post(`/admin/roles/${id}/assign-buttons`, { button_ids: buttonIds })
+  return post(`/api/admin/roles/${id}/assign-buttons`, { button_ids: buttonIds })
 }
 
 export function assignRoleApis(id: number, apiIds: number[]): Promise<ApiResponse<void>> {
-  return post(`/admin/roles/${id}/assign-apis`, { api_ids: apiIds })
+  return post(`/api/admin/roles/${id}/assign-apis`, { api_ids: apiIds })
 }
 
 export function setRoleDataScope(
@@ -89,12 +89,12 @@ export function setRoleDataScope(
   dataScope: number,
   deptIds?: string
 ): Promise<ApiResponse<void>> {
-  return put(`/admin/roles/${id}/data-scope`, {
+  return put(`/api/admin/roles/${id}/data-scope`, {
     data_scope: dataScope,
     data_scope_dept_ids: deptIds || ''
   })
 }
 
 export function changeRoleStatus(id: number, status: number): Promise<ApiResponse<void>> {
-  return put(`/admin/roles/${id}/status`, { status })
+  return put(`/api/admin/roles/${id}/status`, { status })
 }

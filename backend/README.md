@@ -76,7 +76,6 @@ cp .env.example .env
 | `CACHE_DRIVER` | 缓存驱动 | redis |
 | `WX_MINIAPP_APPID` | 微信小程序 AppID | - |
 | `WX_MINIAPP_SECRET` | 微信小程序 Secret | - |
-| `MEMORY_FILE_PATH` | 知识图谱记忆文件路径 | runtime/data/knowledge_graph_memory.json |
 
 > **安全提示**：生产环境必须通过环境变量 `JWT_SECRET` 设置强随机密钥（至少 64 字符），可使用 `php -r "echo bin2hex(random_bytes(32));"` 生成。
 
@@ -87,11 +86,11 @@ cp .env.example .env
 ```bash
 mysql -u root -p < database/migrations/001_init_schema.sql
 mysql -u root -p < database/migrations/002_init_data.sql
-# (可选) 微信小程序表
-mysql -u root -p < database/migrations/004_wx_tables.sql
 ```
 
-> **注意**：`003_add_user_unique_indexes.sql` 中的唯一索引已在 `001_init_schema.sql` 中定义，无需单独执行。
+> **注意**：
+> - 数据库迁移脚本位于 `database/migrations/` 目录
+> - 建议在生产环境中仔细审查每个迁移脚本，确保数据安全
 
 默认管理员账号：`admin` / `123456`
 
@@ -116,24 +115,30 @@ backend/
 ├── app/
 │   ├── admin/                    # 后台管理模块
 │   │   ├── controller/           # 控制器
-│   │   │   ├── ApiController     # 接口管理
-│   │   │   ├── AuthController    # 认证管理
-│   │   │   ├── BaseController    # 基础控制器
-│   │   │   ├── DashboardController # 仪表盘
-│   │   │   ├── DepartmentController # 部门管理
-│   │   │   ├── DictController    # 字典管理
-│   │   │   ├── LoginLogController # 登录日志
-│   │   │   ├── MenuController    # 菜单管理
-│   │   │   ├── OperationLogController # 操作日志
-│   │   │   ├── ProfileController # 个人信息
-│   │   │   ├── RoleController    # 角色管理
-│   │   │   └── UserController    # 用户管理
+│   │   │   ├── ApiController.php     # 接口管理
+│   │   │   ├── AuthController.php    # 认证管理
+│   │   │   ├── DashboardController.php # 仪表盘
+│   │   │   ├── DepartmentController.php # 部门管理
+│   │   │   ├── DictController.php    # 字典管理
+│   │   │   ├── LoginLogController.php # 登录日志
+│   │   │   ├── MenuButtonController.php # 菜单按钮管理
+│   │   │   ├── MenuController.php    # 菜单管理
+│   │   │   ├── OperationLogController.php # 操作日志
+│   │   │   ├── ProfileController.php # 个人信息
+│   │   │   ├── RoleController.php    # 角色管理
+│   │   │   └── UserController.php    # 用户管理
 │   │   ├── event/                # 事件
 │   │   ├── middleware/           # 中间件
-│   │   │   ├── ApiPermission     # API 权限校验
-│   │   │   ├── AuthCheck         # 登录认证
-│   │   │   └── RecordOperate     # 操作记录
+│   │   │   ├── ApiPermission.php     # API 权限校验
+│   │   │   ├── AuthCheck.php         # 登录认证
+│   │   │   └── RecordOperate.php     # 操作记录
 │   │   ├── service/              # 服务层
+│   │   │   ├── AdminAuthService.php  # 管理员认证服务
+│   │   │   ├── ApiService.php        # 接口服务
+│   │   │   ├── DepartmentService.php # 部门服务
+│   │   │   ├── LoginSecurityService.php # 登录安全服务
+│   │   │   ├── UserAgentParserService.php # 用户代理解析服务
+│   │   │   └── UserService.php       # 用户服务
 │   │   └── validate/             # 验证器
 │   ├── common/                   # 公共模块
 │   │   ├── AdminAuth.php         # 管理员认证
@@ -144,60 +149,111 @@ backend/
 │   │   ├── SimpleCache.php       # 简单缓存实现
 │   │   └── exception/            # 异常处理
 │   ├── middleware/                # 全局中间件
-│   │   ├── AllowCrossDomain      # 跨域处理
-│   │   └── AppInit               # 应用初始化
+│   │   └── AllowCrossDomain.php  # 跨域处理
 │   ├── miniapp/                  # 微信小程序模块
 │   │   ├── controller/           # 控制器
+│   │   │   ├── AuthController.php    # 认证控制器
+│   │   │   ├── BusinessController.php # 业务控制器
+│   │   │   ├── HomeController.php    # 首页控制器
+│   │   │   ├── MiniappBaseController.php # 小程序基础控制器
+│   │   │   └── ProfileController.php  # 个人信息控制器
 │   │   ├── middleware/           # 中间件
-│   │   │   └── MiniappAuth       # 小程序认证
+│   │   │   └── MiniappAuth.php       # 小程序认证
 │   │   ├── service/              # 服务层
+│   │   │   ├── BusinessService.php   # 业务服务
+│   │   │   ├── HomeService.php       # 首页服务
+│   │   │   ├── MiniappAuthService.php # 小程序认证服务
+│   │   │   ├── TokenBlacklistService.php # Token黑名单服务
+│   │   │   └── WechatService.php     # 微信服务
 │   │   └── validate/             # 验证器
-│   ├── model/                    # 数据模型
-│   │   ├── Api                   # 接口模型
-│   │   ├── Business              # 业务模型
-│   │   ├── BusinessInteraction   # 业务交互模型
-│   │   ├── Department            # 部门模型
-│   │   ├── DictData              # 字典数据模型
-│   │   ├── DictType              # 字典类型模型
-│   │   ├── LoginLog              # 登录日志模型
-│   │   ├── Menu                  # 菜单模型
-│   │   ├── MenuButton            # 菜单按钮模型
-│   │   ├── OperationLog          # 操作日志模型
-│   │   ├── Role                  # 角色模型
-│   │   ├── User                  # 用户模型
-│   │   ├── WxConfig              # 微信配置模型
-│   │   └── WxUser                # 微信用户模型
-│   └── service/                  # 公共服务
-│       └── JwtService            # JWT 服务
+│   └── model/                    # 数据模型
+│       ├── Api.php               # 接口模型
+│       ├── Business.php              # 业务模型
+│       ├── BusinessInteraction.php   # 业务交互模型
+│       ├── Department.php            # 部门模型
+│       ├── DictData.php              # 字典数据模型
+│       ├── DictType.php              # 字典类型模型
+│       ├── LoginLog.php              # 登录日志模型
+│       ├── Menu.php                  # 菜单模型
+│       ├── MenuButton.php            # 菜单按钮模型
+│       ├── OperationLog.php          # 操作日志模型
+│       ├── Role.php                  # 角色模型
+│       ├── User.php                  # 用户模型
+│       ├── UserDept.php              # 用户部门关联模型
+│       ├── WxConfig.php              # 微信配置模型
+│       └── WxUser.php                # 微信用户模型
 ├── config/                       # 配置文件
 │   ├── app.php                   # 应用配置
+│   ├── app_multi.php             # 多应用配置
+│   ├── auth.php                  # 认证配置
+│   ├── cache.php                 # 缓存配置
 │   ├── database.php              # 数据库配置
 │   ├── jwt.php                   # JWT 配置
-│   ├── redis.php                 # Redis 配置
-│   ├── wechat.php                # 微信配置
-│   ├── cache.php                 # 缓存配置
 │   ├── log.php                   # 日志配置
 │   ├── middleware.php            # 中间件配置
-│   ├── admin_middleware.php      # 后台中间件配置
-│   ├── auth.php                  # 认证配置
-│   └── route.php                 # 路由配置
+│   ├── redis.php                 # Redis 配置
+│   ├── route.php                 # 路由配置
+│   └── wechat.php                # 微信配置
 ├── database/
-│   ├── migrations/               # 数据库迁移脚本
+│   └── migrations/               # 数据库迁移脚本
 │       ├── 001_init_schema.sql   # 表结构初始化
-│       ├── 002_init_data.sql     # 初始数据
-│       ├── 003_add_user_unique_indexes.sql # 用户唯一索引（已包含在001中）
-│       └── 004_wx_tables.sql     # 微信相关表
+│       └── 002_init_data.sql     # 初始数据
 ├── public/
-│   └── index.php                 # 应用入口
+│   ├── .htaccess
+│   ├── index.php                 # 应用入口
+│   └── router.php
 ├── route/                        # 路由定义
-│   ├── route.php                 # 路由入口
 │   ├── admin.php                 # 后台路由
 │   ├── miniapp.php               # 小程序路由
-│   └── api.php                   # 默认路由
+│   └── route.php                 # 路由入口
+├── tests/                        # 单元测试
+│   ├── AdminAuthServiceTest.php
+│   ├── AdminAuthTest.php
+│   ├── ApiServiceTest.php
+│   ├── DepartmentServiceTest.php
+│   ├── LoginSecurityServiceTest.php
+│   ├── SimpleCacheTest.php
+│   ├── UserAgentParserServiceTest.php
+│   ├── UserServiceTest.php
+│   └── bootstrap.php
 ├── .env.example                  # 环境变量模板
 ├── composer.json                 # 依赖配置
+├── phpunit.xml                  # PHPUnit 配置
 └── think                         # 命令行入口
 ```
+
+## 服务层架构
+
+项目采用服务层（Service Layer）架构，将业务逻辑从控制器中分离出来，提高代码的可维护性和可测试性。
+
+### 核心服务
+
+| 服务类 | 职责说明 |
+|--------|---------|
+| `AdminAuthService` | 后台管理员认证服务，负责登录、登出、Token 管理、资料获取、密码修改、登录安全（失败计数、账户锁定）等核心认证逻辑 |
+| `ApiService` | API 接口管理服务，处理接口的增删改查、状态切换、分组查询及按菜单关联查询 |
+| `DepartmentService` | 部门管理服务，处理部门的增删改查、树形结构构建、循环引用防护、状态切换、排序调整 |
+| `LoginSecurityService` | 登录安全服务，实现登录失败计数、账户锁定机制，防止暴力破解 |
+| `UserAgentParserService` | User-Agent 解析服务，从浏览器请求头中提取操作系统和浏览器类型 |
+| `UserService` | 用户管理服务，处理用户全生命周期的核心业务逻辑，包括角色分配、多部门关联管理、密码重置、数据导入导出 |
+
+### 设计原则
+
+- **单例模式**：所有服务类采用 `getInstance()` 方法获取实例，与项目现有架构保持一致
+- **统一返回格式**：所有服务方法返回统一结果结构 `['success' => bool, 'data' => ..., 'error' => string, 'code' => int]`
+- **单一职责**：每个服务类专注于特定的业务领域
+- **事务支持**：涉及数据变更的操作在数据库事务中执行，保证数据一致性
+- **缓存管理**：数据变更时自动清除相关缓存，确保权限数据一致性
+
+### 小程序服务
+
+| 服务类 | 职责说明 |
+|--------|---------|
+| `MiniappAuthService` | 小程序认证服务，处理小程序登录、Token 管理、用户信息获取 |
+| `WechatService` | 微信服务，封装 EasyWeChat SDK，提供微信接口调用能力 |
+| `TokenBlacklistService` | Token 黑名单服务，管理已失效的 Token |
+| `BusinessService` | 业务服务，处理小程序业务逻辑 |
+| `HomeService` | 首页服务，提供小程序首页数据 |
 
 ## API 文档
 
@@ -223,6 +279,9 @@ backend/
 | POST | `/admin/users/:id/assign-roles` | 分配角色 |
 | POST | `/admin/users/:id/reset-password` | 重置密码 |
 | PUT | `/admin/users/:id/status` | 修改状态 |
+| PUT | `/admin/users/:id/depts` | 更新用户部门 |
+| POST | `/admin/users/:id/depts` | 添加用户部门 |
+| DELETE | `/admin/users/:id/depts/:deptId` | 移除用户部门 |
 | GET | `/admin/users/export` | 导出用户 |
 | POST | `/admin/users/import` | 导入用户 |
 
@@ -251,10 +310,21 @@ backend/
 | POST | `/admin/menus` | 创建菜单 |
 | PUT | `/admin/menus/:id` | 更新菜单 |
 | DELETE | `/admin/menus/:id` | 删除菜单 |
+| PUT | `/admin/menus/:id/status` | 修改状态 |
 | GET | `/admin/menus/:id/buttons` | 获取菜单按钮 |
 | POST | `/admin/menus/:id/buttons` | 创建菜单按钮 |
 | PUT | `/admin/menus/:id/buttons/:buttonId` | 更新菜单按钮 |
 | DELETE | `/admin/menus/:id/buttons/:buttonId` | 删除菜单按钮 |
+
+### 菜单按钮管理
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| GET | `/admin/menu-buttons` | 菜单按钮列表 |
+| GET | `/admin/menu-buttons/:id` | 菜单按钮详情 |
+| PUT | `/admin/menu-buttons/:id/status` | 修改菜单按钮状态 |
+| POST | `/admin/menu-buttons/batch-status` | 批量修改菜单按钮状态 |
+| POST | `/admin/menu-buttons/batch-delete` | 批量删除菜单按钮 |
 
 > **缓存说明**：菜单和按钮的创建、更新、删除操作会自动清除所有活跃用户的菜单缓存（`user_menu_tree_*`、`user_menu_codes_*`、`user_api_codes_*`），确保前端能立即获取最新权限数据。
 
@@ -369,9 +439,12 @@ backend/
   "msg": "success",
   "data": {
     "list": [],
-    "total": 100,
-    "page": 1,
-    "limit": 10
+    "pagination": {
+      "page": 1,
+      "page_size": 10,
+      "total": 100,
+      "total_pages": 10
+    }
   }
 }
 ```
@@ -384,6 +457,33 @@ backend/
 | `php think service:discover` | 发现服务 |
 | `composer install` | 安装依赖 |
 | `composer update` | 更新依赖 |
+
+## 测试
+
+项目包含完整的单元测试，覆盖核心服务层的功能测试。
+
+### 测试文件
+
+| 测试文件 | 覆盖范围 |
+|---------|---------|
+| `AdminAuthServiceTest.php` | 管理员认证服务测试 |
+| `AdminAuthTest.php` | 管理员认证测试 |
+| `ApiServiceTest.php` | API服务测试 |
+| `DepartmentServiceTest.php` | 部门服务测试 |
+| `LoginSecurityServiceTest.php` | 登录安全服务测试 |
+| `SimpleCacheTest.php` | 简单缓存测试 |
+| `UserAgentParserServiceTest.php` | 用户代理解析服务测试 |
+| `UserServiceTest.php` | 用户服务测试 |
+
+### 运行测试
+
+```bash
+# 运行所有测试
+./vendor/bin/phpunit
+
+# 运行单个测试文件
+./vendor/bin/phpunit tests/AdminAuthServiceTest.php
+```
 
 ## 部署说明
 
@@ -466,4 +566,4 @@ server {
 
 *项目版本：v1.0*
 *技术栈：ThinkPHP 8 + MySQL + Redis + JWT*
-*最后更新：2026-05-12*
+*最后更新：2026-05-16*

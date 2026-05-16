@@ -31,7 +31,7 @@ export interface LoginResponse {
  * @returns Promise<ApiResponse<LoginResponse>>
  */
 export function login(data: LoginRequest): Promise<ApiResponse<LoginResponse>> {
-  return post('/admin/login', data)
+  return post('/api/admin/login', data)
 }
 
 /**
@@ -39,7 +39,7 @@ export function login(data: LoginRequest): Promise<ApiResponse<LoginResponse>> {
  * @returns Promise<ApiResponse<void>>
  */
 export function logout(): Promise<ApiResponse<void>> {
-  return post('/admin/logout')
+  return post('/api/admin/logout')
 }
 
 /**
@@ -47,7 +47,7 @@ export function logout(): Promise<ApiResponse<void>> {
  * @returns Promise<ApiResponse<LoginResponse>>
  */
 export function refreshToken(refresh_token: string): Promise<ApiResponse<LoginResponse>> {
-  return post('/admin/refresh-token', { refresh_token })
+  return post('/api/admin/refresh-token', { refresh_token })
 }
 
 export interface ProfileResponse {
@@ -72,5 +72,5 @@ export interface ProfileResponse {
  * @returns Promise<ApiResponse<ProfileResponse>>
  */
 export function getCurrentUser(): Promise<ApiResponse<ProfileResponse>> {
-  return get('/admin/profile')
+  return get('/api/admin/profile')
 }

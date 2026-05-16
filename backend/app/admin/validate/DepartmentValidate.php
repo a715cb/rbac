@@ -39,11 +39,4 @@ class DepartmentValidate extends BaseValidate
         'setSort' => ['sort'],
     ];
 
-    protected function mobile($value): bool
-    {
-        if (empty($value)) {
-            return true;
-        }
-        return (bool) preg_match('/^1[3-9]\d{9}$/', $value);
-    }
 }

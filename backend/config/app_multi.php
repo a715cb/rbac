@@ -9,7 +9,7 @@ return [
     // 默认应用
     'default' => 'admin',
     // 允许访问的应用列表
-    'allow_list' => ['admin', 'api', 'miniapp'],
+    'allow_list' => ['admin', 'miniapp'],
     // 应用映射（用于域名部署）
     'app_map' => [],
     // 域名部署

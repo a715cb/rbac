@@ -1,18 +1,5 @@
 <?php
-// +----------------------------------------------------------------------
-// | 中间件配置
-// +----------------------------------------------------------------------
 
 return [
-    // 全局中间件
-    'global' => [
-        // 允许跨域
-        \app\middleware\AllowCrossDomain::class,
-    ],
-    
-    // 应用中间件
-    'app' => [
-        // 应用初始化
-        \app\middleware\AppInit::class,
-    ],
+    \app\middleware\AllowCrossDomain::class,
 ];

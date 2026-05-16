@@ -71,6 +71,22 @@ class BaseValidate extends Validate
      *              - 场景值为索引数组时（如 ['name', 'age']），从 $rules 中提取对应字段规则
      *              - 场景值为关联数组时（如 ['name' => 'require']），直接使用场景中定义的规则
      */
+    protected function mobile($value): bool
+    {
+        if (empty($value)) {
+            return true;
+        }
+        return (bool) preg_match('/^1[3-9]\d{9}$/', $value);
+    }
+
+    protected function email($value): bool
+    {
+        if (empty($value)) {
+            return true;
+        }
+        return (bool) filter_var($value, FILTER_VALIDATE_EMAIL) !== false;
+    }
+
     public function getSceneRules(): array
     {
         $scene = $this->currentScene;
