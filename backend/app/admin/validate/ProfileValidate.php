@@ -31,5 +31,4 @@ class ProfileValidate extends BaseValidate
         'update' => ['nickname', 'email', 'mobile', 'gender'],
         'change_password' => ['old_password', 'password'],
     ];
-
 }

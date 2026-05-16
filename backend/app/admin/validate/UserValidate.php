@@ -46,5 +46,4 @@ class UserValidate extends BaseValidate
         'reset_password' => ['password'],
         'change_status' => ['status'],
     ];
-
 }

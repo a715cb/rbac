@@ -38,5 +38,4 @@ class DepartmentValidate extends BaseValidate
         'setStatus' => ['status'],
         'setSort' => ['sort'],
     ];
-
 }
