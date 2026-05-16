@@ -1,341 +1,510 @@
--- =============================================
--- RBAC 权限系统 - 统一初始化数据脚本
--- =============================================
+-- ============================================
+-- RBAC 系统初始数据
+-- 自动生成时间: 2026-05-16 03:05:27
 -- 数据库: rbac_system
--- 整合时间: 2026-05-10
--- 说明: 创建初始管理员、角色、菜单、字典等数据，
---       并执行用户部门关联数据迁移
--- 整合来源:
---   002_init_data.sql (原始初始化数据)
---   006_migrate_user_dept_data.sql (用户部门数据迁移)
--- 默认密码: 123456 (bcrypt加密)
--- =============================================
+-- 表前缀: sys_
+-- ============================================
 
 SET NAMES utf8mb4;
-SET FOREIGN_KEY_CHECKS = 0;
 
-USE `rbac_system`;
+-- --------------------------------------------
+-- 数据: sys_api (59 行)
+-- --------------------------------------------
+INSERT INTO `sys_api` (`id`, `menu_id`, `name`, `code`, `method`, `path`, `group`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('1001', NULL, '管理员登录', 'admin:auth:login', 'POST', '/admin/login', 'auth', '1', '1', '2026-04-25 21:00:54', '1', '2026-04-25 21:00:54', NULL);
+INSERT INTO `sys_api` (`id`, `menu_id`, `name`, `code`, `method`, `path`, `group`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('1002', NULL, '管理员登出', 'admin:auth:logout', 'POST', '/admin/logout', 'auth', '1', '1', '2026-04-25 21:00:54', '1', '2026-04-25 21:00:54', NULL);
+INSERT INTO `sys_api` (`id`, `menu_id`, `name`, `code`, `method`, `path`, `group`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('1003', NULL, '刷新Token', 'admin:auth:refresh', 'POST', '/admin/refresh-token', 'auth', '1', '1', '2026-04-25 21:00:54', '1', '2026-04-25 21:00:54', NULL);
+INSERT INTO `sys_api` (`id`, `menu_id`, `name`, `code`, `method`, `path`, `group`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('2001', '100', '用户列表', 'admin:user:list', 'GET', '/admin/users', 'user', '1', '1', '2026-04-25 21:00:54', '1', '2026-04-25 21:00:54', NULL);
+INSERT INTO `sys_api` (`id`, `menu_id`, `name`, `code`, `method`, `path`, `group`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('2002', '100', '用户详情', 'admin:user:detail', 'GET', '/admin/users/:id', 'user', '1', '1', '2026-04-25 21:00:54', '1', '2026-04-25 21:00:54', NULL);
+INSERT INTO `sys_api` (`id`, `menu_id`, `name`, `code`, `method`, `path`, `group`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('2003', '100', '创建用户', 'admin:user:create', 'POST', '/admin/users', 'user', '1', '1', '2026-04-25 21:00:54', '1', '2026-04-25 21:00:54', NULL);
+INSERT INTO `sys_api` (`id`, `menu_id`, `name`, `code`, `method`, `path`, `group`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('2004', '100', '更新用户', 'admin:user:update', 'PUT', '/admin/users/:id', 'user', '1', '1', '2026-04-25 21:00:54', '1', '2026-04-25 21:00:54', NULL);
+INSERT INTO `sys_api` (`id`, `menu_id`, `name`, `code`, `method`, `path`, `group`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('2005', '100', '删除用户', 'admin:user:delete', 'DELETE', '/admin/users/:id', 'user', '1', '1', '2026-04-25 21:00:54', '1', '2026-04-25 21:00:54', NULL);
+INSERT INTO `sys_api` (`id`, `menu_id`, `name`, `code`, `method`, `path`, `group`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('2006', '100', '分配角色', 'admin:user:assign', 'POST', '/admin/users/:id/roles', 'user', '1', '1', '2026-04-25 21:00:54', '1', '2026-04-25 21:00:54', NULL);
+INSERT INTO `sys_api` (`id`, `menu_id`, `name`, `code`, `method`, `path`, `group`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('2007', '100', '重置密码', 'admin:user:reset', 'POST', '/admin/users/:id/reset-password', 'user', '1', '1', '2026-04-25 21:00:54', '1', '2026-04-25 21:00:54', NULL);
+INSERT INTO `sys_api` (`id`, `menu_id`, `name`, `code`, `method`, `path`, `group`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('3001', '101', '角色列表', 'admin:role:list', 'GET', '/admin/roles', 'role', '1', '1', '2026-04-25 21:00:54', '1', '2026-04-25 21:00:54', NULL);
+INSERT INTO `sys_api` (`id`, `menu_id`, `name`, `code`, `method`, `path`, `group`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('3002', '101', '角色详情', 'admin:role:detail', 'GET', '/admin/roles/:id', 'role', '1', '1', '2026-04-25 21:00:54', '1', '2026-04-25 21:00:54', NULL);
+INSERT INTO `sys_api` (`id`, `menu_id`, `name`, `code`, `method`, `path`, `group`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('3003', '101', '创建角色', 'admin:role:create', 'POST', '/admin/roles', 'role', '1', '1', '2026-04-25 21:00:54', '1', '2026-04-25 21:00:54', NULL);
+INSERT INTO `sys_api` (`id`, `menu_id`, `name`, `code`, `method`, `path`, `group`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('3004', '101', '更新角色', 'admin:role:update', 'PUT', '/admin/roles/:id', 'role', '1', '1', '2026-04-25 21:00:54', '1', '2026-04-25 21:00:54', NULL);
+INSERT INTO `sys_api` (`id`, `menu_id`, `name`, `code`, `method`, `path`, `group`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('3005', '101', '删除角色', 'admin:role:delete', 'DELETE', '/admin/roles/:id', 'role', '1', '1', '2026-04-25 21:00:54', '1', '2026-04-25 21:00:54', NULL);
+INSERT INTO `sys_api` (`id`, `menu_id`, `name`, `code`, `method`, `path`, `group`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('3006', '101', '分配菜单权限', 'admin:role:assignMenu', 'POST', '/admin/roles/:id/menus', 'role', '1', '1', '2026-04-25 21:00:54', '1', '2026-04-25 21:00:54', NULL);
+INSERT INTO `sys_api` (`id`, `menu_id`, `name`, `code`, `method`, `path`, `group`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('3007', '101', '分配按钮权限', 'admin:role:assignButton', 'POST', '/admin/roles/:id/buttons', 'role', '1', '1', '2026-04-25 21:00:54', '1', '2026-04-25 21:00:54', NULL);
+INSERT INTO `sys_api` (`id`, `menu_id`, `name`, `code`, `method`, `path`, `group`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('3008', '101', '分配API权限', 'admin:role:assignApi', 'POST', '/admin/roles/:id/apis', 'role', '1', '1', '2026-04-25 21:00:54', '1', '2026-04-25 21:00:54', NULL);
+INSERT INTO `sys_api` (`id`, `menu_id`, `name`, `code`, `method`, `path`, `group`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('4001', '102', '菜单列表', 'admin:menu:list', 'GET', '/admin/menus', 'menu', '1', '1', '2026-04-25 21:00:54', '1', '2026-04-25 21:00:54', NULL);
+INSERT INTO `sys_api` (`id`, `menu_id`, `name`, `code`, `method`, `path`, `group`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('4002', '102', '菜单树形', 'admin:menu:tree', 'GET', '/admin/menus/tree', 'menu', '1', '1', '2026-04-25 21:00:54', '1', '2026-04-25 21:00:54', NULL);
+INSERT INTO `sys_api` (`id`, `menu_id`, `name`, `code`, `method`, `path`, `group`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('4003', '102', '菜单详情', 'admin:menu:detail', 'GET', '/admin/menus/:id', 'menu', '1', '1', '2026-04-25 21:00:54', '1', '2026-04-25 21:00:54', NULL);
+INSERT INTO `sys_api` (`id`, `menu_id`, `name`, `code`, `method`, `path`, `group`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('4004', '102', '创建菜单', 'admin:menu:create', 'POST', '/admin/menus', 'menu', '1', '1', '2026-04-25 21:00:54', '1', '2026-04-25 21:00:54', NULL);
+INSERT INTO `sys_api` (`id`, `menu_id`, `name`, `code`, `method`, `path`, `group`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('4005', '102', '更新菜单', 'admin:menu:update', 'PUT', '/admin/menus/:id', 'menu', '1', '1', '2026-04-25 21:00:54', '1', '2026-04-25 21:00:54', NULL);
+INSERT INTO `sys_api` (`id`, `menu_id`, `name`, `code`, `method`, `path`, `group`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('4006', '102', '删除菜单', 'admin:menu:delete', 'DELETE', '/admin/menus/:id', 'menu', '1', '1', '2026-04-25 21:00:54', '1', '2026-04-25 21:00:54', NULL);
+INSERT INTO `sys_api` (`id`, `menu_id`, `name`, `code`, `method`, `path`, `group`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('5001', '103', '部门列表', 'admin:dept:list', 'GET', '/admin/depts', 'dept', '1', '1', '2026-04-25 21:00:54', '1', '2026-04-25 21:00:54', NULL);
+INSERT INTO `sys_api` (`id`, `menu_id`, `name`, `code`, `method`, `path`, `group`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('5002', '103', '部门树形', 'admin:dept:tree', 'GET', '/admin/depts/tree', 'dept', '1', '1', '2026-04-25 21:00:54', '1', '2026-04-25 21:00:54', NULL);
+INSERT INTO `sys_api` (`id`, `menu_id`, `name`, `code`, `method`, `path`, `group`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('5003', '103', '部门详情', 'admin:dept:detail', 'GET', '/admin/depts/:id', 'dept', '1', '1', '2026-04-25 21:00:54', '1', '2026-04-25 21:00:54', NULL);
+INSERT INTO `sys_api` (`id`, `menu_id`, `name`, `code`, `method`, `path`, `group`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('5004', '103', '创建部门', 'admin:dept:create', 'POST', '/admin/depts', 'dept', '1', '1', '2026-04-25 21:00:54', '1', '2026-04-25 21:00:54', NULL);
+INSERT INTO `sys_api` (`id`, `menu_id`, `name`, `code`, `method`, `path`, `group`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('5005', '103', '更新部门', 'admin:dept:update', 'PUT', '/admin/depts/:id', 'dept', '1', '1', '2026-04-25 21:00:54', '1', '2026-04-25 21:00:54', NULL);
+INSERT INTO `sys_api` (`id`, `menu_id`, `name`, `code`, `method`, `path`, `group`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('5006', '103', '删除部门', 'admin:dept:delete', 'DELETE', '/admin/depts/:id', 'dept', '1', '1', '2026-04-25 21:00:54', '1', '2026-04-25 21:00:54', NULL);
+INSERT INTO `sys_api` (`id`, `menu_id`, `name`, `code`, `method`, `path`, `group`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('6001', '104', '接口列表', 'admin:api:list', 'GET', '/admin/apis', 'api', '1', '1', '2026-04-25 21:00:54', '1', '2026-04-25 21:00:54', NULL);
+INSERT INTO `sys_api` (`id`, `menu_id`, `name`, `code`, `method`, `path`, `group`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('6002', '104', '接口详情', 'admin:api:detail', 'GET', '/admin/apis/:id', 'api', '1', '1', '2026-04-25 21:00:54', '1', '2026-04-25 21:00:54', NULL);
+INSERT INTO `sys_api` (`id`, `menu_id`, `name`, `code`, `method`, `path`, `group`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('6003', '104', '创建接口', 'admin:api:create', 'POST', '/admin/apis', 'api', '1', '1', '2026-04-25 21:00:54', '1', '2026-04-25 21:00:54', NULL);
+INSERT INTO `sys_api` (`id`, `menu_id`, `name`, `code`, `method`, `path`, `group`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('6004', '104', '更新接口', 'admin:api:update', 'PUT', '/admin/apis/:id', 'api', '1', '1', '2026-04-25 21:00:54', '1', '2026-04-25 21:00:54', NULL);
+INSERT INTO `sys_api` (`id`, `menu_id`, `name`, `code`, `method`, `path`, `group`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('6005', '104', '删除接口', 'admin:api:delete', 'DELETE', '/admin/apis/:id', 'api', '1', '1', '2026-04-25 21:00:54', '1', '2026-04-25 21:00:54', NULL);
+INSERT INTO `sys_api` (`id`, `menu_id`, `name`, `code`, `method`, `path`, `group`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('7001', '105', '字典类型列表', 'admin:dict:typeList', 'GET', '/admin/dict/types', 'dict', '1', '1', '2026-04-25 21:00:54', '1', '2026-04-25 21:00:54', NULL);
+INSERT INTO `sys_api` (`id`, `menu_id`, `name`, `code`, `method`, `path`, `group`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('7002', '105', '字典类型详情', 'admin:dict:typeDetail', 'GET', '/admin/dict/types/:id', 'dict', '1', '1', '2026-04-25 21:00:54', '1', '2026-04-25 21:00:54', NULL);
+INSERT INTO `sys_api` (`id`, `menu_id`, `name`, `code`, `method`, `path`, `group`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('7003', '105', '创建字典类型', 'admin:dict:typeCreate', 'POST', '/admin/dict/types', 'dict', '1', '1', '2026-04-25 21:00:54', '1', '2026-04-25 21:00:54', NULL);
+INSERT INTO `sys_api` (`id`, `menu_id`, `name`, `code`, `method`, `path`, `group`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('7004', '105', '更新字典类型', 'admin:dict:typeUpdate', 'PUT', '/admin/dict/types/:id', 'dict', '1', '1', '2026-04-25 21:00:54', '1', '2026-04-25 21:00:54', NULL);
+INSERT INTO `sys_api` (`id`, `menu_id`, `name`, `code`, `method`, `path`, `group`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('7005', '105', '删除字典类型', 'admin:dict:typeDelete', 'DELETE', '/admin/dict/types/:id', 'dict', '1', '1', '2026-04-25 21:00:54', '1', '2026-04-25 21:00:54', NULL);
+INSERT INTO `sys_api` (`id`, `menu_id`, `name`, `code`, `method`, `path`, `group`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('7006', '105', '字典数据列表', 'admin:dict:dataList', 'GET', '/admin/dict/data', 'dict', '1', '1', '2026-04-25 21:00:54', '1', '2026-04-25 21:00:54', NULL);
+INSERT INTO `sys_api` (`id`, `menu_id`, `name`, `code`, `method`, `path`, `group`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('7007', '105', '字典数据详情', 'admin:dict:dataDetail', 'GET', '/admin/dict/data/:id', 'dict', '1', '1', '2026-04-25 21:00:54', '1', '2026-04-25 21:00:54', NULL);
+INSERT INTO `sys_api` (`id`, `menu_id`, `name`, `code`, `method`, `path`, `group`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('7008', '105', '创建字典数据', 'admin:dict:dataCreate', 'POST', '/admin/dict/data', 'dict', '1', '1', '2026-04-25 21:00:54', '1', '2026-04-25 21:00:54', NULL);
+INSERT INTO `sys_api` (`id`, `menu_id`, `name`, `code`, `method`, `path`, `group`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('7009', '105', '更新字典数据', 'admin:dict:dataUpdate', 'PUT', '/admin/dict/data/:id', 'dict', '1', '1', '2026-04-25 21:00:54', '1', '2026-04-25 21:00:54', NULL);
+INSERT INTO `sys_api` (`id`, `menu_id`, `name`, `code`, `method`, `path`, `group`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('7010', '105', '删除字典数据', 'admin:dict:dataDelete', 'DELETE', '/admin/dict/data/:id', 'dict', '1', '1', '2026-04-25 21:00:54', '1', '2026-04-25 21:00:54', NULL);
+INSERT INTO `sys_api` (`id`, `menu_id`, `name`, `code`, `method`, `path`, `group`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('8003', NULL, '操作日志列表', 'admin:operation-log:list', 'GET', '/admin/operation-logs', 'monitor', '1', NULL, '2026-04-30 14:39:00', NULL, '2026-04-30 14:39:00', NULL);
+INSERT INTO `sys_api` (`id`, `menu_id`, `name`, `code`, `method`, `path`, `group`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('8004', NULL, '操作日志统计', 'admin:operation-log:stats', 'GET', '/admin/operation-logs/stats', 'monitor', '1', NULL, '2026-04-30 14:39:00', NULL, '2026-04-30 14:39:00', NULL);
+INSERT INTO `sys_api` (`id`, `menu_id`, `name`, `code`, `method`, `path`, `group`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('8005', NULL, '清理操作日志', 'admin:operation-log:clean', 'POST', '/admin/operation-logs/clean', 'monitor', '1', NULL, '2026-04-30 14:39:00', NULL, '2026-04-30 14:39:00', NULL);
+INSERT INTO `sys_api` (`id`, `menu_id`, `name`, `code`, `method`, `path`, `group`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('8006', NULL, '清空操作日志', 'admin:operation-log:clear', 'POST', '/admin/operation-logs/clear', 'monitor', '1', NULL, '2026-04-30 14:39:00', NULL, '2026-04-30 14:39:00', NULL);
+INSERT INTO `sys_api` (`id`, `menu_id`, `name`, `code`, `method`, `path`, `group`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('8007', NULL, '删除操作日志', 'admin:operation-log:delete', 'POST', '/admin/operation-logs/delete', 'monitor', '1', NULL, '2026-04-30 14:39:00', NULL, '2026-04-30 14:39:00', NULL);
+INSERT INTO `sys_api` (`id`, `menu_id`, `name`, `code`, `method`, `path`, `group`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('8008', NULL, '登录日志列表', 'admin:login-log:list', 'GET', '/admin/login-logs', 'monitor', '1', NULL, '2026-04-30 14:39:00', NULL, '2026-04-30 14:39:00', NULL);
+INSERT INTO `sys_api` (`id`, `menu_id`, `name`, `code`, `method`, `path`, `group`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('8009', NULL, '登录日志统计', 'admin:login-log:stats', 'GET', '/admin/login-logs/stats', 'monitor', '1', NULL, '2026-04-30 14:39:00', NULL, '2026-04-30 14:39:00', NULL);
+INSERT INTO `sys_api` (`id`, `menu_id`, `name`, `code`, `method`, `path`, `group`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('8010', NULL, '清理登录日志', 'admin:login-log:clean', 'POST', '/admin/login-logs/clean', 'monitor', '1', NULL, '2026-04-30 14:39:00', NULL, '2026-04-30 14:39:00', NULL);
+INSERT INTO `sys_api` (`id`, `menu_id`, `name`, `code`, `method`, `path`, `group`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('8011', NULL, '清空登录日志', 'admin:login-log:clear', 'POST', '/admin/login-logs/clear', 'monitor', '1', NULL, '2026-04-30 14:39:00', NULL, '2026-04-30 14:39:00', NULL);
+INSERT INTO `sys_api` (`id`, `menu_id`, `name`, `code`, `method`, `path`, `group`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('8012', NULL, '删除登录日志', 'admin:login-log:delete', 'POST', '/admin/login-logs/delete', 'monitor', '1', NULL, '2026-04-30 14:39:00', NULL, '2026-04-30 14:39:00', NULL);
+INSERT INTO `sys_api` (`id`, `menu_id`, `name`, `code`, `method`, `path`, `group`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('8015', NULL, '修改字典类型状态', 'admin:dict:typeStatus', 'PUT', '/admin/dict/types/:id/status', 'dict', '1', NULL, '2026-04-30 14:39:00', NULL, '2026-04-30 14:39:00', NULL);
+INSERT INTO `sys_api` (`id`, `menu_id`, `name`, `code`, `method`, `path`, `group`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('8016', NULL, '修改字典数据状态', 'admin:dict:dataStatus', 'PUT', '/admin/dict/data/:id/status', 'dict', '1', NULL, '2026-04-30 14:39:00', NULL, '2026-04-30 14:39:00', NULL);
+INSERT INTO `sys_api` (`id`, `menu_id`, `name`, `code`, `method`, `path`, `group`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('8017', NULL, '字典数据排序', 'admin:dict:dataSort', 'POST', '/admin/dict/data/sort', 'dict', '1', NULL, '2026-04-30 14:39:00', NULL, '2026-05-14 09:37:14', NULL);
+INSERT INTO `sys_api` (`id`, `menu_id`, `name`, `code`, `method`, `path`, `group`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('8018', NULL, '测试接口', 'test:api:1875', 'GET', '/test/endpoint', 'test', '1', '1', '2026-05-09 18:09:56', NULL, '2026-05-09 18:09:56', '2026-05-09 18:09:56');
 
--- =============================================
--- 1. 创建超级管理员角色
--- =============================================
-INSERT INTO `sys_role` (`id`, `name`, `code`, `data_scope`, `status`, `sort`, `remark`, `created_by`, `create_time`, `updated_by`, `update_time`) VALUES
-(1, '超级管理员', 'super_admin', 1, 1, 0, '系统超级管理员，拥有所有权限', NULL, NOW(), NULL, NULL);
+-- --------------------------------------------
+-- 数据: sys_business (空表，无数据)
+-- --------------------------------------------
 
--- =============================================
--- 2. 创建超级管理员用户 (密码: 123456)
--- =============================================
-INSERT INTO `sys_user` (`id`, `username`, `password`, `nickname`, `email`, `mobile`, `avatar`, `gender`, `status`, `dept_id`, `remark`, `created_by`, `create_time`, `updated_by`, `update_time`) VALUES
-(1, 'admin', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '超级管理员', 'admin@example.com', '13800138000', NULL, 1, 1, NULL, '系统超级管理员账号', NULL, NOW(), NULL, NULL);
+-- --------------------------------------------
+-- 数据: sys_business_interaction (空表，无数据)
+-- --------------------------------------------
 
--- =============================================
--- 3. 用户角色关联
--- =============================================
-INSERT INTO `sys_user_role` (`user_id`, `role_id`, `create_time`) VALUES
-(1, 1, NOW());
+-- --------------------------------------------
+-- 数据: sys_config (6 行)
+-- --------------------------------------------
+INSERT INTO `sys_config` (`id`, `name`, `code`, `value`, `type`, `status`, `remark`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('1', '登录验证码', 'login_captcha', 'true', 'string', '1', '是否启用登录验证码', '1', '2026-04-25 21:00:54', '1', '2026-04-25 21:00:54', NULL);
+INSERT INTO `sys_config` (`id`, `name`, `code`, `value`, `type`, `status`, `remark`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('2', '密码最小长度', 'password_min_length', '6', 'number', '1', '密码最小长度要求', '1', '2026-04-25 21:00:54', '1', '2026-04-25 21:00:54', NULL);
+INSERT INTO `sys_config` (`id`, `name`, `code`, `value`, `type`, `status`, `remark`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('3', '登录失败锁定次数', 'login_fail_lock_count', '5', 'number', '1', '连续失败次数后锁定账户', '1', '2026-04-25 21:00:54', '1', '2026-04-25 21:00:54', NULL);
+INSERT INTO `sys_config` (`id`, `name`, `code`, `value`, `type`, `status`, `remark`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('4', '登录失败锁定时间', 'login_fail_lock_minutes', '15', 'number', '1', '账户锁定时间（分钟）', '1', '2026-04-25 21:00:54', '1', '2026-04-25 21:00:54', NULL);
+INSERT INTO `sys_config` (`id`, `name`, `code`, `value`, `type`, `status`, `remark`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('5', 'Token有效期', 'token_expire_hours', '2', 'number', '1', 'Access Token有效期（小时）', '1', '2026-04-25 21:00:54', '1', '2026-04-25 21:00:54', NULL);
+INSERT INTO `sys_config` (`id`, `name`, `code`, `value`, `type`, `status`, `remark`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('6', '刷新Token有效期', 'refresh_token_expire_days', '7', 'number', '1', '刷新Token有效期（天）', '1', '2026-04-25 21:00:54', '1', '2026-04-25 21:00:54', NULL);
 
--- =============================================
--- 4. 创建系统管理目录
--- =============================================
-INSERT INTO `sys_menu` (`id`, `parent_id`, `name`, `code`, `path`, `icon`, `component`, `menu_type`, `sort`, `visible`, `status`, `keep_alive`, `always_show`, `breadcrumb`, `active_menu`, `is_external`, `is_frame`, `remark`, `created_by`, `create_time`, `updated_by`, `update_time`) VALUES
-(3, 0, '首页', 'dashboard', '/', 'ant-design:dashboard-outlined', NULL, 1, 0, 1, 1, 0, 0, 1, NULL, 0, 1, '首页目录', 1, NOW(), 1, NOW()),
-(1, 0, '系统管理', 'system', '/system', 'ant-design:setting-outlined', NULL, 1, 100, 1, 1, 0, 1, 1, NULL, 0, 1, '系统管理模块', 1, NOW(), 1, NOW()),
-(2, 0, '系统监控', 'monitor', '/monitor', 'ant-design:monitor-outlined', NULL, 1, 200, 1, 1, 0, 1, 1, NULL, 0, 1, '系统监控模块', 1, NOW(), 1, NOW());
+-- --------------------------------------------
+-- 数据: sys_department (6 行)
+-- --------------------------------------------
+INSERT INTO `sys_department` (`id`, `parent_id`, `name`, `code`, `leader`, `phone`, `email`, `sort`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('1', '0', '总部', 'zb', '', '', '', '0', '1', '1', '2026-04-26 13:35:48', NULL, '2026-04-26 13:35:48', NULL);
+INSERT INTO `sys_department` (`id`, `parent_id`, `name`, `code`, `leader`, `phone`, `email`, `sort`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('2', '1', '人事部', 'rsb', '', '', '', '0', '1', '1', '2026-04-26 13:36:20', NULL, '2026-04-26 13:36:20', NULL);
+INSERT INTO `sys_department` (`id`, `parent_id`, `name`, `code`, `leader`, `phone`, `email`, `sort`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('3', '1', '财务部', 'cwb', '', '', '', '0', '1', '1', '2026-04-26 13:36:56', NULL, '2026-04-26 13:36:56', NULL);
+INSERT INTO `sys_department` (`id`, `parent_id`, `name`, `code`, `leader`, `phone`, `email`, `sort`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('4', '1', '业务部', 'ywb', '', '', '', '0', '1', '1', '2026-04-26 13:37:14', NULL, '2026-05-14 10:55:32', NULL);
+INSERT INTO `sys_department` (`id`, `parent_id`, `name`, `code`, `leader`, `phone`, `email`, `sort`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('5', '0', '测试部门', 'test_dept_3454', '测试负责人', '13800000000', 'test@dept.com', '999', '1', '1', '2026-05-09 18:09:50', NULL, '2026-05-09 18:09:51', '2026-05-09 18:09:51');
+INSERT INTO `sys_department` (`id`, `parent_id`, `name`, `code`, `leader`, `phone`, `email`, `sort`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('6', '0', '测试部门', 'test_dept_4905', '测试负责人', '13800000000', 'test@dept.com', '999', '1', '1', '2026-05-09 18:12:48', NULL, '2026-05-09 18:12:49', '2026-05-09 18:12:49');
 
--- =============================================
--- 4.1 创建首页子菜单
--- =============================================
-INSERT INTO `sys_menu` (`id`, `parent_id`, `name`, `code`, `path`, `icon`, `component`, `menu_type`, `sort`, `visible`, `status`, `keep_alive`, `always_show`, `breadcrumb`, `active_menu`, `is_external`, `is_frame`, `remark`, `created_by`, `create_time`, `updated_by`, `update_time`) VALUES
-(300, 3, '控制台', 'dashboard_console', '/dashboard', 'ant-design:dashboard-outlined', 'dashboard/index', 2, 100, 1, 1, 1, 0, 1, NULL, 0, 1, '控制台菜单', 1, NOW(), 1, NOW());
+-- --------------------------------------------
+-- 数据: sys_dict_data (20 行)
+-- --------------------------------------------
+INSERT INTO `sys_dict_data` (`id`, `dict_type_id`, `label`, `value`, `sort`, `status`, `remark`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('1', '1', '未知', '0', '0', '1', '', '1', '2026-04-25 21:00:54', '1', '2026-05-10 01:43:11', NULL);
+INSERT INTO `sys_dict_data` (`id`, `dict_type_id`, `label`, `value`, `sort`, `status`, `remark`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('2', '1', '男', '1', '1', '1', NULL, '1', '2026-04-25 21:00:54', '1', '2026-04-25 21:00:54', NULL);
+INSERT INTO `sys_dict_data` (`id`, `dict_type_id`, `label`, `value`, `sort`, `status`, `remark`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('3', '1', '女', '2', '2', '1', NULL, '1', '2026-04-25 21:00:54', '1', '2026-04-25 21:00:54', NULL);
+INSERT INTO `sys_dict_data` (`id`, `dict_type_id`, `label`, `value`, `sort`, `status`, `remark`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('4', '2', '正常', '1', '1', '1', '', '1', '2026-04-25 21:00:54', '1', '2026-05-11 06:05:59', NULL);
+INSERT INTO `sys_dict_data` (`id`, `dict_type_id`, `label`, `value`, `sort`, `status`, `remark`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('5', '2', '禁用', '0', '2', '1', NULL, '1', '2026-04-25 21:00:54', '1', '2026-04-25 21:00:54', NULL);
+INSERT INTO `sys_dict_data` (`id`, `dict_type_id`, `label`, `value`, `sort`, `status`, `remark`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('6', '3', '目录', '1', '1', '1', NULL, '1', '2026-04-25 21:00:54', '1', '2026-04-25 21:00:54', NULL);
+INSERT INTO `sys_dict_data` (`id`, `dict_type_id`, `label`, `value`, `sort`, `status`, `remark`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('7', '3', '菜单', '2', '2', '1', NULL, '1', '2026-04-25 21:00:54', '1', '2026-04-25 21:00:54', NULL);
+INSERT INTO `sys_dict_data` (`id`, `dict_type_id`, `label`, `value`, `sort`, `status`, `remark`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('8', '3', '按钮', '3', '3', '1', NULL, '1', '2026-04-25 21:00:54', '1', '2026-04-25 21:00:54', NULL);
+INSERT INTO `sys_dict_data` (`id`, `dict_type_id`, `label`, `value`, `sort`, `status`, `remark`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('9', '4', '全部数据', '1', '1', '1', NULL, '1', '2026-04-25 21:00:54', '1', '2026-04-25 21:00:54', NULL);
+INSERT INTO `sys_dict_data` (`id`, `dict_type_id`, `label`, `value`, `sort`, `status`, `remark`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('10', '4', '本部门数据', '2', '2', '1', NULL, '1', '2026-04-25 21:00:54', '1', '2026-04-25 21:00:54', NULL);
+INSERT INTO `sys_dict_data` (`id`, `dict_type_id`, `label`, `value`, `sort`, `status`, `remark`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('11', '4', '本部门及以下数据', '3', '3', '1', NULL, '1', '2026-04-25 21:00:54', '1', '2026-04-25 21:00:54', NULL);
+INSERT INTO `sys_dict_data` (`id`, `dict_type_id`, `label`, `value`, `sort`, `status`, `remark`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('12', '4', '仅本人数据', '4', '4', '1', NULL, '1', '2026-04-25 21:00:54', '1', '2026-04-25 21:00:54', NULL);
+INSERT INTO `sys_dict_data` (`id`, `dict_type_id`, `label`, `value`, `sort`, `status`, `remark`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('13', '4', '自定义数据', '5', '5', '1', NULL, '1', '2026-04-25 21:00:54', '1', '2026-04-25 21:00:54', NULL);
+INSERT INTO `sys_dict_data` (`id`, `dict_type_id`, `label`, `value`, `sort`, `status`, `remark`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('14', '5', '是', '1', '1', '1', NULL, '1', '2026-04-25 21:00:54', '1', '2026-04-25 21:00:54', NULL);
+INSERT INTO `sys_dict_data` (`id`, `dict_type_id`, `label`, `value`, `sort`, `status`, `remark`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('15', '5', '否', '0', '2', '1', '', '1', '2026-04-25 21:00:54', '1', '2026-05-14 08:51:30', NULL);
+INSERT INTO `sys_dict_data` (`id`, `dict_type_id`, `label`, `value`, `sort`, `status`, `remark`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('16', '6', '成功', '1', '1', '1', '成功', '1', '2026-05-10 00:57:06', '1', '2026-05-10 00:57:06', NULL);
+INSERT INTO `sys_dict_data` (`id`, `dict_type_id`, `label`, `value`, `sort`, `status`, `remark`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('17', '6', '失败', '0', '2', '1', '失败', '1', '2026-05-10 00:59:56', '1', '2026-05-10 00:59:56', NULL);
+INSERT INTO `sys_dict_data` (`id`, `dict_type_id`, `label`, `value`, `sort`, `status`, `remark`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('18', '2', '测试', '3', '99', '0', '', '1', '2026-05-10 01:22:30', '1', '2026-05-10 01:43:39', NULL);
+INSERT INTO `sys_dict_data` (`id`, `dict_type_id`, `label`, `value`, `sort`, `status`, `remark`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('19', '7', '正常', '1', '1', '1', NULL, '1', '2026-05-11 03:25:22', '1', '2026-05-11 03:25:22', NULL);
+INSERT INTO `sys_dict_data` (`id`, `dict_type_id`, `label`, `value`, `sort`, `status`, `remark`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('20', '7', '禁用', '0', '2', '1', '', '1', '2026-05-11 03:25:22', '1', '2026-05-11 06:06:08', NULL);
 
--- =============================================
--- 5. 创建系统管理子菜单
--- =============================================
-INSERT INTO `sys_menu` (`id`, `parent_id`, `name`, `code`, `path`, `icon`, `component`, `menu_type`, `sort`, `visible`, `status`, `keep_alive`, `always_show`, `breadcrumb`, `active_menu`, `is_external`, `is_frame`, `remark`, `created_by`, `create_time`, `updated_by`, `update_time`) VALUES
-(100, 1, '用户管理', 'system_user', '/system/user', 'ant-design:user-outlined', 'system/user/index', 2, 100, 1, 1, 1, 1, 1, NULL, 0, 1, '用户管理菜单', 1, NOW(), 1, NOW()),
-(101, 1, '角色管理', 'system_role', '/system/role', 'ant-design:team-outlined', 'system/role/index', 2, 101, 1, 1, 0, 1, 1, NULL, 0, 1, '角色管理菜单', 1, NOW(), 1, NOW()),
-(102, 1, '菜单管理', 'system_menu', '/system/menu', 'ant-design:menu-outlined', 'system/menu/index', 2, 102, 1, 1, 0, 1, 1, NULL, 0, 1, '菜单管理菜单', 1, NOW(), 1, NOW()),
-(103, 1, '部门管理', 'system_dept', '/system/dept', 'ant-design:apartment-outlined', 'system/dept/index', 2, 103, 1, 1, 0, 1, 1, NULL, 0, 1, '部门管理菜单', 1, NOW(), 1, NOW()),
-(104, 1, '接口管理', 'system_api', '/system/api', 'ant-design:api-outlined', 'system/api/index', 2, 104, 1, 1, 0, 1, 1, NULL, 0, 1, '接口管理菜单', 1, NOW(), 1, NOW()),
-(105, 1, '字典管理', 'system_dict', '/system/dict', 'ant-design:book-outlined', 'system/dict/index', 2, 105, 1, 1, 0, 1, 1, NULL, 0, 1, '字典管理菜单', 1, NOW(), 1, NOW());
+-- --------------------------------------------
+-- 数据: sys_dict_type (7 行)
+-- --------------------------------------------
+INSERT INTO `sys_dict_type` (`id`, `name`, `code`, `type`, `status`, `remark`, `sort`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('1', '用户性别', 'user_gender', 'string', '1', '用户性别字典', '0', '1', '2026-04-25 21:00:54', '1', '2026-04-30 04:16:49', NULL);
+INSERT INTO `sys_dict_type` (`id`, `name`, `code`, `type`, `status`, `remark`, `sort`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('2', '用户状态', 'user_status', 'string', '1', '用户状态字典', '0', '1', '2026-04-25 21:00:54', '1', '2026-04-30 03:48:46', NULL);
+INSERT INTO `sys_dict_type` (`id`, `name`, `code`, `type`, `status`, `remark`, `sort`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('3', '菜单类型', 'menu_type', 'string', '1', '菜单类型字典', '0', '1', '2026-04-25 21:00:54', '1', '2026-04-25 21:00:54', NULL);
+INSERT INTO `sys_dict_type` (`id`, `name`, `code`, `type`, `status`, `remark`, `sort`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('4', '数据权限', 'data_scope', 'number', '1', '数据权限范围字典', '0', '1', '2026-04-25 21:00:54', '1', '2026-04-25 21:00:54', NULL);
+INSERT INTO `sys_dict_type` (`id`, `name`, `code`, `type`, `status`, `remark`, `sort`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('5', '是否', 'yes_no', 'string', '1', '是/否字典', '0', '1', '2026-04-25 21:00:54', '1', '2026-04-25 21:00:54', NULL);
+INSERT INTO `sys_dict_type` (`id`, `name`, `code`, `type`, `status`, `remark`, `sort`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('6', '操作状态', 'operation_status', 'number', '1', '操作状态', '0', '1', '2026-05-10 00:58:33', NULL, '2026-05-10 00:58:33', NULL);
+INSERT INTO `sys_dict_type` (`id`, `name`, `code`, `type`, `status`, `remark`, `sort`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('7', '角色状态', 'role_status', 'number', '1', '角色状态字典', '0', '1', '2026-05-11 03:25:22', '1', '2026-05-11 03:25:22', NULL);
 
--- =============================================
--- 6. 创建监控子菜单
--- =============================================
-INSERT INTO `sys_menu` (`id`, `parent_id`, `name`, `code`, `path`, `icon`, `component`, `menu_type`, `sort`, `visible`, `status`, `keep_alive`, `always_show`, `breadcrumb`, `active_menu`, `is_external`, `is_frame`, `remark`, `created_by`, `create_time`, `updated_by`, `update_time`) VALUES
-(200, 2, '登录日志', 'monitor_login', '/monitor/login', 'ant-design:file-text-outlined', 'monitor/login/index', 2, 100, 1, 1, 0, 1, 1, NULL, 0, 1, '登录日志菜单', 1, NOW(), 1, NOW()),
-(201, 2, '操作日志', 'monitor_operation', '/monitor/operation', 'ant-design:history-outlined', 'monitor/operation/index', 2, 101, 1, 1, 0, 1, 1, NULL, 0, 1, '操作日志菜单', 1, NOW(), 1, NOW());
+-- --------------------------------------------
+-- 数据: sys_login_log (38 行)
+-- --------------------------------------------
+INSERT INTO `sys_login_log` (`id`, `username`, `ip`, `address`, `user_agent`, `os`, `browser`, `status`, `msg`, `login_time`) VALUES ('752', 'admin', '127.0.0.1', '', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', 'Windows 10', 'Chrome', '1', '登录成功', '2026-05-14 15:01:23');
+INSERT INTO `sys_login_log` (`id`, `username`, `ip`, `address`, `user_agent`, `os`, `browser`, `status`, `msg`, `login_time`) VALUES ('753', 'admin', '127.0.0.1', '', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', 'Windows 10', 'Chrome', '1', '登录成功', '2026-05-14 17:49:41');
+INSERT INTO `sys_login_log` (`id`, `username`, `ip`, `address`, `user_agent`, `os`, `browser`, `status`, `msg`, `login_time`) VALUES ('754', 'admin', '127.0.0.1', '', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', 'Windows 10', 'Chrome', '1', '登录成功', '2026-05-14 18:31:30');
+INSERT INTO `sys_login_log` (`id`, `username`, `ip`, `address`, `user_agent`, `os`, `browser`, `status`, `msg`, `login_time`) VALUES ('755', 'admin', '127.0.0.1', '', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', 'Windows 10', 'Chrome', '1', '登录成功', '2026-05-14 19:02:50');
+INSERT INTO `sys_login_log` (`id`, `username`, `ip`, `address`, `user_agent`, `os`, `browser`, `status`, `msg`, `login_time`) VALUES ('756', 'test', '127.0.0.1', '', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', 'Windows 10', 'Chrome', '1', '登录成功', '2026-05-15 06:09:59');
+INSERT INTO `sys_login_log` (`id`, `username`, `ip`, `address`, `user_agent`, `os`, `browser`, `status`, `msg`, `login_time`) VALUES ('757', 'test', '127.0.0.1', '', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', 'Windows 10', 'Chrome', '1', '登录成功', '2026-05-15 06:10:24');
+INSERT INTO `sys_login_log` (`id`, `username`, `ip`, `address`, `user_agent`, `os`, `browser`, `status`, `msg`, `login_time`) VALUES ('758', 'admin', '127.0.0.1', '', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36 Edg/148.0.0.0', 'Windows 10', 'Chrome', '1', '登录成功', '2026-05-15 06:12:45');
+INSERT INTO `sys_login_log` (`id`, `username`, `ip`, `address`, `user_agent`, `os`, `browser`, `status`, `msg`, `login_time`) VALUES ('759', 'test', '127.0.0.1', '', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', 'Windows 10', 'Chrome', '1', '登录成功', '2026-05-15 06:13:51');
+INSERT INTO `sys_login_log` (`id`, `username`, `ip`, `address`, `user_agent`, `os`, `browser`, `status`, `msg`, `login_time`) VALUES ('760', 'test', '127.0.0.1', '', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', 'Windows 10', 'Chrome', '1', '登录成功', '2026-05-15 06:44:00');
+INSERT INTO `sys_login_log` (`id`, `username`, `ip`, `address`, `user_agent`, `os`, `browser`, `status`, `msg`, `login_time`) VALUES ('761', 'admin', '127.0.0.1', '', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36 Edg/148.0.0.0', 'Windows 10', 'Chrome', '1', '登录成功', '2026-05-15 06:49:17');
+INSERT INTO `sys_login_log` (`id`, `username`, `ip`, `address`, `user_agent`, `os`, `browser`, `status`, `msg`, `login_time`) VALUES ('762', 'test', '127.0.0.1', '', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', 'Windows 10', 'Chrome', '1', '登录成功', '2026-05-15 06:50:01');
+INSERT INTO `sys_login_log` (`id`, `username`, `ip`, `address`, `user_agent`, `os`, `browser`, `status`, `msg`, `login_time`) VALUES ('763', 'test', '127.0.0.1', '', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', 'Windows 10', 'Chrome', '1', '登录成功', '2026-05-15 07:16:56');
+INSERT INTO `sys_login_log` (`id`, `username`, `ip`, `address`, `user_agent`, `os`, `browser`, `status`, `msg`, `login_time`) VALUES ('764', 'test', '127.0.0.1', '', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', 'Windows 10', 'Chrome', '1', '登录成功', '2026-05-15 07:18:29');
+INSERT INTO `sys_login_log` (`id`, `username`, `ip`, `address`, `user_agent`, `os`, `browser`, `status`, `msg`, `login_time`) VALUES ('765', 'test', '127.0.0.1', '', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', 'Windows 10', 'Chrome', '1', '登录成功', '2026-05-15 07:19:23');
+INSERT INTO `sys_login_log` (`id`, `username`, `ip`, `address`, `user_agent`, `os`, `browser`, `status`, `msg`, `login_time`) VALUES ('766', 'demoadmin', '127.0.0.1', '', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', 'Windows 10', 'Chrome', '1', '登录成功', '2026-05-15 10:03:03');
+INSERT INTO `sys_login_log` (`id`, `username`, `ip`, `address`, `user_agent`, `os`, `browser`, `status`, `msg`, `login_time`) VALUES ('767', 'demoadmin', '127.0.0.1', '', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', 'Windows 10', 'Chrome', '1', '登录成功', '2026-05-15 10:05:25');
+INSERT INTO `sys_login_log` (`id`, `username`, `ip`, `address`, `user_agent`, `os`, `browser`, `status`, `msg`, `login_time`) VALUES ('768', 'admin', '127.0.0.1', '', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) TraeCN/1.107.1 Chrome/142.0.7444.235 Electron/39.2.7 Safari/537.36', 'Windows 10', 'Chrome', '1', '登录成功', '2026-05-15 12:32:19');
+INSERT INTO `sys_login_log` (`id`, `username`, `ip`, `address`, `user_agent`, `os`, `browser`, `status`, `msg`, `login_time`) VALUES ('769', 'admin', '127.0.0.1', '', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36 Edg/148.0.0.0', 'Windows 10', 'Chrome', '1', '登录成功', '2026-05-15 13:52:07');
+INSERT INTO `sys_login_log` (`id`, `username`, `ip`, `address`, `user_agent`, `os`, `browser`, `status`, `msg`, `login_time`) VALUES ('770', 'admin', '127.0.0.1', '', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36 Edg/148.0.0.0', 'Windows 10', 'Chrome', '1', '登录成功', '2026-05-15 13:58:39');
+INSERT INTO `sys_login_log` (`id`, `username`, `ip`, `address`, `user_agent`, `os`, `browser`, `status`, `msg`, `login_time`) VALUES ('771', 'admin', '127.0.0.1', '', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36 Edg/148.0.0.0', 'Windows 10', 'Chrome', '1', '登录成功', '2026-05-15 15:18:38');
+INSERT INTO `sys_login_log` (`id`, `username`, `ip`, `address`, `user_agent`, `os`, `browser`, `status`, `msg`, `login_time`) VALUES ('772', 'demoadmin', '127.0.0.1', '', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', 'Windows 10', 'Chrome', '1', '登录成功', '2026-05-15 15:20:06');
+INSERT INTO `sys_login_log` (`id`, `username`, `ip`, `address`, `user_agent`, `os`, `browser`, `status`, `msg`, `login_time`) VALUES ('773', 'admin', '127.0.0.1', '', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36 Edg/148.0.0.0', 'Windows 10', 'Chrome', '1', '登录成功', '2026-05-15 15:22:51');
+INSERT INTO `sys_login_log` (`id`, `username`, `ip`, `address`, `user_agent`, `os`, `browser`, `status`, `msg`, `login_time`) VALUES ('774', 'admin', '127.0.0.1', '', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36 Edg/148.0.0.0', 'Windows 10', 'Chrome', '1', '登录成功', '2026-05-15 15:41:40');
+INSERT INTO `sys_login_log` (`id`, `username`, `ip`, `address`, `user_agent`, `os`, `browser`, `status`, `msg`, `login_time`) VALUES ('775', 'admin', '127.0.0.1', '', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36 Edg/148.0.0.0', 'Windows 10', 'Chrome', '1', '登录成功', '2026-05-15 15:52:33');
+INSERT INTO `sys_login_log` (`id`, `username`, `ip`, `address`, `user_agent`, `os`, `browser`, `status`, `msg`, `login_time`) VALUES ('776', 'admin', '127.0.0.1', '', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36 Edg/148.0.0.0', 'Windows 10', 'Chrome', '1', '登录成功', '2026-05-15 15:53:49');
+INSERT INTO `sys_login_log` (`id`, `username`, `ip`, `address`, `user_agent`, `os`, `browser`, `status`, `msg`, `login_time`) VALUES ('777', 'admin', '127.0.0.1', '', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36 Edg/148.0.0.0', 'Windows 10', 'Chrome', '1', '登录成功', '2026-05-15 17:53:55');
+INSERT INTO `sys_login_log` (`id`, `username`, `ip`, `address`, `user_agent`, `os`, `browser`, `status`, `msg`, `login_time`) VALUES ('778', 'admin', '127.0.0.1', '', 'Mozilla/5.0 (Windows NT; Windows NT 10.0; zh-CN) WindowsPowerShell/5.1.19041.6456', 'Windows 10', 'Unknown', '1', '登录成功', '2026-05-15 17:55:05');
+INSERT INTO `sys_login_log` (`id`, `username`, `ip`, `address`, `user_agent`, `os`, `browser`, `status`, `msg`, `login_time`) VALUES ('779', 'demoadmin', '127.0.0.1', '', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', 'Windows 10', 'Chrome', '1', '登录成功', '2026-05-15 18:38:07');
+INSERT INTO `sys_login_log` (`id`, `username`, `ip`, `address`, `user_agent`, `os`, `browser`, `status`, `msg`, `login_time`) VALUES ('780', 'demoadmin', '127.0.0.1', '', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', 'Windows 10', 'Chrome', '1', '登录成功', '2026-05-15 18:40:18');
+INSERT INTO `sys_login_log` (`id`, `username`, `ip`, `address`, `user_agent`, `os`, `browser`, `status`, `msg`, `login_time`) VALUES ('781', 'admin', '127.0.0.1', '', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36 Edg/148.0.0.0', 'Windows 10', 'Chrome', '1', '登录成功', '2026-05-15 22:59:42');
+INSERT INTO `sys_login_log` (`id`, `username`, `ip`, `address`, `user_agent`, `os`, `browser`, `status`, `msg`, `login_time`) VALUES ('782', 'admin', '127.0.0.1', '', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36 Edg/148.0.0.0', 'Windows 10', 'Chrome', '1', '登录成功', '2026-05-15 23:00:35');
+INSERT INTO `sys_login_log` (`id`, `username`, `ip`, `address`, `user_agent`, `os`, `browser`, `status`, `msg`, `login_time`) VALUES ('783', 'admin', '127.0.0.1', '', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36 Edg/148.0.0.0', 'Windows 10', 'Chrome', '1', '登录成功', '2026-05-15 23:20:43');
+INSERT INTO `sys_login_log` (`id`, `username`, `ip`, `address`, `user_agent`, `os`, `browser`, `status`, `msg`, `login_time`) VALUES ('784', 'admin', '127.0.0.1', '', 'Mozilla/5.0 (Windows NT; Windows NT 10.0; zh-CN) WindowsPowerShell/5.1.19041.6456', 'Windows 10', 'Unknown', '0', '密码错误', '2026-05-16 05:28:28');
+INSERT INTO `sys_login_log` (`id`, `username`, `ip`, `address`, `user_agent`, `os`, `browser`, `status`, `msg`, `login_time`) VALUES ('785', 'admin', '127.0.0.1', '', 'TestAgent', 'Unknown', 'Unknown', '0', '密码错误', '2026-05-16 05:30:15');
+INSERT INTO `sys_login_log` (`id`, `username`, `ip`, `address`, `user_agent`, `os`, `browser`, `status`, `msg`, `login_time`) VALUES ('786', 'admin', '127.0.0.1', '', 'Mozilla/5.0 (Windows NT; Windows NT 10.0; zh-CN) WindowsPowerShell/5.1.19041.6456', 'Windows 10', 'Unknown', '1', '登录成功', '2026-05-16 05:33:17');
+INSERT INTO `sys_login_log` (`id`, `username`, `ip`, `address`, `user_agent`, `os`, `browser`, `status`, `msg`, `login_time`) VALUES ('787', 'admin', '127.0.0.1', '', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36 Edg/148.0.0.0', 'Windows 10', 'Chrome', '1', '登录成功', '2026-05-16 05:33:21');
+INSERT INTO `sys_login_log` (`id`, `username`, `ip`, `address`, `user_agent`, `os`, `browser`, `status`, `msg`, `login_time`) VALUES ('788', 'demoadmin', '127.0.0.1', '', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', 'Windows 10', 'Chrome', '1', '登录成功', '2026-05-16 05:35:32');
+INSERT INTO `sys_login_log` (`id`, `username`, `ip`, `address`, `user_agent`, `os`, `browser`, `status`, `msg`, `login_time`) VALUES ('789', 'admin', '127.0.0.1', '', 'Mozilla/5.0 (Windows NT; Windows NT 10.0; zh-CN) WindowsPowerShell/5.1.19041.6456', 'Windows 10', 'Unknown', '1', '登录成功', '2026-05-16 05:39:50');
 
--- =============================================
--- 7. 创建按钮权限（48条）
--- =============================================
-INSERT INTO `sys_menu_button` (`id`, `menu_id`, `name`, `code`, `icon`, `sort`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`) VALUES
-(1001, 100, '新增用户', 'system_user:add', 'ant-design:plus-outlined', 1, 1, 1, NOW(), 1, NOW()),
-(1002, 100, '编辑用户', 'system_user:edit', 'ant-design:edit-outlined', 2, 1, 1, NOW(), 1, NOW()),
-(1003, 100, '删除用户', 'system_user:delete', 'ant-design:delete-outlined', 3, 1, 1, NOW(), 1, NOW()),
-(1004, 100, '分配角色', 'system_user:assign', 'ant-design:usergroup-add-outlined', 4, 1, 1, NOW(), 1, NOW()),
-(1005, 100, '重置密码', 'system_user:reset', 'ant-design:key-outlined', 5, 1, 1, NOW(), 1, NOW()),
-(1006, 100, '导出数据', 'system_user:export', 'ant-design:download-outlined', 6, 1, 1, NOW(), 1, NOW()),
-(1007, 100, '导入数据', 'system_user:import', 'ant-design:upload-outlined', 7, 1, 1, NOW(), 1, NOW()),
+-- --------------------------------------------
+-- 数据: sys_menu (13 行)
+-- --------------------------------------------
+INSERT INTO `sys_menu` (`id`, `parent_id`, `name`, `code`, `path`, `icon`, `component`, `menu_type`, `sort`, `visible`, `status`, `keep_alive`, `always_show`, `breadcrumb`, `active_menu`, `is_external`, `is_frame`, `remark`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('1', '0', '系统管理', 'system', '/system', 'setting-outlined', '', '1', '1', '1', '1', '0', '1', '1', '', '0', '1', '系统管理模块', '1', '2026-04-25 21:00:54', '1', '2026-05-14 10:15:51', NULL);
+INSERT INTO `sys_menu` (`id`, `parent_id`, `name`, `code`, `path`, `icon`, `component`, `menu_type`, `sort`, `visible`, `status`, `keep_alive`, `always_show`, `breadcrumb`, `active_menu`, `is_external`, `is_frame`, `remark`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('2', '1', '系统监控', 'monitor', '/monitor', 'search-outlined', '', '1', '6', '1', '1', '0', '1', '1', '', '0', '1', '系统监控模块', '1', '2026-04-25 21:00:54', '1', '2026-05-13 08:33:57', NULL);
+INSERT INTO `sys_menu` (`id`, `parent_id`, `name`, `code`, `path`, `icon`, `component`, `menu_type`, `sort`, `visible`, `status`, `keep_alive`, `always_show`, `breadcrumb`, `active_menu`, `is_external`, `is_frame`, `remark`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('100', '1', '用户管理', 'system_user', '/system/user', 'user-outlined', 'system/user/index', '2', '4', '1', '1', '1', '1', '1', '', '0', '1', '用户管理菜单', '1', '2026-04-25 21:00:54', '1', '2026-05-13 08:32:20', NULL);
+INSERT INTO `sys_menu` (`id`, `parent_id`, `name`, `code`, `path`, `icon`, `component`, `menu_type`, `sort`, `visible`, `status`, `keep_alive`, `always_show`, `breadcrumb`, `active_menu`, `is_external`, `is_frame`, `remark`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('101', '1', '角色管理', 'system_role', '/system/role', 'team-outlined', 'system/role/index', '2', '2', '1', '1', '0', '1', '1', '', '0', '1', '角色管理菜单', '1', '2026-04-25 21:00:54', '1', '2026-05-13 15:04:05', NULL);
+INSERT INTO `sys_menu` (`id`, `parent_id`, `name`, `code`, `path`, `icon`, `component`, `menu_type`, `sort`, `visible`, `status`, `keep_alive`, `always_show`, `breadcrumb`, `active_menu`, `is_external`, `is_frame`, `remark`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('102', '304', '菜单管理', 'permission_menu', '/permission/menu', 'bars-outlined', 'permission/menu/index', '2', '1', '1', '1', '0', '1', '1', '', '0', '1', '菜单管理菜单', '1', '2026-04-25 21:00:54', '1', '2026-05-13 15:03:00', NULL);
+INSERT INTO `sys_menu` (`id`, `parent_id`, `name`, `code`, `path`, `icon`, `component`, `menu_type`, `sort`, `visible`, `status`, `keep_alive`, `always_show`, `breadcrumb`, `active_menu`, `is_external`, `is_frame`, `remark`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('103', '1', '部门管理', 'system_dept', '/system/dept', 'apartment-outlined', 'system/dept/index', '2', '1', '1', '1', '0', '1', '1', '', '0', '1', '部门管理菜单', '1', '2026-04-25 21:00:54', '1', '2026-05-13 08:31:10', NULL);
+INSERT INTO `sys_menu` (`id`, `parent_id`, `name`, `code`, `path`, `icon`, `component`, `menu_type`, `sort`, `visible`, `status`, `keep_alive`, `always_show`, `breadcrumb`, `active_menu`, `is_external`, `is_frame`, `remark`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('104', '304', '接口管理', 'permission_api', '/permission/api', 'api-outlined', 'permission/api/index', '2', '2', '1', '1', '0', '1', '1', '', '0', '1', '接口管理菜单', '1', '2026-04-25 21:00:54', '1', '2026-05-13 15:03:34', NULL);
+INSERT INTO `sys_menu` (`id`, `parent_id`, `name`, `code`, `path`, `icon`, `component`, `menu_type`, `sort`, `visible`, `status`, `keep_alive`, `always_show`, `breadcrumb`, `active_menu`, `is_external`, `is_frame`, `remark`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('105', '1', '字典管理', 'system_dict', '/system/dict', 'book-outlined', 'system/dict/index', '2', '5', '1', '1', '0', '1', '1', '', '0', '1', '字典管理菜单', '1', '2026-04-25 21:00:54', '1', '2026-05-13 08:32:59', NULL);
+INSERT INTO `sys_menu` (`id`, `parent_id`, `name`, `code`, `path`, `icon`, `component`, `menu_type`, `sort`, `visible`, `status`, `keep_alive`, `always_show`, `breadcrumb`, `active_menu`, `is_external`, `is_frame`, `remark`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('200', '2', '登录日志', 'monitor_login', '/monitor/login', 'file-text-outlined', 'monitor/login/index', '2', '1', '1', '1', '0', '1', '1', '', '0', '1', '登录日志菜单', '1', '2026-04-25 21:00:54', '1', '2026-05-13 08:35:04', NULL);
+INSERT INTO `sys_menu` (`id`, `parent_id`, `name`, `code`, `path`, `icon`, `component`, `menu_type`, `sort`, `visible`, `status`, `keep_alive`, `always_show`, `breadcrumb`, `active_menu`, `is_external`, `is_frame`, `remark`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('201', '2', '操作日志', 'monitor_operation', '/monitor/operation', 'file-protect-outlined', 'monitor/operation/index', '2', '2', '1', '1', '0', '1', '1', '', '0', '1', '操作日志菜单', '1', '2026-04-25 21:00:54', '1', '2026-05-14 11:54:28', NULL);
+INSERT INTO `sys_menu` (`id`, `parent_id`, `name`, `code`, `path`, `icon`, `component`, `menu_type`, `sort`, `visible`, `status`, `keep_alive`, `always_show`, `breadcrumb`, `active_menu`, `is_external`, `is_frame`, `remark`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('301', '304', '按钮管理', 'permission_button', '/permission/buttom', 'robot-outlined', 'permission/button/index', '2', '3', '1', '1', '0', '1', '1', '', '0', '1', '', '1', '2026-05-09 18:09:43', '1', '2026-05-13 15:03:50', NULL);
+INSERT INTO `sys_menu` (`id`, `parent_id`, `name`, `code`, `path`, `icon`, `component`, `menu_type`, `sort`, `visible`, `status`, `keep_alive`, `always_show`, `breadcrumb`, `active_menu`, `is_external`, `is_frame`, `remark`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('303', '0', '菜单测试', 'menu_test', '/system/tset', 'robot-outlined', 'system/tset', '2', '0', '1', '1', '1', '1', '1', '', '0', '1', '', '3', '2026-05-12 07:10:18', '3', '2026-05-13 08:07:36', '2026-05-13 08:07:36');
+INSERT INTO `sys_menu` (`id`, `parent_id`, `name`, `code`, `path`, `icon`, `component`, `menu_type`, `sort`, `visible`, `status`, `keep_alive`, `always_show`, `breadcrumb`, `active_menu`, `is_external`, `is_frame`, `remark`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('304', '1', '权限管理', 'permission', '/permission', 'idcard-outlined', '', '1', '3', '1', '1', '1', '1', '1', '', '0', '1', '', '1', '2026-05-13 08:11:14', '1', '2026-05-13 08:31:52', NULL);
 
-(1011, 101, '新增角色', 'permission_role:add', 'ant-design:plus-outlined', 1, 1, 1, NOW(), 1, NOW()),
-(1012, 101, '编辑角色', 'permission_role:edit', 'ant-design:edit-outlined', 2, 1, 1, NOW(), 1, NOW()),
-(1013, 101, '删除角色', 'permission_role:delete', 'ant-design:delete-outlined', 3, 1, 1, NOW(), 1, NOW()),
-(1014, 101, '分配权限', 'permission_role:permission', 'ant-design:lock-outlined', 4, 1, 1, NOW(), 1, NOW()),
-(1015, 101, '数据范围', 'permission_role:data_scope', 'ant-design:cluster-outlined', 5, 1, 1, NOW(), 1, NOW()),
-(1016, 101, '状态切换', 'permission_role:status', 'ant-design:swap-outlined', 6, 1, 1, NOW(), 1, NOW()),
+-- --------------------------------------------
+-- 数据: sys_menu_button (47 行)
+-- --------------------------------------------
+INSERT INTO `sys_menu_button` (`id`, `menu_id`, `name`, `code`, `icon`, `sort`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('1001', '100', '新增用户', 'system_user:add', 'ant-design:plus-outlined', '1', '1', '1', '2026-04-25 21:00:54', '1', '2026-04-25 21:00:54', NULL);
+INSERT INTO `sys_menu_button` (`id`, `menu_id`, `name`, `code`, `icon`, `sort`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('1002', '100', '编辑用户', 'system_user:edit', 'ant-design:edit-outlined', '2', '1', '1', '2026-04-25 21:00:54', '1', '2026-04-25 21:00:54', NULL);
+INSERT INTO `sys_menu_button` (`id`, `menu_id`, `name`, `code`, `icon`, `sort`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('1003', '100', '删除用户', 'system_user:delete', 'ant-design:delete-outlined', '3', '1', '1', '2026-04-25 21:00:54', '1', '2026-04-25 21:00:54', NULL);
+INSERT INTO `sys_menu_button` (`id`, `menu_id`, `name`, `code`, `icon`, `sort`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('1004', '100', '分配角色', 'system_user:assign', 'ant-design:usergroup-add-outlined', '4', '1', '1', '2026-04-25 21:00:54', '1', '2026-04-25 21:00:54', NULL);
+INSERT INTO `sys_menu_button` (`id`, `menu_id`, `name`, `code`, `icon`, `sort`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('1005', '100', '重置密码', 'system_user:reset', 'ant-design:key-outlined', '5', '1', '1', '2026-04-25 21:00:54', '1', '2026-04-25 21:00:54', NULL);
+INSERT INTO `sys_menu_button` (`id`, `menu_id`, `name`, `code`, `icon`, `sort`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('1006', '100', '导出数据', 'system_user:export', 'ant-design:download-outlined', '6', '1', '1', '2026-04-25 21:00:54', '1', '2026-04-25 21:00:54', NULL);
+INSERT INTO `sys_menu_button` (`id`, `menu_id`, `name`, `code`, `icon`, `sort`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('1007', '100', '导入数据', 'system_user:import', 'ant-design:upload-outlined', '7', '1', '1', '2026-04-25 21:00:54', '1', '2026-04-25 21:00:54', NULL);
+INSERT INTO `sys_menu_button` (`id`, `menu_id`, `name`, `code`, `icon`, `sort`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('1011', '101', '新增角色', 'permission_role:add', 'ant-design:plus-outlined', '1', '1', '1', '2026-04-25 21:00:54', '1', '2026-04-25 21:00:54', NULL);
+INSERT INTO `sys_menu_button` (`id`, `menu_id`, `name`, `code`, `icon`, `sort`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('1012', '101', '编辑角色', 'permission_role:edit', 'ant-design:edit-outlined', '2', '1', '1', '2026-04-25 21:00:54', '1', '2026-04-25 21:00:54', NULL);
+INSERT INTO `sys_menu_button` (`id`, `menu_id`, `name`, `code`, `icon`, `sort`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('1013', '101', '删除角色', 'permission_role:delete', 'ant-design:delete-outlined', '3', '1', '1', '2026-04-25 21:00:54', '1', '2026-04-25 21:00:54', NULL);
+INSERT INTO `sys_menu_button` (`id`, `menu_id`, `name`, `code`, `icon`, `sort`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('1014', '101', '分配权限', 'permission_role:permission', 'ant-design:lock-outlined', '4', '1', '1', '2026-04-25 21:00:54', '1', '2026-04-25 21:00:54', NULL);
+INSERT INTO `sys_menu_button` (`id`, `menu_id`, `name`, `code`, `icon`, `sort`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('1015', '101', '数据范围', 'permission_role:data_scope', 'ant-design:cluster-outlined', '5', '1', '1', '2026-05-13 05:11:11', '1', '2026-05-13 05:11:11', NULL);
+INSERT INTO `sys_menu_button` (`id`, `menu_id`, `name`, `code`, `icon`, `sort`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('1016', '101', '状态切换', 'permission_role:status', 'ant-design:swap-outlined', '6', '1', '1', '2026-05-13 05:11:11', '1', '2026-05-13 05:11:11', NULL);
+INSERT INTO `sys_menu_button` (`id`, `menu_id`, `name`, `code`, `icon`, `sort`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('1021', '102', '新增菜单', 'system_menu:add', 'ant-design:plus-outlined', '1', '1', '1', '2026-04-25 21:00:54', '1', '2026-04-25 21:00:54', NULL);
+INSERT INTO `sys_menu_button` (`id`, `menu_id`, `name`, `code`, `icon`, `sort`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('1022', '102', '编辑菜单', 'system_menu:edit', 'ant-design:edit-outlined', '2', '1', '1', '2026-04-25 21:00:54', '1', '2026-04-25 21:00:54', NULL);
+INSERT INTO `sys_menu_button` (`id`, `menu_id`, `name`, `code`, `icon`, `sort`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('1023', '102', '删除菜单', 'system_menu:delete', 'ant-design:delete-outlined', '3', '1', '1', '2026-04-25 21:00:54', '1', '2026-04-25 21:00:54', NULL);
+INSERT INTO `sys_menu_button` (`id`, `menu_id`, `name`, `code`, `icon`, `sort`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('1031', '103', '新增部门', 'system_dept:add', 'ant-design:plus-outlined', '1', '1', '1', '2026-04-25 21:00:54', '1', '2026-05-14 11:54:03', NULL);
+INSERT INTO `sys_menu_button` (`id`, `menu_id`, `name`, `code`, `icon`, `sort`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('1032', '103', '编辑部门', 'system_dept:edit', 'ant-design:edit-outlined', '2', '1', '1', '2026-04-25 21:00:54', '1', '2026-04-25 21:00:54', NULL);
+INSERT INTO `sys_menu_button` (`id`, `menu_id`, `name`, `code`, `icon`, `sort`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('1033', '103', '删除部门', 'system_dept:delete', 'ant-design:delete-outlined', '3', '1', '1', '2026-04-25 21:00:54', '1', '2026-04-25 21:00:54', NULL);
+INSERT INTO `sys_menu_button` (`id`, `menu_id`, `name`, `code`, `icon`, `sort`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('1041', '104', '新增接口', 'permission_api:add', NULL, '1', '1', NULL, '2026-05-15 10:34:01', NULL, '2026-05-15 10:34:01', NULL);
+INSERT INTO `sys_menu_button` (`id`, `menu_id`, `name`, `code`, `icon`, `sort`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('1042', '104', '编辑接口', 'permission_api:edit', NULL, '2', '1', NULL, '2026-05-15 10:34:01', NULL, '2026-05-15 10:34:01', NULL);
+INSERT INTO `sys_menu_button` (`id`, `menu_id`, `name`, `code`, `icon`, `sort`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('1043', '104', '删除接口', 'permission_api:delete', NULL, '3', '1', NULL, '2026-05-15 10:34:01', NULL, '2026-05-15 10:34:01', NULL);
+INSERT INTO `sys_menu_button` (`id`, `menu_id`, `name`, `code`, `icon`, `sort`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('1044', '104', '状态切换', 'permission_api:status', NULL, '4', '1', NULL, '2026-05-15 10:34:01', NULL, '2026-05-15 10:34:01', NULL);
+INSERT INTO `sys_menu_button` (`id`, `menu_id`, `name`, `code`, `icon`, `sort`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('1051', '105', '新增字典类型', 'system_dict:add_type', NULL, '1', '1', NULL, '2026-05-15 10:34:01', NULL, '2026-05-15 10:34:01', NULL);
+INSERT INTO `sys_menu_button` (`id`, `menu_id`, `name`, `code`, `icon`, `sort`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('1052', '105', '编辑字典类型', 'system_dict:edit_type', NULL, '2', '1', NULL, '2026-05-15 10:34:01', NULL, '2026-05-15 10:34:01', NULL);
+INSERT INTO `sys_menu_button` (`id`, `menu_id`, `name`, `code`, `icon`, `sort`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('1053', '105', '删除字典类型', 'system_dict:delete_type', NULL, '3', '1', NULL, '2026-05-15 10:34:01', NULL, '2026-05-15 10:34:01', NULL);
+INSERT INTO `sys_menu_button` (`id`, `menu_id`, `name`, `code`, `icon`, `sort`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('1054', '105', '字典类型状态', 'system_dict:type_status', NULL, '4', '1', NULL, '2026-05-15 10:34:01', NULL, '2026-05-15 10:34:01', NULL);
+INSERT INTO `sys_menu_button` (`id`, `menu_id`, `name`, `code`, `icon`, `sort`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('1055', '105', '新增字典数据', 'system_dict:add_data', NULL, '5', '1', NULL, '2026-05-15 10:34:01', NULL, '2026-05-15 10:34:01', NULL);
+INSERT INTO `sys_menu_button` (`id`, `menu_id`, `name`, `code`, `icon`, `sort`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('1056', '105', '编辑字典数据', 'system_dict:edit_data', NULL, '6', '1', NULL, '2026-05-15 10:34:01', NULL, '2026-05-15 10:34:01', NULL);
+INSERT INTO `sys_menu_button` (`id`, `menu_id`, `name`, `code`, `icon`, `sort`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('1057', '105', '删除字典数据', 'system_dict:delete_data', NULL, '7', '1', NULL, '2026-05-15 10:34:01', NULL, '2026-05-15 10:34:01', NULL);
+INSERT INTO `sys_menu_button` (`id`, `menu_id`, `name`, `code`, `icon`, `sort`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('1058', '105', '字典数据状态', 'system_dict:data_status', NULL, '8', '1', NULL, '2026-05-15 10:34:01', NULL, '2026-05-15 10:34:01', NULL);
+INSERT INTO `sys_menu_button` (`id`, `menu_id`, `name`, `code`, `icon`, `sort`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('1059', '105', '字典数据排序', 'system_dict:data_sort', NULL, '9', '1', NULL, '2026-05-15 10:34:01', NULL, '2026-05-15 10:34:01', NULL);
+INSERT INTO `sys_menu_button` (`id`, `menu_id`, `name`, `code`, `icon`, `sort`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('2001', '200', '清理日志', 'admin:login-log:clean', NULL, '1', '1', NULL, '2026-05-15 10:34:01', NULL, '2026-05-15 10:34:01', NULL);
+INSERT INTO `sys_menu_button` (`id`, `menu_id`, `name`, `code`, `icon`, `sort`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('2002', '200', '清空日志', 'admin:login-log:clear', NULL, '2', '1', NULL, '2026-05-15 10:34:01', NULL, '2026-05-15 10:34:01', NULL);
+INSERT INTO `sys_menu_button` (`id`, `menu_id`, `name`, `code`, `icon`, `sort`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('2003', '200', '删除日志', 'admin:login-log:delete', NULL, '3', '1', NULL, '2026-05-15 10:34:01', NULL, '2026-05-15 10:34:01', NULL);
+INSERT INTO `sys_menu_button` (`id`, `menu_id`, `name`, `code`, `icon`, `sort`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('2004', '200', '导出数据', 'admin:login-log:export', NULL, '4', '1', NULL, '2026-05-15 10:34:01', NULL, '2026-05-15 10:34:01', NULL);
+INSERT INTO `sys_menu_button` (`id`, `menu_id`, `name`, `code`, `icon`, `sort`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('2011', '201', '清理日志', 'admin:operation-log:clean', NULL, '1', '1', NULL, '2026-05-15 10:34:01', NULL, '2026-05-15 10:34:01', NULL);
+INSERT INTO `sys_menu_button` (`id`, `menu_id`, `name`, `code`, `icon`, `sort`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('2012', '201', '清空日志', 'admin:operation-log:clear', NULL, '2', '1', NULL, '2026-05-15 10:34:01', NULL, '2026-05-15 10:34:01', NULL);
+INSERT INTO `sys_menu_button` (`id`, `menu_id`, `name`, `code`, `icon`, `sort`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('2013', '201', '删除日志', 'admin:operation-log:delete', NULL, '3', '1', NULL, '2026-05-15 10:34:01', NULL, '2026-05-15 10:34:01', NULL);
+INSERT INTO `sys_menu_button` (`id`, `menu_id`, `name`, `code`, `icon`, `sort`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('3011', '301', '新增按钮', 'permission_button:add', NULL, '1', '1', NULL, '2026-05-15 10:34:01', NULL, '2026-05-15 10:34:01', NULL);
+INSERT INTO `sys_menu_button` (`id`, `menu_id`, `name`, `code`, `icon`, `sort`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('3012', '301', '编辑按钮', 'permission_button:edit', NULL, '2', '1', NULL, '2026-05-15 10:34:01', NULL, '2026-05-15 10:34:01', NULL);
+INSERT INTO `sys_menu_button` (`id`, `menu_id`, `name`, `code`, `icon`, `sort`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('3013', '301', '删除按钮', 'permission_button:delete', NULL, '3', '1', NULL, '2026-05-15 10:34:01', NULL, '2026-05-15 10:34:01', NULL);
+INSERT INTO `sys_menu_button` (`id`, `menu_id`, `name`, `code`, `icon`, `sort`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('3014', '301', '查看详情', 'permission_button:detail', NULL, '4', '1', NULL, '2026-05-15 10:34:01', NULL, '2026-05-15 10:34:01', NULL);
+INSERT INTO `sys_menu_button` (`id`, `menu_id`, `name`, `code`, `icon`, `sort`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('3015', '301', '状态切换', 'permission_button:status', NULL, '5', '1', NULL, '2026-05-15 10:34:01', NULL, '2026-05-15 10:34:01', NULL);
+INSERT INTO `sys_menu_button` (`id`, `menu_id`, `name`, `code`, `icon`, `sort`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('3016', '301', '批量启用', 'permission_button:batch_enable', NULL, '6', '1', NULL, '2026-05-15 10:34:01', NULL, '2026-05-15 10:34:01', NULL);
+INSERT INTO `sys_menu_button` (`id`, `menu_id`, `name`, `code`, `icon`, `sort`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('3017', '301', '批量禁用', 'permission_button:batch_disable', NULL, '7', '1', NULL, '2026-05-15 10:34:01', NULL, '2026-05-15 10:34:01', NULL);
+INSERT INTO `sys_menu_button` (`id`, `menu_id`, `name`, `code`, `icon`, `sort`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('3018', '301', '批量删除', 'permission_button:batch_delete', NULL, '8', '1', NULL, '2026-05-15 10:34:01', NULL, '2026-05-15 10:34:01', NULL);
 
-(1021, 102, '新增菜单', 'system_menu:add', 'ant-design:plus-outlined', 1, 1, 1, NOW(), 1, NOW()),
-(1022, 102, '编辑菜单', 'system_menu:edit', 'ant-design:edit-outlined', 2, 1, 1, NOW(), 1, NOW()),
-(1023, 102, '删除菜单', 'system_menu:delete', 'ant-design:delete-outlined', 3, 1, 1, NOW(), 1, NOW()),
+-- --------------------------------------------
+-- 数据: sys_operation_log (46 行)
+-- --------------------------------------------
+INSERT INTO `sys_operation_log` (`id`, `user_id`, `username`, `module`, `action`, `method`, `url`, `ip`, `address`, `param`, `result`, `status`, `error_msg`, `duration`, `create_time`) VALUES ('345', '1', '超级管理员', '系统', '清空操作日志', 'POST', '/admin/operation-logs/clear', '127.0.0.1', '', '', '{\"cleared_count\":69}', '1', NULL, NULL, '2026-05-14 12:21:03');
+INSERT INTO `sys_operation_log` (`id`, `user_id`, `username`, `module`, `action`, `method`, `url`, `ip`, `address`, `param`, `result`, `status`, `error_msg`, `duration`, `create_time`) VALUES ('346', '1', '超级管理员', '系统', '清空登录日志', 'POST', '/admin/login-logs/clear', '127.0.0.1', '', '', '{\"cleared_count\":12}', '1', NULL, NULL, '2026-05-14 12:21:09');
+INSERT INTO `sys_operation_log` (`id`, `user_id`, `username`, `module`, `action`, `method`, `url`, `ip`, `address`, `param`, `result`, `status`, `error_msg`, `duration`, `create_time`) VALUES ('347', '1', 'admin', '系统', '新增', 'POST', '/admin/users', '127.0.0.1', '', '{\"username\":\"test\",\"password\":\"Test@123\",\"confirmPassword\":\"Test@123\",\"nickname\":\"普通用户测试员\",\"email\":\"\",\"mobile\":\"\",\"gender\":0,\"dept_id\":1,\"depts\":[{\"dept_id\":1,\"dept_name\":\"总部\",\"is_primary\":1,\"sort\":0}],\"status\":1,\"role_ids\":[3]}', '{\"id\":\"4\"}', '1', NULL, NULL, '2026-05-15 06:07:47');
+INSERT INTO `sys_operation_log` (`id`, `user_id`, `username`, `module`, `action`, `method`, `url`, `ip`, `address`, `param`, `result`, `status`, `error_msg`, `duration`, `create_time`) VALUES ('348', '1', 'admin', '系统', '编辑', 'PUT', '/admin/users/4', '127.0.0.1', '', '{\"id\":\"4\",\"username\":\"test\",\"nickname\":\"普通用户测试员\",\"email\":\"test@szctcw.cn\",\"mobile\":\"13500000001\",\"gender\":0,\"dept_id\":1,\"depts\":[{\"dept_id\":1,\"dept_name\":\"总部\",\"is_primary\":1,\"sort\":0}],\"status\":1,\"role_ids\":[3]}', '[]', '1', NULL, NULL, '2026-05-15 06:09:24');
+INSERT INTO `sys_operation_log` (`id`, `user_id`, `username`, `module`, `action`, `method`, `url`, `ip`, `address`, `param`, `result`, `status`, `error_msg`, `duration`, `create_time`) VALUES ('349', '1', 'admin', '系统', '分配菜单', 'POST', '/admin/roles/3/assign-menus', '127.0.0.1', '', '{\"id\":\"3\",\"menu_ids\":[]}', '[]', '1', NULL, NULL, '2026-05-15 06:13:43');
+INSERT INTO `sys_operation_log` (`id`, `user_id`, `username`, `module`, `action`, `method`, `url`, `ip`, `address`, `param`, `result`, `status`, `error_msg`, `duration`, `create_time`) VALUES ('350', '1', 'admin', '系统', '分配按钮', 'POST', '/admin/roles/3/assign-buttons', '127.0.0.1', '', '{\"id\":\"3\",\"button_ids\":[]}', '[]', '1', NULL, NULL, '2026-05-15 06:13:43');
+INSERT INTO `sys_operation_log` (`id`, `user_id`, `username`, `module`, `action`, `method`, `url`, `ip`, `address`, `param`, `result`, `status`, `error_msg`, `duration`, `create_time`) VALUES ('351', '1', 'admin', '系统', '分配接口', 'POST', '/admin/roles/3/assign-apis', '127.0.0.1', '', '{\"id\":\"3\",\"api_ids\":[8013]}', '[]', '1', NULL, NULL, '2026-05-15 06:13:44');
+INSERT INTO `sys_operation_log` (`id`, `user_id`, `username`, `module`, `action`, `method`, `url`, `ip`, `address`, `param`, `result`, `status`, `error_msg`, `duration`, `create_time`) VALUES ('352', '1', 'admin', '系统', '分配菜单', 'POST', '/admin/roles/3/assign-menus', '127.0.0.1', '', '{\"id\":\"3\",\"menu_ids\":[]}', '[]', '1', NULL, NULL, '2026-05-15 06:49:35');
+INSERT INTO `sys_operation_log` (`id`, `user_id`, `username`, `module`, `action`, `method`, `url`, `ip`, `address`, `param`, `result`, `status`, `error_msg`, `duration`, `create_time`) VALUES ('353', '1', 'admin', '系统', '分配按钮', 'POST', '/admin/roles/3/assign-buttons', '127.0.0.1', '', '{\"id\":\"3\",\"button_ids\":[]}', '[]', '1', NULL, NULL, '2026-05-15 06:49:36');
+INSERT INTO `sys_operation_log` (`id`, `user_id`, `username`, `module`, `action`, `method`, `url`, `ip`, `address`, `param`, `result`, `status`, `error_msg`, `duration`, `create_time`) VALUES ('354', '1', 'admin', '系统', '分配接口', 'POST', '/admin/roles/3/assign-apis', '127.0.0.1', '', '{\"id\":\"3\",\"api_ids\":[]}', '[]', '1', NULL, NULL, '2026-05-15 06:49:36');
+INSERT INTO `sys_operation_log` (`id`, `user_id`, `username`, `module`, `action`, `method`, `url`, `ip`, `address`, `param`, `result`, `status`, `error_msg`, `duration`, `create_time`) VALUES ('355', '1', 'admin', '系统', '分配菜单', 'POST', '/admin/roles/3/assign-menus', '127.0.0.1', '', '{\"id\":\"3\",\"menu_ids\":[2,200,201]}', '[]', '1', NULL, NULL, '2026-05-15 07:16:32');
+INSERT INTO `sys_operation_log` (`id`, `user_id`, `username`, `module`, `action`, `method`, `url`, `ip`, `address`, `param`, `result`, `status`, `error_msg`, `duration`, `create_time`) VALUES ('356', '1', 'admin', '系统', '分配按钮', 'POST', '/admin/roles/3/assign-buttons', '127.0.0.1', '', '{\"id\":\"3\",\"button_ids\":[]}', '[]', '1', NULL, NULL, '2026-05-15 07:16:33');
+INSERT INTO `sys_operation_log` (`id`, `user_id`, `username`, `module`, `action`, `method`, `url`, `ip`, `address`, `param`, `result`, `status`, `error_msg`, `duration`, `create_time`) VALUES ('357', '1', 'admin', '系统', '分配接口', 'POST', '/admin/roles/3/assign-apis', '127.0.0.1', '', '{\"id\":\"3\",\"api_ids\":[]}', '[]', '1', NULL, NULL, '2026-05-15 07:16:33');
+INSERT INTO `sys_operation_log` (`id`, `user_id`, `username`, `module`, `action`, `method`, `url`, `ip`, `address`, `param`, `result`, `status`, `error_msg`, `duration`, `create_time`) VALUES ('358', '1', 'admin', '系统', '分配菜单', 'POST', '/admin/roles/3/assign-menus', '127.0.0.1', '', '{\"id\":\"3\",\"menu_ids\":[2,200,201]}', '[]', '1', NULL, NULL, '2026-05-15 07:18:07');
+INSERT INTO `sys_operation_log` (`id`, `user_id`, `username`, `module`, `action`, `method`, `url`, `ip`, `address`, `param`, `result`, `status`, `error_msg`, `duration`, `create_time`) VALUES ('359', '1', 'admin', '系统', '分配按钮', 'POST', '/admin/roles/3/assign-buttons', '127.0.0.1', '', '{\"id\":\"3\",\"button_ids\":[]}', '[]', '1', NULL, NULL, '2026-05-15 07:18:07');
+INSERT INTO `sys_operation_log` (`id`, `user_id`, `username`, `module`, `action`, `method`, `url`, `ip`, `address`, `param`, `result`, `status`, `error_msg`, `duration`, `create_time`) VALUES ('360', '1', 'admin', '系统', '分配接口', 'POST', '/admin/roles/3/assign-apis', '127.0.0.1', '', '{\"id\":\"3\",\"api_ids\":[8001]}', '[]', '1', NULL, NULL, '2026-05-15 07:18:08');
+INSERT INTO `sys_operation_log` (`id`, `user_id`, `username`, `module`, `action`, `method`, `url`, `ip`, `address`, `param`, `result`, `status`, `error_msg`, `duration`, `create_time`) VALUES ('361', '1', 'admin', '系统', '分配菜单', 'POST', '/admin/roles/3/assign-menus', '127.0.0.1', '', '{\"id\":\"3\",\"menu_ids\":[2,200,201]}', '[]', '1', NULL, NULL, '2026-05-15 07:34:32');
+INSERT INTO `sys_operation_log` (`id`, `user_id`, `username`, `module`, `action`, `method`, `url`, `ip`, `address`, `param`, `result`, `status`, `error_msg`, `duration`, `create_time`) VALUES ('362', '1', 'admin', '系统', '分配按钮', 'POST', '/admin/roles/3/assign-buttons', '127.0.0.1', '', '{\"id\":\"3\",\"button_ids\":[]}', '[]', '1', NULL, NULL, '2026-05-15 07:34:32');
+INSERT INTO `sys_operation_log` (`id`, `user_id`, `username`, `module`, `action`, `method`, `url`, `ip`, `address`, `param`, `result`, `status`, `error_msg`, `duration`, `create_time`) VALUES ('363', '1', 'admin', '系统', '分配接口', 'POST', '/admin/roles/3/assign-apis', '127.0.0.1', '', '{\"id\":\"3\",\"api_ids\":[8008]}', '[]', '1', NULL, NULL, '2026-05-15 07:34:33');
+INSERT INTO `sys_operation_log` (`id`, `user_id`, `username`, `module`, `action`, `method`, `url`, `ip`, `address`, `param`, `result`, `status`, `error_msg`, `duration`, `create_time`) VALUES ('364', '1', 'admin', '系统', '分配菜单', 'POST', '/admin/roles/3/assign-menus', '127.0.0.1', '', '{\"id\":\"3\",\"menu_ids\":[2,200,201]}', '[]', '1', NULL, NULL, '2026-05-15 07:36:45');
+INSERT INTO `sys_operation_log` (`id`, `user_id`, `username`, `module`, `action`, `method`, `url`, `ip`, `address`, `param`, `result`, `status`, `error_msg`, `duration`, `create_time`) VALUES ('365', '1', 'admin', '系统', '分配按钮', 'POST', '/admin/roles/3/assign-buttons', '127.0.0.1', '', '{\"id\":\"3\",\"button_ids\":[]}', '[]', '1', NULL, NULL, '2026-05-15 07:36:45');
+INSERT INTO `sys_operation_log` (`id`, `user_id`, `username`, `module`, `action`, `method`, `url`, `ip`, `address`, `param`, `result`, `status`, `error_msg`, `duration`, `create_time`) VALUES ('366', '1', 'admin', '系统', '分配接口', 'POST', '/admin/roles/3/assign-apis', '127.0.0.1', '', '{\"id\":\"3\",\"api_ids\":[8008,8003,2001]}', '[]', '1', NULL, NULL, '2026-05-15 07:36:45');
+INSERT INTO `sys_operation_log` (`id`, `user_id`, `username`, `module`, `action`, `method`, `url`, `ip`, `address`, `param`, `result`, `status`, `error_msg`, `duration`, `create_time`) VALUES ('367', '1', 'admin', '系统', '分配菜单', 'POST', '/admin/roles/3/assign-menus', '127.0.0.1', '', '{\"id\":\"3\",\"menu_ids\":[2,200,201]}', '[]', '1', NULL, NULL, '2026-05-15 07:58:59');
+INSERT INTO `sys_operation_log` (`id`, `user_id`, `username`, `module`, `action`, `method`, `url`, `ip`, `address`, `param`, `result`, `status`, `error_msg`, `duration`, `create_time`) VALUES ('368', '1', 'admin', '系统', '分配按钮', 'POST', '/admin/roles/3/assign-buttons', '127.0.0.1', '', '{\"id\":\"3\",\"button_ids\":[]}', '[]', '1', NULL, NULL, '2026-05-15 07:59:00');
+INSERT INTO `sys_operation_log` (`id`, `user_id`, `username`, `module`, `action`, `method`, `url`, `ip`, `address`, `param`, `result`, `status`, `error_msg`, `duration`, `create_time`) VALUES ('369', '1', 'admin', '系统', '分配接口', 'POST', '/admin/roles/3/assign-apis', '127.0.0.1', '', '{\"id\":\"3\",\"api_ids\":[8003,8008]}', '[]', '1', NULL, NULL, '2026-05-15 07:59:00');
+INSERT INTO `sys_operation_log` (`id`, `user_id`, `username`, `module`, `action`, `method`, `url`, `ip`, `address`, `param`, `result`, `status`, `error_msg`, `duration`, `create_time`) VALUES ('370', '1', 'admin', '系统', '分配菜单', 'POST', '/admin/roles/3/assign-menus', '127.0.0.1', '', '{\"id\":\"3\",\"menu_ids\":[2,200,201]}', '[]', '1', NULL, NULL, '2026-05-15 09:33:14');
+INSERT INTO `sys_operation_log` (`id`, `user_id`, `username`, `module`, `action`, `method`, `url`, `ip`, `address`, `param`, `result`, `status`, `error_msg`, `duration`, `create_time`) VALUES ('371', '1', 'admin', '系统', '分配按钮', 'POST', '/admin/roles/3/assign-buttons', '127.0.0.1', '', '{\"id\":\"3\",\"button_ids\":[]}', '[]', '1', NULL, NULL, '2026-05-15 09:33:15');
+INSERT INTO `sys_operation_log` (`id`, `user_id`, `username`, `module`, `action`, `method`, `url`, `ip`, `address`, `param`, `result`, `status`, `error_msg`, `duration`, `create_time`) VALUES ('372', '1', 'admin', '系统', '分配接口', 'POST', '/admin/roles/3/assign-apis', '127.0.0.1', '', '{\"id\":\"3\",\"api_ids\":[8003,8008,2001]}', '[]', '1', NULL, NULL, '2026-05-15 09:33:15');
+INSERT INTO `sys_operation_log` (`id`, `user_id`, `username`, `module`, `action`, `method`, `url`, `ip`, `address`, `param`, `result`, `status`, `error_msg`, `duration`, `create_time`) VALUES ('373', '1', 'admin', '系统', '分配菜单', 'POST', '/admin/roles/2/assign-menus', '127.0.0.1', '', '{\"id\":\"2\",\"menu_ids\":[2,200,201]}', '[]', '1', NULL, NULL, '2026-05-15 10:04:29');
+INSERT INTO `sys_operation_log` (`id`, `user_id`, `username`, `module`, `action`, `method`, `url`, `ip`, `address`, `param`, `result`, `status`, `error_msg`, `duration`, `create_time`) VALUES ('374', '1', 'admin', '系统', '分配按钮', 'POST', '/admin/roles/2/assign-buttons', '127.0.0.1', '', '{\"id\":\"2\",\"button_ids\":[]}', '[]', '1', NULL, NULL, '2026-05-15 10:04:30');
+INSERT INTO `sys_operation_log` (`id`, `user_id`, `username`, `module`, `action`, `method`, `url`, `ip`, `address`, `param`, `result`, `status`, `error_msg`, `duration`, `create_time`) VALUES ('375', '1', 'admin', '系统', '分配接口', 'POST', '/admin/roles/2/assign-apis', '127.0.0.1', '', '{\"id\":\"2\",\"api_ids\":[]}', '[]', '1', NULL, NULL, '2026-05-15 10:04:30');
+INSERT INTO `sys_operation_log` (`id`, `user_id`, `username`, `module`, `action`, `method`, `url`, `ip`, `address`, `param`, `result`, `status`, `error_msg`, `duration`, `create_time`) VALUES ('376', '1', 'admin', '系统', '分配菜单', 'POST', '/admin/roles/2/assign-menus', '127.0.0.1', '', '{\"id\":\"2\",\"menu_ids\":[2,200,201]}', '[]', '1', NULL, NULL, '2026-05-15 10:06:02');
+INSERT INTO `sys_operation_log` (`id`, `user_id`, `username`, `module`, `action`, `method`, `url`, `ip`, `address`, `param`, `result`, `status`, `error_msg`, `duration`, `create_time`) VALUES ('377', '1', 'admin', '系统', '分配按钮', 'POST', '/admin/roles/2/assign-buttons', '127.0.0.1', '', '{\"id\":\"2\",\"button_ids\":[]}', '[]', '1', NULL, NULL, '2026-05-15 10:06:02');
+INSERT INTO `sys_operation_log` (`id`, `user_id`, `username`, `module`, `action`, `method`, `url`, `ip`, `address`, `param`, `result`, `status`, `error_msg`, `duration`, `create_time`) VALUES ('378', '1', 'admin', '系统', '分配接口', 'POST', '/admin/roles/2/assign-apis', '127.0.0.1', '', '{\"id\":\"2\",\"api_ids\":[8008,8003]}', '[]', '1', NULL, NULL, '2026-05-15 10:06:03');
+INSERT INTO `sys_operation_log` (`id`, `user_id`, `username`, `module`, `action`, `method`, `url`, `ip`, `address`, `param`, `result`, `status`, `error_msg`, `duration`, `create_time`) VALUES ('379', '1', 'admin', '系统', '分配菜单', 'POST', '/admin/roles/2/assign-menus', '127.0.0.1', '', '{\"id\":\"2\",\"menu_ids\":[2,200,201,103,101,304,102,104,301,100,105,1]}', '[]', '1', NULL, NULL, '2026-05-15 18:37:19');
+INSERT INTO `sys_operation_log` (`id`, `user_id`, `username`, `module`, `action`, `method`, `url`, `ip`, `address`, `param`, `result`, `status`, `error_msg`, `duration`, `create_time`) VALUES ('380', '1', 'admin', '系统', '分配按钮', 'POST', '/admin/roles/2/assign-buttons', '127.0.0.1', '', '{\"id\":\"2\",\"button_ids\":[1001,1002,1003,1004,1005,1006,1007,1011,1012,1013,1014,1015,1016,1021,1022,1023,1031,1032,1033,1041,1042,1043,1044,1051,1052,1053,1054,1055,1056,1057,1058,1059,2001,2002,2003,2004,2011,2012,2013,3011,3012,3013,3014,3015,3016,3017,3018]}', '[]', '1', NULL, NULL, '2026-05-15 18:37:20');
+INSERT INTO `sys_operation_log` (`id`, `user_id`, `username`, `module`, `action`, `method`, `url`, `ip`, `address`, `param`, `result`, `status`, `error_msg`, `duration`, `create_time`) VALUES ('381', '1', 'admin', '系统', '分配接口', 'POST', '/admin/roles/2/assign-apis', '127.0.0.1', '', '{\"id\":\"2\",\"api_ids\":[8003,8008]}', '[]', '1', NULL, NULL, '2026-05-15 18:37:21');
+INSERT INTO `sys_operation_log` (`id`, `user_id`, `username`, `module`, `action`, `method`, `url`, `ip`, `address`, `param`, `result`, `status`, `error_msg`, `duration`, `create_time`) VALUES ('382', '1', 'admin', '系统', '分配菜单', 'POST', '/admin/roles/2/assign-menus', '127.0.0.1', '', '{\"id\":\"2\",\"menu_ids\":[1,2,100,101,102,103,104,105,200,201,301,304]}', '[]', '1', NULL, NULL, '2026-05-15 18:39:28');
+INSERT INTO `sys_operation_log` (`id`, `user_id`, `username`, `module`, `action`, `method`, `url`, `ip`, `address`, `param`, `result`, `status`, `error_msg`, `duration`, `create_time`) VALUES ('383', '1', 'admin', '系统', '分配按钮', 'POST', '/admin/roles/2/assign-buttons', '127.0.0.1', '', '{\"id\":\"2\",\"button_ids\":[]}', '[]', '1', NULL, NULL, '2026-05-15 18:39:28');
+INSERT INTO `sys_operation_log` (`id`, `user_id`, `username`, `module`, `action`, `method`, `url`, `ip`, `address`, `param`, `result`, `status`, `error_msg`, `duration`, `create_time`) VALUES ('384', '1', 'admin', '系统', '分配接口', 'POST', '/admin/roles/2/assign-apis', '127.0.0.1', '', '{\"id\":\"2\",\"api_ids\":[8003,8008,8017,8016,8015,7010,7009,7008,7007,7006,7005,7004,7003,7002,7001,8012,8011,8010,8009,8007,8006,8005,8004,6005,6004,6003,6002,6001,5006,5005,5004,5003,5002,5001,4006,4005,4004,4003,4002,4001,3008,3007,3006,3005,3004,3003,3002,3001,2007,2006,2005,2004,2003,2002,2001,1003,1002,1001]}', '[]', '1', NULL, NULL, '2026-05-15 18:39:28');
+INSERT INTO `sys_operation_log` (`id`, `user_id`, `username`, `module`, `action`, `method`, `url`, `ip`, `address`, `param`, `result`, `status`, `error_msg`, `duration`, `create_time`) VALUES ('385', '1', 'admin', '系统', '新增', 'POST', '/admin/menu-buttons/batch-status', '127.0.0.1', '', '{\"ids\":[1031,1032,1033],\"status\":1}', '[]', '1', NULL, NULL, '2026-05-15 18:45:02');
+INSERT INTO `sys_operation_log` (`id`, `user_id`, `username`, `module`, `action`, `method`, `url`, `ip`, `address`, `param`, `result`, `status`, `error_msg`, `duration`, `create_time`) VALUES ('386', '1', 'admin', '系统', '新增', 'POST', '/admin/menu-buttons/batch-status', '127.0.0.1', '', '{\"ids\":[1031,1032,1033],\"status\":0}', '[]', '1', NULL, NULL, '2026-05-15 18:45:47');
+INSERT INTO `sys_operation_log` (`id`, `user_id`, `username`, `module`, `action`, `method`, `url`, `ip`, `address`, `param`, `result`, `status`, `error_msg`, `duration`, `create_time`) VALUES ('387', '1', 'admin', '系统', '新增', 'POST', '/admin/menu-buttons/batch-status', '127.0.0.1', '', '{\"ids\":[1031,1032,1033],\"status\":1}', '[]', '1', NULL, NULL, '2026-05-15 18:46:25');
+INSERT INTO `sys_operation_log` (`id`, `user_id`, `username`, `module`, `action`, `method`, `url`, `ip`, `address`, `param`, `result`, `status`, `error_msg`, `duration`, `create_time`) VALUES ('388', '1', 'admin', '系统', '分配菜单', 'POST', '/admin/roles/2/assign-menus', '127.0.0.1', '', '{\"id\":\"2\",\"menu_ids\":[1,2,100,101,102,103,104,105,200,201,301,304]}', '[]', '1', NULL, NULL, '2026-05-15 23:21:17');
+INSERT INTO `sys_operation_log` (`id`, `user_id`, `username`, `module`, `action`, `method`, `url`, `ip`, `address`, `param`, `result`, `status`, `error_msg`, `duration`, `create_time`) VALUES ('389', '1', 'admin', '系统', '分配按钮', 'POST', '/admin/roles/2/assign-buttons', '127.0.0.1', '', '{\"id\":\"2\",\"button_ids\":[2001,2002,2003,2004,2011,2012,2013,1051,1052,1053,1054,1055,1056,1057,1058,1059,1001,1002,1003,1004,1005,1006,1007,1021,1022,1023,1041,1042,1043,1044,3011,3012,3013,3014,3015,3016,3017,3018,1031,1032,1033,1011,1012,1013,1014,1015,1016]}', '[]', '1', NULL, NULL, '2026-05-15 23:21:18');
+INSERT INTO `sys_operation_log` (`id`, `user_id`, `username`, `module`, `action`, `method`, `url`, `ip`, `address`, `param`, `result`, `status`, `error_msg`, `duration`, `create_time`) VALUES ('390', '1', 'admin', '系统', '分配接口', 'POST', '/admin/roles/2/assign-apis', '127.0.0.1', '', '{\"id\":\"2\",\"api_ids\":[1001,1002,1003,2001,2002,2003,2004,2005,2006,2007,3001,3002,3003,3004,3005,3006,3007,3008,4001,4002,4003,4004,4005,4006,5001,5002,5003,5004,5005,5006,6001,6002,6003,6004,6005,7001,7002,7003,7004,7005,7006,7007,7008,7009,7010,8003,8004,8005,8006,8007,8008,8009,8010,8011,8012,8015,8016,8017]}', '[]', '1', NULL, NULL, '2026-05-15 23:21:18');
 
-(1031, 103, '新增部门', 'system_dept:add', 'ant-design:plus-outlined', 1, 1, 1, NOW(), 1, NOW()),
-(1032, 103, '编辑部门', 'system_dept:edit', 'ant-design:edit-outlined', 2, 1, 1, NOW(), 1, NOW()),
-(1033, 103, '删除部门', 'system_dept:delete', 'ant-design:delete-outlined', 3, 1, 1, NOW(), 1, NOW()),
+-- --------------------------------------------
+-- 数据: sys_role (4 行)
+-- --------------------------------------------
+INSERT INTO `sys_role` (`id`, `name`, `code`, `data_scope`, `data_scope_dept_ids`, `status`, `sort`, `remark`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('1', '超级管理员', 'super_admin', '1', NULL, '1', '1', '系统超级管理员，拥有所有权限', NULL, '2026-04-25 21:00:53', '1', '2026-05-11 03:52:11', NULL);
+INSERT INTO `sys_role` (`id`, `name`, `code`, `data_scope`, `data_scope_dept_ids`, `status`, `sort`, `remark`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('2', '管理员', 'admin', '1', NULL, '1', '2', '管理员', '1', '2026-04-29 15:50:20', '1', '2026-05-11 03:54:12', NULL);
+INSERT INTO `sys_role` (`id`, `name`, `code`, `data_scope`, `data_scope_dept_ids`, `status`, `sort`, `remark`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('3', '普通用户', 'users', '1', NULL, '1', '3', '普通用户，拥有基本管理权限', '1', '2026-05-05 15:16:11', '1', '2026-05-10 07:11:03', NULL);
+INSERT INTO `sys_role` (`id`, `name`, `code`, `data_scope`, `data_scope_dept_ids`, `status`, `sort`, `remark`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('4', '人事经理', 'hr', '1', '', '1', '4', '人事经理', '1', '2026-05-10 19:22:56', '1', '2026-05-14 10:48:46', NULL);
 
-(1041, 104, '新增接口', 'permission_api:add', 'ant-design:plus-outlined', 1, 1, NULL, NOW(), NULL, NOW()),
-(1042, 104, '编辑接口', 'permission_api:edit', 'ant-design:edit-outlined', 2, 1, NULL, NOW(), NULL, NOW()),
-(1043, 104, '删除接口', 'permission_api:delete', 'ant-design:delete-outlined', 3, 1, NULL, NOW(), NULL, NOW()),
-(1044, 104, '状态切换', 'permission_api:status', 'ant-design:swap-outlined', 4, 1, NULL, NOW(), NULL, NOW()),
+-- --------------------------------------------
+-- 数据: sys_role_api (81 行)
+-- --------------------------------------------
+INSERT INTO `sys_role_api` (`id`, `role_id`, `api_id`, `create_time`) VALUES ('341', '4', '2001', '2026-05-11 12:51:25');
+INSERT INTO `sys_role_api` (`id`, `role_id`, `api_id`, `create_time`) VALUES ('342', '4', '2002', '2026-05-11 12:51:25');
+INSERT INTO `sys_role_api` (`id`, `role_id`, `api_id`, `create_time`) VALUES ('343', '4', '2003', '2026-05-11 12:51:25');
+INSERT INTO `sys_role_api` (`id`, `role_id`, `api_id`, `create_time`) VALUES ('344', '4', '2004', '2026-05-11 12:51:25');
+INSERT INTO `sys_role_api` (`id`, `role_id`, `api_id`, `create_time`) VALUES ('345', '4', '2005', '2026-05-11 12:51:25');
+INSERT INTO `sys_role_api` (`id`, `role_id`, `api_id`, `create_time`) VALUES ('346', '4', '2006', '2026-05-11 12:51:25');
+INSERT INTO `sys_role_api` (`id`, `role_id`, `api_id`, `create_time`) VALUES ('347', '4', '2007', '2026-05-11 12:51:25');
+INSERT INTO `sys_role_api` (`id`, `role_id`, `api_id`, `create_time`) VALUES ('348', '4', '5001', '2026-05-11 12:51:25');
+INSERT INTO `sys_role_api` (`id`, `role_id`, `api_id`, `create_time`) VALUES ('349', '4', '5002', '2026-05-11 12:51:25');
+INSERT INTO `sys_role_api` (`id`, `role_id`, `api_id`, `create_time`) VALUES ('350', '4', '5003', '2026-05-11 12:51:25');
+INSERT INTO `sys_role_api` (`id`, `role_id`, `api_id`, `create_time`) VALUES ('351', '4', '5004', '2026-05-11 12:51:25');
+INSERT INTO `sys_role_api` (`id`, `role_id`, `api_id`, `create_time`) VALUES ('352', '4', '5005', '2026-05-11 12:51:25');
+INSERT INTO `sys_role_api` (`id`, `role_id`, `api_id`, `create_time`) VALUES ('353', '4', '5006', '2026-05-11 12:51:25');
+INSERT INTO `sys_role_api` (`id`, `role_id`, `api_id`, `create_time`) VALUES ('356', '4', '8015', '2026-05-11 12:51:25');
+INSERT INTO `sys_role_api` (`id`, `role_id`, `api_id`, `create_time`) VALUES ('357', '4', '8016', '2026-05-11 12:51:25');
+INSERT INTO `sys_role_api` (`id`, `role_id`, `api_id`, `create_time`) VALUES ('358', '4', '8017', '2026-05-11 12:51:25');
+INSERT INTO `sys_role_api` (`id`, `role_id`, `api_id`, `create_time`) VALUES ('499', '4', '8003', '2026-05-15 07:31:28');
+INSERT INTO `sys_role_api` (`id`, `role_id`, `api_id`, `create_time`) VALUES ('500', '4', '8004', '2026-05-15 07:31:28');
+INSERT INTO `sys_role_api` (`id`, `role_id`, `api_id`, `create_time`) VALUES ('501', '4', '8008', '2026-05-15 07:31:28');
+INSERT INTO `sys_role_api` (`id`, `role_id`, `api_id`, `create_time`) VALUES ('502', '4', '8009', '2026-05-15 07:31:28');
+INSERT INTO `sys_role_api` (`id`, `role_id`, `api_id`, `create_time`) VALUES ('509', '3', '8003', '2026-05-15 09:33:15');
+INSERT INTO `sys_role_api` (`id`, `role_id`, `api_id`, `create_time`) VALUES ('510', '3', '8008', '2026-05-15 09:33:15');
+INSERT INTO `sys_role_api` (`id`, `role_id`, `api_id`, `create_time`) VALUES ('511', '3', '2001', '2026-05-15 09:33:15');
+INSERT INTO `sys_role_api` (`id`, `role_id`, `api_id`, `create_time`) VALUES ('574', '2', '1001', '2026-05-15 23:21:18');
+INSERT INTO `sys_role_api` (`id`, `role_id`, `api_id`, `create_time`) VALUES ('575', '2', '1002', '2026-05-15 23:21:18');
+INSERT INTO `sys_role_api` (`id`, `role_id`, `api_id`, `create_time`) VALUES ('576', '2', '1003', '2026-05-15 23:21:18');
+INSERT INTO `sys_role_api` (`id`, `role_id`, `api_id`, `create_time`) VALUES ('577', '2', '2001', '2026-05-15 23:21:18');
+INSERT INTO `sys_role_api` (`id`, `role_id`, `api_id`, `create_time`) VALUES ('578', '2', '2002', '2026-05-15 23:21:18');
+INSERT INTO `sys_role_api` (`id`, `role_id`, `api_id`, `create_time`) VALUES ('579', '2', '2003', '2026-05-15 23:21:18');
+INSERT INTO `sys_role_api` (`id`, `role_id`, `api_id`, `create_time`) VALUES ('580', '2', '2004', '2026-05-15 23:21:18');
+INSERT INTO `sys_role_api` (`id`, `role_id`, `api_id`, `create_time`) VALUES ('581', '2', '2005', '2026-05-15 23:21:18');
+INSERT INTO `sys_role_api` (`id`, `role_id`, `api_id`, `create_time`) VALUES ('582', '2', '2006', '2026-05-15 23:21:18');
+INSERT INTO `sys_role_api` (`id`, `role_id`, `api_id`, `create_time`) VALUES ('583', '2', '2007', '2026-05-15 23:21:18');
+INSERT INTO `sys_role_api` (`id`, `role_id`, `api_id`, `create_time`) VALUES ('584', '2', '3001', '2026-05-15 23:21:18');
+INSERT INTO `sys_role_api` (`id`, `role_id`, `api_id`, `create_time`) VALUES ('585', '2', '3002', '2026-05-15 23:21:18');
+INSERT INTO `sys_role_api` (`id`, `role_id`, `api_id`, `create_time`) VALUES ('586', '2', '3003', '2026-05-15 23:21:18');
+INSERT INTO `sys_role_api` (`id`, `role_id`, `api_id`, `create_time`) VALUES ('587', '2', '3004', '2026-05-15 23:21:18');
+INSERT INTO `sys_role_api` (`id`, `role_id`, `api_id`, `create_time`) VALUES ('588', '2', '3005', '2026-05-15 23:21:18');
+INSERT INTO `sys_role_api` (`id`, `role_id`, `api_id`, `create_time`) VALUES ('589', '2', '3006', '2026-05-15 23:21:18');
+INSERT INTO `sys_role_api` (`id`, `role_id`, `api_id`, `create_time`) VALUES ('590', '2', '3007', '2026-05-15 23:21:18');
+INSERT INTO `sys_role_api` (`id`, `role_id`, `api_id`, `create_time`) VALUES ('591', '2', '3008', '2026-05-15 23:21:18');
+INSERT INTO `sys_role_api` (`id`, `role_id`, `api_id`, `create_time`) VALUES ('592', '2', '4001', '2026-05-15 23:21:18');
+INSERT INTO `sys_role_api` (`id`, `role_id`, `api_id`, `create_time`) VALUES ('593', '2', '4002', '2026-05-15 23:21:18');
+INSERT INTO `sys_role_api` (`id`, `role_id`, `api_id`, `create_time`) VALUES ('594', '2', '4003', '2026-05-15 23:21:18');
+INSERT INTO `sys_role_api` (`id`, `role_id`, `api_id`, `create_time`) VALUES ('595', '2', '4004', '2026-05-15 23:21:18');
+INSERT INTO `sys_role_api` (`id`, `role_id`, `api_id`, `create_time`) VALUES ('596', '2', '4005', '2026-05-15 23:21:18');
+INSERT INTO `sys_role_api` (`id`, `role_id`, `api_id`, `create_time`) VALUES ('597', '2', '4006', '2026-05-15 23:21:18');
+INSERT INTO `sys_role_api` (`id`, `role_id`, `api_id`, `create_time`) VALUES ('598', '2', '5001', '2026-05-15 23:21:18');
+INSERT INTO `sys_role_api` (`id`, `role_id`, `api_id`, `create_time`) VALUES ('599', '2', '5002', '2026-05-15 23:21:18');
+INSERT INTO `sys_role_api` (`id`, `role_id`, `api_id`, `create_time`) VALUES ('600', '2', '5003', '2026-05-15 23:21:18');
+INSERT INTO `sys_role_api` (`id`, `role_id`, `api_id`, `create_time`) VALUES ('601', '2', '5004', '2026-05-15 23:21:18');
+INSERT INTO `sys_role_api` (`id`, `role_id`, `api_id`, `create_time`) VALUES ('602', '2', '5005', '2026-05-15 23:21:18');
+INSERT INTO `sys_role_api` (`id`, `role_id`, `api_id`, `create_time`) VALUES ('603', '2', '5006', '2026-05-15 23:21:18');
+INSERT INTO `sys_role_api` (`id`, `role_id`, `api_id`, `create_time`) VALUES ('604', '2', '6001', '2026-05-15 23:21:18');
+INSERT INTO `sys_role_api` (`id`, `role_id`, `api_id`, `create_time`) VALUES ('605', '2', '6002', '2026-05-15 23:21:18');
+INSERT INTO `sys_role_api` (`id`, `role_id`, `api_id`, `create_time`) VALUES ('606', '2', '6003', '2026-05-15 23:21:18');
+INSERT INTO `sys_role_api` (`id`, `role_id`, `api_id`, `create_time`) VALUES ('607', '2', '6004', '2026-05-15 23:21:18');
+INSERT INTO `sys_role_api` (`id`, `role_id`, `api_id`, `create_time`) VALUES ('608', '2', '6005', '2026-05-15 23:21:18');
+INSERT INTO `sys_role_api` (`id`, `role_id`, `api_id`, `create_time`) VALUES ('609', '2', '7001', '2026-05-15 23:21:18');
+INSERT INTO `sys_role_api` (`id`, `role_id`, `api_id`, `create_time`) VALUES ('610', '2', '7002', '2026-05-15 23:21:18');
+INSERT INTO `sys_role_api` (`id`, `role_id`, `api_id`, `create_time`) VALUES ('611', '2', '7003', '2026-05-15 23:21:18');
+INSERT INTO `sys_role_api` (`id`, `role_id`, `api_id`, `create_time`) VALUES ('612', '2', '7004', '2026-05-15 23:21:18');
+INSERT INTO `sys_role_api` (`id`, `role_id`, `api_id`, `create_time`) VALUES ('613', '2', '7005', '2026-05-15 23:21:18');
+INSERT INTO `sys_role_api` (`id`, `role_id`, `api_id`, `create_time`) VALUES ('614', '2', '7006', '2026-05-15 23:21:18');
+INSERT INTO `sys_role_api` (`id`, `role_id`, `api_id`, `create_time`) VALUES ('615', '2', '7007', '2026-05-15 23:21:18');
+INSERT INTO `sys_role_api` (`id`, `role_id`, `api_id`, `create_time`) VALUES ('616', '2', '7008', '2026-05-15 23:21:18');
+INSERT INTO `sys_role_api` (`id`, `role_id`, `api_id`, `create_time`) VALUES ('617', '2', '7009', '2026-05-15 23:21:18');
+INSERT INTO `sys_role_api` (`id`, `role_id`, `api_id`, `create_time`) VALUES ('618', '2', '7010', '2026-05-15 23:21:18');
+INSERT INTO `sys_role_api` (`id`, `role_id`, `api_id`, `create_time`) VALUES ('619', '2', '8003', '2026-05-15 23:21:18');
+INSERT INTO `sys_role_api` (`id`, `role_id`, `api_id`, `create_time`) VALUES ('620', '2', '8004', '2026-05-15 23:21:18');
+INSERT INTO `sys_role_api` (`id`, `role_id`, `api_id`, `create_time`) VALUES ('621', '2', '8005', '2026-05-15 23:21:18');
+INSERT INTO `sys_role_api` (`id`, `role_id`, `api_id`, `create_time`) VALUES ('622', '2', '8006', '2026-05-15 23:21:18');
+INSERT INTO `sys_role_api` (`id`, `role_id`, `api_id`, `create_time`) VALUES ('623', '2', '8007', '2026-05-15 23:21:18');
+INSERT INTO `sys_role_api` (`id`, `role_id`, `api_id`, `create_time`) VALUES ('624', '2', '8008', '2026-05-15 23:21:18');
+INSERT INTO `sys_role_api` (`id`, `role_id`, `api_id`, `create_time`) VALUES ('625', '2', '8009', '2026-05-15 23:21:18');
+INSERT INTO `sys_role_api` (`id`, `role_id`, `api_id`, `create_time`) VALUES ('626', '2', '8010', '2026-05-15 23:21:18');
+INSERT INTO `sys_role_api` (`id`, `role_id`, `api_id`, `create_time`) VALUES ('627', '2', '8011', '2026-05-15 23:21:18');
+INSERT INTO `sys_role_api` (`id`, `role_id`, `api_id`, `create_time`) VALUES ('628', '2', '8012', '2026-05-15 23:21:18');
+INSERT INTO `sys_role_api` (`id`, `role_id`, `api_id`, `create_time`) VALUES ('629', '2', '8015', '2026-05-15 23:21:18');
+INSERT INTO `sys_role_api` (`id`, `role_id`, `api_id`, `create_time`) VALUES ('630', '2', '8016', '2026-05-15 23:21:18');
+INSERT INTO `sys_role_api` (`id`, `role_id`, `api_id`, `create_time`) VALUES ('631', '2', '8017', '2026-05-15 23:21:18');
 
-(1051, 105, '新增字典类型', 'system_dict:add_type', 'ant-design:plus-outlined', 1, 1, NULL, NOW(), NULL, NOW()),
-(1052, 105, '编辑字典类型', 'system_dict:edit_type', 'ant-design:edit-outlined', 2, 1, NULL, NOW(), NULL, NOW()),
-(1053, 105, '删除字典类型', 'system_dict:delete_type', 'ant-design:delete-outlined', 3, 1, NULL, NOW(), NULL, NOW()),
-(1054, 105, '字典类型状态', 'system_dict:type_status', 'ant-design:swap-outlined', 4, 1, NULL, NOW(), NULL, NOW()),
-(1055, 105, '新增字典数据', 'system_dict:add_data', 'ant-design:plus-outlined', 5, 1, NULL, NOW(), NULL, NOW()),
-(1056, 105, '编辑字典数据', 'system_dict:edit_data', 'ant-design:edit-outlined', 6, 1, NULL, NOW(), NULL, NOW()),
-(1057, 105, '删除字典数据', 'system_dict:delete_data', 'ant-design:delete-outlined', 7, 1, NULL, NOW(), NULL, NOW()),
-(1058, 105, '字典数据状态', 'system_dict:data_status', 'ant-design:swap-outlined', 8, 1, NULL, NOW(), NULL, NOW()),
-(1059, 105, '字典数据排序', 'system_dict:data_sort', 'ant-design:sort-ascending-outlined', 9, 1, NULL, NOW(), NULL, NOW()),
+-- --------------------------------------------
+-- 数据: sys_role_menu (17 行)
+-- --------------------------------------------
+INSERT INTO `sys_role_menu` (`id`, `role_id`, `menu_id`, `create_time`) VALUES ('65', '4', '100', '2026-05-11 12:51:25');
+INSERT INTO `sys_role_menu` (`id`, `role_id`, `menu_id`, `create_time`) VALUES ('66', '4', '103', '2026-05-11 12:51:25');
+INSERT INTO `sys_role_menu` (`id`, `role_id`, `menu_id`, `create_time`) VALUES ('112', '3', '2', '2026-05-15 09:33:14');
+INSERT INTO `sys_role_menu` (`id`, `role_id`, `menu_id`, `create_time`) VALUES ('113', '3', '200', '2026-05-15 09:33:14');
+INSERT INTO `sys_role_menu` (`id`, `role_id`, `menu_id`, `create_time`) VALUES ('114', '3', '201', '2026-05-15 09:33:14');
+INSERT INTO `sys_role_menu` (`id`, `role_id`, `menu_id`, `create_time`) VALUES ('145', '2', '1', '2026-05-15 23:21:17');
+INSERT INTO `sys_role_menu` (`id`, `role_id`, `menu_id`, `create_time`) VALUES ('146', '2', '2', '2026-05-15 23:21:17');
+INSERT INTO `sys_role_menu` (`id`, `role_id`, `menu_id`, `create_time`) VALUES ('147', '2', '100', '2026-05-15 23:21:17');
+INSERT INTO `sys_role_menu` (`id`, `role_id`, `menu_id`, `create_time`) VALUES ('148', '2', '101', '2026-05-15 23:21:17');
+INSERT INTO `sys_role_menu` (`id`, `role_id`, `menu_id`, `create_time`) VALUES ('149', '2', '102', '2026-05-15 23:21:17');
+INSERT INTO `sys_role_menu` (`id`, `role_id`, `menu_id`, `create_time`) VALUES ('150', '2', '103', '2026-05-15 23:21:17');
+INSERT INTO `sys_role_menu` (`id`, `role_id`, `menu_id`, `create_time`) VALUES ('151', '2', '104', '2026-05-15 23:21:17');
+INSERT INTO `sys_role_menu` (`id`, `role_id`, `menu_id`, `create_time`) VALUES ('152', '2', '105', '2026-05-15 23:21:17');
+INSERT INTO `sys_role_menu` (`id`, `role_id`, `menu_id`, `create_time`) VALUES ('153', '2', '200', '2026-05-15 23:21:17');
+INSERT INTO `sys_role_menu` (`id`, `role_id`, `menu_id`, `create_time`) VALUES ('154', '2', '201', '2026-05-15 23:21:17');
+INSERT INTO `sys_role_menu` (`id`, `role_id`, `menu_id`, `create_time`) VALUES ('155', '2', '301', '2026-05-15 23:21:17');
+INSERT INTO `sys_role_menu` (`id`, `role_id`, `menu_id`, `create_time`) VALUES ('156', '2', '304', '2026-05-15 23:21:17');
 
-(2001, 200, '清理日志', 'admin:login-log:clean', 'ant-design:clear-outlined', 1, 1, NULL, NOW(), NULL, NOW()),
-(2002, 200, '清空日志', 'admin:login-log:clear', 'ant-design:delete-outlined', 2, 1, NULL, NOW(), NULL, NOW()),
-(2003, 200, '删除日志', 'admin:login-log:delete', 'ant-design:delete-outlined', 3, 1, NULL, NOW(), NULL, NOW()),
-(2004, 200, '导出数据', 'admin:login-log:export', 'ant-design:download-outlined', 4, 1, NULL, NOW(), NULL, NOW()),
+-- --------------------------------------------
+-- 数据: sys_role_menu_button (60 行)
+-- --------------------------------------------
+INSERT INTO `sys_role_menu_button` (`id`, `role_id`, `menu_button_id`, `create_time`) VALUES ('129', '4', '1001', '2026-05-15 10:34:01');
+INSERT INTO `sys_role_menu_button` (`id`, `role_id`, `menu_button_id`, `create_time`) VALUES ('130', '4', '1002', '2026-05-15 10:34:01');
+INSERT INTO `sys_role_menu_button` (`id`, `role_id`, `menu_button_id`, `create_time`) VALUES ('131', '4', '1003', '2026-05-15 10:34:01');
+INSERT INTO `sys_role_menu_button` (`id`, `role_id`, `menu_button_id`, `create_time`) VALUES ('132', '4', '1004', '2026-05-15 10:34:01');
+INSERT INTO `sys_role_menu_button` (`id`, `role_id`, `menu_button_id`, `create_time`) VALUES ('133', '4', '1005', '2026-05-15 10:34:01');
+INSERT INTO `sys_role_menu_button` (`id`, `role_id`, `menu_button_id`, `create_time`) VALUES ('134', '4', '1006', '2026-05-15 10:34:01');
+INSERT INTO `sys_role_menu_button` (`id`, `role_id`, `menu_button_id`, `create_time`) VALUES ('135', '4', '1007', '2026-05-15 10:34:01');
+INSERT INTO `sys_role_menu_button` (`id`, `role_id`, `menu_button_id`, `create_time`) VALUES ('136', '4', '1031', '2026-05-15 10:34:01');
+INSERT INTO `sys_role_menu_button` (`id`, `role_id`, `menu_button_id`, `create_time`) VALUES ('137', '4', '1032', '2026-05-15 10:34:01');
+INSERT INTO `sys_role_menu_button` (`id`, `role_id`, `menu_button_id`, `create_time`) VALUES ('138', '4', '1033', '2026-05-15 10:34:01');
+INSERT INTO `sys_role_menu_button` (`id`, `role_id`, `menu_button_id`, `create_time`) VALUES ('139', '3', '2003', '2026-05-15 10:34:01');
+INSERT INTO `sys_role_menu_button` (`id`, `role_id`, `menu_button_id`, `create_time`) VALUES ('140', '3', '2004', '2026-05-15 10:34:01');
+INSERT INTO `sys_role_menu_button` (`id`, `role_id`, `menu_button_id`, `create_time`) VALUES ('141', '3', '2013', '2026-05-15 10:34:01');
+INSERT INTO `sys_role_menu_button` (`id`, `role_id`, `menu_button_id`, `create_time`) VALUES ('189', '2', '2001', '2026-05-15 23:21:17');
+INSERT INTO `sys_role_menu_button` (`id`, `role_id`, `menu_button_id`, `create_time`) VALUES ('190', '2', '2002', '2026-05-15 23:21:17');
+INSERT INTO `sys_role_menu_button` (`id`, `role_id`, `menu_button_id`, `create_time`) VALUES ('191', '2', '2003', '2026-05-15 23:21:17');
+INSERT INTO `sys_role_menu_button` (`id`, `role_id`, `menu_button_id`, `create_time`) VALUES ('192', '2', '2004', '2026-05-15 23:21:17');
+INSERT INTO `sys_role_menu_button` (`id`, `role_id`, `menu_button_id`, `create_time`) VALUES ('193', '2', '2011', '2026-05-15 23:21:17');
+INSERT INTO `sys_role_menu_button` (`id`, `role_id`, `menu_button_id`, `create_time`) VALUES ('194', '2', '2012', '2026-05-15 23:21:17');
+INSERT INTO `sys_role_menu_button` (`id`, `role_id`, `menu_button_id`, `create_time`) VALUES ('195', '2', '2013', '2026-05-15 23:21:17');
+INSERT INTO `sys_role_menu_button` (`id`, `role_id`, `menu_button_id`, `create_time`) VALUES ('196', '2', '1051', '2026-05-15 23:21:17');
+INSERT INTO `sys_role_menu_button` (`id`, `role_id`, `menu_button_id`, `create_time`) VALUES ('197', '2', '1052', '2026-05-15 23:21:17');
+INSERT INTO `sys_role_menu_button` (`id`, `role_id`, `menu_button_id`, `create_time`) VALUES ('198', '2', '1053', '2026-05-15 23:21:17');
+INSERT INTO `sys_role_menu_button` (`id`, `role_id`, `menu_button_id`, `create_time`) VALUES ('199', '2', '1054', '2026-05-15 23:21:17');
+INSERT INTO `sys_role_menu_button` (`id`, `role_id`, `menu_button_id`, `create_time`) VALUES ('200', '2', '1055', '2026-05-15 23:21:17');
+INSERT INTO `sys_role_menu_button` (`id`, `role_id`, `menu_button_id`, `create_time`) VALUES ('201', '2', '1056', '2026-05-15 23:21:17');
+INSERT INTO `sys_role_menu_button` (`id`, `role_id`, `menu_button_id`, `create_time`) VALUES ('202', '2', '1057', '2026-05-15 23:21:17');
+INSERT INTO `sys_role_menu_button` (`id`, `role_id`, `menu_button_id`, `create_time`) VALUES ('203', '2', '1058', '2026-05-15 23:21:17');
+INSERT INTO `sys_role_menu_button` (`id`, `role_id`, `menu_button_id`, `create_time`) VALUES ('204', '2', '1059', '2026-05-15 23:21:17');
+INSERT INTO `sys_role_menu_button` (`id`, `role_id`, `menu_button_id`, `create_time`) VALUES ('205', '2', '1001', '2026-05-15 23:21:17');
+INSERT INTO `sys_role_menu_button` (`id`, `role_id`, `menu_button_id`, `create_time`) VALUES ('206', '2', '1002', '2026-05-15 23:21:17');
+INSERT INTO `sys_role_menu_button` (`id`, `role_id`, `menu_button_id`, `create_time`) VALUES ('207', '2', '1003', '2026-05-15 23:21:17');
+INSERT INTO `sys_role_menu_button` (`id`, `role_id`, `menu_button_id`, `create_time`) VALUES ('208', '2', '1004', '2026-05-15 23:21:17');
+INSERT INTO `sys_role_menu_button` (`id`, `role_id`, `menu_button_id`, `create_time`) VALUES ('209', '2', '1005', '2026-05-15 23:21:17');
+INSERT INTO `sys_role_menu_button` (`id`, `role_id`, `menu_button_id`, `create_time`) VALUES ('210', '2', '1006', '2026-05-15 23:21:17');
+INSERT INTO `sys_role_menu_button` (`id`, `role_id`, `menu_button_id`, `create_time`) VALUES ('211', '2', '1007', '2026-05-15 23:21:17');
+INSERT INTO `sys_role_menu_button` (`id`, `role_id`, `menu_button_id`, `create_time`) VALUES ('212', '2', '1021', '2026-05-15 23:21:17');
+INSERT INTO `sys_role_menu_button` (`id`, `role_id`, `menu_button_id`, `create_time`) VALUES ('213', '2', '1022', '2026-05-15 23:21:17');
+INSERT INTO `sys_role_menu_button` (`id`, `role_id`, `menu_button_id`, `create_time`) VALUES ('214', '2', '1023', '2026-05-15 23:21:17');
+INSERT INTO `sys_role_menu_button` (`id`, `role_id`, `menu_button_id`, `create_time`) VALUES ('215', '2', '1041', '2026-05-15 23:21:17');
+INSERT INTO `sys_role_menu_button` (`id`, `role_id`, `menu_button_id`, `create_time`) VALUES ('216', '2', '1042', '2026-05-15 23:21:17');
+INSERT INTO `sys_role_menu_button` (`id`, `role_id`, `menu_button_id`, `create_time`) VALUES ('217', '2', '1043', '2026-05-15 23:21:17');
+INSERT INTO `sys_role_menu_button` (`id`, `role_id`, `menu_button_id`, `create_time`) VALUES ('218', '2', '1044', '2026-05-15 23:21:17');
+INSERT INTO `sys_role_menu_button` (`id`, `role_id`, `menu_button_id`, `create_time`) VALUES ('219', '2', '3011', '2026-05-15 23:21:17');
+INSERT INTO `sys_role_menu_button` (`id`, `role_id`, `menu_button_id`, `create_time`) VALUES ('220', '2', '3012', '2026-05-15 23:21:17');
+INSERT INTO `sys_role_menu_button` (`id`, `role_id`, `menu_button_id`, `create_time`) VALUES ('221', '2', '3013', '2026-05-15 23:21:17');
+INSERT INTO `sys_role_menu_button` (`id`, `role_id`, `menu_button_id`, `create_time`) VALUES ('222', '2', '3014', '2026-05-15 23:21:17');
+INSERT INTO `sys_role_menu_button` (`id`, `role_id`, `menu_button_id`, `create_time`) VALUES ('223', '2', '3015', '2026-05-15 23:21:17');
+INSERT INTO `sys_role_menu_button` (`id`, `role_id`, `menu_button_id`, `create_time`) VALUES ('224', '2', '3016', '2026-05-15 23:21:17');
+INSERT INTO `sys_role_menu_button` (`id`, `role_id`, `menu_button_id`, `create_time`) VALUES ('225', '2', '3017', '2026-05-15 23:21:17');
+INSERT INTO `sys_role_menu_button` (`id`, `role_id`, `menu_button_id`, `create_time`) VALUES ('226', '2', '3018', '2026-05-15 23:21:17');
+INSERT INTO `sys_role_menu_button` (`id`, `role_id`, `menu_button_id`, `create_time`) VALUES ('227', '2', '1031', '2026-05-15 23:21:17');
+INSERT INTO `sys_role_menu_button` (`id`, `role_id`, `menu_button_id`, `create_time`) VALUES ('228', '2', '1032', '2026-05-15 23:21:17');
+INSERT INTO `sys_role_menu_button` (`id`, `role_id`, `menu_button_id`, `create_time`) VALUES ('229', '2', '1033', '2026-05-15 23:21:17');
+INSERT INTO `sys_role_menu_button` (`id`, `role_id`, `menu_button_id`, `create_time`) VALUES ('230', '2', '1011', '2026-05-15 23:21:17');
+INSERT INTO `sys_role_menu_button` (`id`, `role_id`, `menu_button_id`, `create_time`) VALUES ('231', '2', '1012', '2026-05-15 23:21:17');
+INSERT INTO `sys_role_menu_button` (`id`, `role_id`, `menu_button_id`, `create_time`) VALUES ('232', '2', '1013', '2026-05-15 23:21:17');
+INSERT INTO `sys_role_menu_button` (`id`, `role_id`, `menu_button_id`, `create_time`) VALUES ('233', '2', '1014', '2026-05-15 23:21:17');
+INSERT INTO `sys_role_menu_button` (`id`, `role_id`, `menu_button_id`, `create_time`) VALUES ('234', '2', '1015', '2026-05-15 23:21:17');
+INSERT INTO `sys_role_menu_button` (`id`, `role_id`, `menu_button_id`, `create_time`) VALUES ('235', '2', '1016', '2026-05-15 23:21:17');
 
-(2011, 201, '清理日志', 'admin:operation-log:clean', 'ant-design:clear-outlined', 1, 1, NULL, NOW(), NULL, NOW()),
-(2012, 201, '清空日志', 'admin:operation-log:clear', 'ant-design:delete-outlined', 2, 1, NULL, NOW(), NULL, NOW()),
-(2013, 201, '删除日志', 'admin:operation-log:delete', 'ant-design:delete-outlined', 3, 1, NULL, NOW(), NULL, NOW()),
+-- --------------------------------------------
+-- 数据: sys_user (4 行)
+-- --------------------------------------------
+INSERT INTO `sys_user` (`id`, `username`, `password`, `nickname`, `email`, `mobile`, `avatar`, `gender`, `status`, `dept_id`, `last_login_ip`, `last_login_time`, `remark`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('1', 'admin', '$2y$10$hKHHg0VF.8aPwfde05GuXupmJb.0TRBIHSSUFiw9dGX1yD0MTE1r2', '超级管理员', 'lyh715cb@qq.com', '17728279992', NULL, '1', '1', '1', '127.0.0.1', '2026-05-16 05:39:50', '系统超级管理员账号', NULL, '2026-04-25 21:00:53', '1', '2026-05-16 05:39:50', NULL);
+INSERT INTO `sys_user` (`id`, `username`, `password`, `nickname`, `email`, `mobile`, `avatar`, `gender`, `status`, `dept_id`, `last_login_ip`, `last_login_time`, `remark`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('2', 'demouser', '$2y$10$sTb6jUMfU.xtbdc6RVXw9eF/JG0dMbie6vRhjmyORs5QTrqBBX.Ke', '用户管理员', 'demo@szctcw.cn', '13900139000', NULL, '2', '1', '2', '127.0.0.1', '2026-05-11 14:15:55', NULL, '1', '2026-04-26 12:57:05', '1', '2026-05-11 14:15:55', NULL);
+INSERT INTO `sys_user` (`id`, `username`, `password`, `nickname`, `email`, `mobile`, `avatar`, `gender`, `status`, `dept_id`, `last_login_ip`, `last_login_time`, `remark`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('3', 'demoadmin', '$2y$10$q7QmHCQbA2t4A/WWaOKape32Ad/WAfHvIX9o3W8IOXnc/aJ7d4IYO', '管理员', 'admin@szctcw.cn', '13500000000', NULL, '1', '1', '1', '127.0.0.1', '2026-05-16 05:35:32', NULL, '1', '2026-05-10 07:16:05', NULL, '2026-05-16 05:35:32', NULL);
+INSERT INTO `sys_user` (`id`, `username`, `password`, `nickname`, `email`, `mobile`, `avatar`, `gender`, `status`, `dept_id`, `last_login_ip`, `last_login_time`, `remark`, `created_by`, `create_time`, `updated_by`, `update_time`, `delete_time`) VALUES ('4', 'test', '$2y$10$JmiXna5dGknszqywvQFPPu.HwmWc6FWsNx8Cz3gbSWkP73ZWf7tTK', '普通用户测试员', 'test@szctcw.cn', '13500000001', NULL, '0', '1', '1', '127.0.0.1', '2026-05-15 07:19:23', NULL, '1', '2026-05-15 06:07:47', '1', '2026-05-15 07:19:23', NULL);
 
-(3011, 301, '新增按钮', 'permission_button:add', 'ant-design:plus-outlined', 1, 1, NULL, NOW(), NULL, NOW()),
-(3012, 301, '编辑按钮', 'permission_button:edit', 'ant-design:edit-outlined', 2, 1, NULL, NOW(), NULL, NOW()),
-(3013, 301, '删除按钮', 'permission_button:delete', 'ant-design:delete-outlined', 3, 1, NULL, NOW(), NULL, NOW()),
-(3014, 301, '查看详情', 'permission_button:detail', 'ant-design:eye-outlined', 4, 1, NULL, NOW(), NULL, NOW()),
-(3015, 301, '状态切换', 'permission_button:status', 'ant-design:swap-outlined', 5, 1, NULL, NOW(), NULL, NOW()),
-(3016, 301, '批量启用', 'permission_button:batch_enable', 'ant-design:check-circle-outlined', 6, 1, NULL, NOW(), NULL, NOW()),
-(3017, 301, '批量禁用', 'permission_button:batch_disable', 'ant-design:stop-outlined', 7, 1, NULL, NOW(), NULL, NOW()),
-(3018, 301, '批量删除', 'permission_button:batch_delete', 'ant-design:delete-outlined', 8, 1, NULL, NOW(), NULL, NOW());
+-- --------------------------------------------
+-- 数据: sys_user_dept (8 行)
+-- --------------------------------------------
+INSERT INTO `sys_user_dept` (`id`, `user_id`, `dept_id`, `is_primary`, `sort`, `create_time`) VALUES ('1', '1', '1', '1', '0', '2026-05-10 05:59:39');
+INSERT INTO `sys_user_dept` (`id`, `user_id`, `dept_id`, `is_primary`, `sort`, `create_time`) VALUES ('10', '3', '1', '1', '0', '2026-05-10 07:16:05');
+INSERT INTO `sys_user_dept` (`id`, `user_id`, `dept_id`, `is_primary`, `sort`, `create_time`) VALUES ('11', '3', '2', '0', '1', '2026-05-10 07:16:05');
+INSERT INTO `sys_user_dept` (`id`, `user_id`, `dept_id`, `is_primary`, `sort`, `create_time`) VALUES ('12', '3', '3', '0', '2', '2026-05-10 07:16:05');
+INSERT INTO `sys_user_dept` (`id`, `user_id`, `dept_id`, `is_primary`, `sort`, `create_time`) VALUES ('13', '3', '4', '0', '3', '2026-05-10 07:16:05');
+INSERT INTO `sys_user_dept` (`id`, `user_id`, `dept_id`, `is_primary`, `sort`, `create_time`) VALUES ('16', '2', '2', '1', '0', '2026-05-10 19:30:20');
+INSERT INTO `sys_user_dept` (`id`, `user_id`, `dept_id`, `is_primary`, `sort`, `create_time`) VALUES ('17', '2', '3', '0', '1', '2026-05-10 19:30:20');
+INSERT INTO `sys_user_dept` (`id`, `user_id`, `dept_id`, `is_primary`, `sort`, `create_time`) VALUES ('19', '4', '1', '1', '0', '2026-05-15 06:09:24');
 
--- =============================================
--- 8. 角色菜单关联（超级管理员拥有所有菜单）
--- =============================================
-INSERT INTO `sys_role_menu` (`role_id`, `menu_id`, `create_time`)
-SELECT 1, id, NOW() FROM `sys_menu` WHERE `status` = 1;
+-- --------------------------------------------
+-- 数据: sys_user_role (5 行)
+-- --------------------------------------------
+INSERT INTO `sys_user_role` (`id`, `user_id`, `role_id`, `create_time`) VALUES ('7', '1', '1', '2026-05-10 05:59:39');
+INSERT INTO `sys_user_role` (`id`, `user_id`, `role_id`, `create_time`) VALUES ('13', '3', '2', '2026-05-10 07:16:05');
+INSERT INTO `sys_user_role` (`id`, `user_id`, `role_id`, `create_time`) VALUES ('15', '2', '3', '2026-05-10 19:30:20');
+INSERT INTO `sys_user_role` (`id`, `user_id`, `role_id`, `create_time`) VALUES ('16', '2', '4', '2026-05-10 19:30:20');
+INSERT INTO `sys_user_role` (`id`, `user_id`, `role_id`, `create_time`) VALUES ('18', '4', '3', '2026-05-15 06:09:24');
 
--- =============================================
--- 9. 角色菜单按钮关联（超级管理员拥有所有按钮）
--- =============================================
-INSERT INTO `sys_role_menu_button` (`role_id`, `menu_button_id`, `create_time`)
-SELECT 1, id, NOW() FROM `sys_menu_button` WHERE `status` = 1;
+-- --------------------------------------------
+-- 数据: sys_wx_config (空表，无数据)
+-- --------------------------------------------
 
--- 管理员角色(role_id=2)的按钮关联：全部按钮
-INSERT INTO `sys_role_menu_button` (`role_id`, `menu_button_id`, `create_time`)
-SELECT 2, id, NOW() FROM `sys_menu_button` WHERE `status` = 1;
+-- --------------------------------------------
+-- 数据: sys_wx_user (空表，无数据)
+-- --------------------------------------------
 
--- 人事经理角色(role_id=4)的按钮关联：用户管理 + 部门管理按钮
-INSERT INTO `sys_role_menu_button` (`role_id`, `menu_button_id`, `create_time`) VALUES
-(4, 1001, NOW()), (4, 1002, NOW()), (4, 1003, NOW()), (4, 1004, NOW()), (4, 1005, NOW()),
-(4, 1006, NOW()), (4, 1007, NOW()),
-(4, 1031, NOW()), (4, 1032, NOW()), (4, 1033, NOW());
-
--- 普通用户角色(role_id=3)的按钮关联：日志删除和导出
-INSERT INTO `sys_role_menu_button` (`role_id`, `menu_button_id`, `create_time`) VALUES
-(3, 2003, NOW()), (3, 2004, NOW()), (3, 2013, NOW());
-
--- =============================================
--- 10. 创建字典类型
--- =============================================
-INSERT INTO `sys_dict_type` (`id`, `name`, `code`, `type`, `status`, `remark`, `created_by`, `create_time`, `updated_by`, `update_time`) VALUES
-(1, '用户性别', 'user_gender', 'string', 1, '用户性别字典', 1, NOW(), 1, NOW()),
-(2, '用户状态', 'user_status', 'string', 1, '用户状态字典', 1, NOW(), 1, NOW()),
-(3, '菜单类型', 'menu_type', 'string', 1, '菜单类型字典', 1, NOW(), 1, NOW()),
-(4, '数据权限', 'data_scope', 'number', 1, '数据权限范围字典', 1, NOW(), 1, NOW()),
-(5, '是否', 'yes_no', 'string', 1, '是/否字典', 1, NOW(), 1, NOW()),
-(6, '角色状态', 'role_status', 'number', 1, '角色状态字典', 1, NOW(), 1, NOW());
-
--- =============================================
--- 11. 创建字典数据
--- =============================================
-INSERT INTO `sys_dict_data` (`dict_type_id`, `label`, `value`, `sort`, `status`, `remark`, `created_by`, `create_time`, `updated_by`, `update_time`) VALUES
-(1, '未知', '0', 0, 1, NULL, 1, NOW(), 1, NOW()),
-(1, '男', '1', 1, 1, NULL, 1, NOW(), 1, NOW()),
-(1, '女', '2', 2, 1, NULL, 1, NOW(), 1, NOW()),
-
-(2, '正常', '1', 1, 1, NULL, 1, NOW(), 1, NOW()),
-(2, '禁用', '0', 2, 1, NULL, 1, NOW(), 1, NOW()),
-
-(3, '目录', '1', 1, 1, NULL, 1, NOW(), 1, NOW()),
-(3, '菜单', '2', 2, 1, NULL, 1, NOW(), 1, NOW()),
-(3, '按钮', '3', 3, 1, NULL, 1, NOW(), 1, NOW()),
-
-(4, '全部数据', '1', 1, 1, NULL, 1, NOW(), 1, NOW()),
-(4, '本部门数据', '2', 2, 1, NULL, 1, NOW(), 1, NOW()),
-(4, '本部门及以下数据', '3', 3, 1, NULL, 1, NOW(), 1, NOW()),
-(4, '仅本人数据', '4', 4, 1, NULL, 1, NOW(), 1, NOW()),
-(4, '自定义数据', '5', 5, 1, NULL, 1, NOW(), 1, NOW()),
-
-(5, '是', '1', 1, 1, NULL, 1, NOW(), 1, NOW()),
-(5, '否', '0', 2, 1, NULL, 1, NOW(), 1, NOW()),
-
-(6, '正常', '1', 1, 1, NULL, 1, NOW(), 1, NOW()),
-(6, '禁用', '0', 2, 1, NULL, 1, NOW(), 1, NOW());
-
--- =============================================
--- 12. 创建系统配置
--- =============================================
-INSERT INTO `sys_config` (`id`, `name`, `code`, `value`, `type`, `status`, `remark`, `created_by`, `create_time`, `updated_by`, `update_time`) VALUES
-(1, '登录验证码', 'login_captcha', 'true', 'string', 1, '是否启用登录验证码', 1, NOW(), 1, NOW()),
-(2, '密码最小长度', 'password_min_length', '6', 'number', 1, '密码最小长度要求', 1, NOW(), 1, NOW()),
-(3, '登录失败锁定次数', 'login_fail_lock_count', '5', 'number', 1, '连续失败次数后锁定账户', 1, NOW(), 1, NOW()),
-(4, '登录失败锁定时间', 'login_fail_lock_minutes', '15', 'number', 1, '账户锁定时间（分钟）', 1, NOW(), 1, NOW()),
-(5, 'Token有效期', 'token_expire_hours', '2', 'number', 1, 'Access Token有效期（小时）', 1, NOW(), 1, NOW()),
-(6, '刷新Token有效期', 'refresh_token_expire_days', '7', 'number', 1, '刷新Token有效期（天）', 1, NOW(), 1, NOW());
-
--- =============================================
--- 13. 创建初始API接口数据
--- =============================================
-INSERT INTO `sys_api` (`id`, `menu_id`, `name`, `code`, `method`, `path`, `group`, `status`, `created_by`, `create_time`, `updated_by`, `update_time`) VALUES
--- 认证接口
-(1001, NULL, '管理员登录', 'admin:auth:login', 'POST', '/admin/login', 'auth', 1, 1, NOW(), 1, NOW()),
-(1002, NULL, '管理员登出', 'admin:auth:logout', 'POST', '/admin/logout', 'auth', 1, 1, NOW(), 1, NOW()),
-(1003, NULL, '刷新Token', 'admin:auth:refresh', 'POST', '/admin/refresh-token', 'auth', 1, 1, NOW(), 1, NOW()),
-(1004, NULL, '获取个人信息', 'admin:auth:profile', 'GET', '/admin/profile', 'auth', 1, 1, NOW(), 1, NOW()),
-(1005, NULL, '修改密码', 'admin:auth:password', 'PUT', '/admin/password', 'auth', 1, 1, NOW(), 1, NOW()),
-
--- 用户管理接口
-(2001, 100, '用户列表', 'admin:user:list', 'GET', '/admin/users', 'user', 1, 1, NOW(), 1, NOW()),
-(2002, 100, '用户详情', 'admin:user:detail', 'GET', '/admin/users/:id', 'user', 1, 1, NOW(), 1, NOW()),
-(2003, 100, '创建用户', 'admin:user:create', 'POST', '/admin/users', 'user', 1, 1, NOW(), 1, NOW()),
-(2004, 100, '更新用户', 'admin:user:update', 'PUT', '/admin/users/:id', 'user', 1, 1, NOW(), 1, NOW()),
-(2005, 100, '删除用户', 'admin:user:delete', 'DELETE', '/admin/users/:id', 'user', 1, 1, NOW(), 1, NOW()),
-(2006, 100, '分配角色', 'admin:user:assign', 'POST', '/admin/users/:id/roles', 'user', 1, 1, NOW(), 1, NOW()),
-(2007, 100, '重置密码', 'admin:user:reset', 'POST', '/admin/users/:id/reset-password', 'user', 1, 1, NOW(), 1, NOW()),
-(2008, 100, '导出用户', 'admin:user:export', 'GET', '/admin/users/export', 'user', 1, 1, NOW(), 1, NOW()),
-(2009, 100, '导入用户', 'admin:user:import', 'POST', '/admin/users/import', 'user', 1, 1, NOW(), 1, NOW()),
-(2010, 100, '修改用户状态', 'admin:user:changeStatus', 'PUT', '/admin/users/:id/status', 'user', 1, 1, NOW(), 1, NOW()),
-
--- 角色管理接口
-(3001, 101, '角色列表', 'admin:role:list', 'GET', '/admin/roles', 'role', 1, 1, NOW(), 1, NOW()),
-(3002, 101, '角色详情', 'admin:role:detail', 'GET', '/admin/roles/:id', 'role', 1, 1, NOW(), 1, NOW()),
-(3003, 101, '创建角色', 'admin:role:create', 'POST', '/admin/roles', 'role', 1, 1, NOW(), 1, NOW()),
-(3004, 101, '更新角色', 'admin:role:update', 'PUT', '/admin/roles/:id', 'role', 1, 1, NOW(), 1, NOW()),
-(3005, 101, '删除角色', 'admin:role:delete', 'DELETE', '/admin/roles/:id', 'role', 1, 1, NOW(), 1, NOW()),
-(3006, 101, '分配菜单权限', 'admin:role:assignMenu', 'POST', '/admin/roles/:id/menus', 'role', 1, 1, NOW(), 1, NOW()),
-(3007, 101, '分配按钮权限', 'admin:role:assignButton', 'POST', '/admin/roles/:id/buttons', 'role', 1, 1, NOW(), 1, NOW()),
-(3008, 101, '分配API权限', 'admin:role:assignApi', 'POST', '/admin/roles/:id/apis', 'role', 1, 1, NOW(), 1, NOW()),
-(3009, 101, '设置数据范围', 'admin:role:setDataScope', 'PUT', '/admin/roles/:id/data-scope', 'role', 1, 1, NOW(), 1, NOW()),
-(3010, 101, '修改角色状态', 'admin:role:changeStatus', 'PUT', '/admin/roles/:id/status', 'role', 1, 1, NOW(), 1, NOW()),
-
--- 菜单管理接口
-(4001, 102, '菜单列表', 'admin:menu:list', 'GET', '/admin/menus', 'menu', 1, 1, NOW(), 1, NOW()),
-(4002, 102, '菜单树形', 'admin:menu:tree', 'GET', '/admin/menus/tree', 'menu', 1, 1, NOW(), 1, NOW()),
-(4003, 102, '菜单详情', 'admin:menu:detail', 'GET', '/admin/menus/:id', 'menu', 1, 1, NOW(), 1, NOW()),
-(4004, 102, '创建菜单', 'admin:menu:create', 'POST', '/admin/menus', 'menu', 1, 1, NOW(), 1, NOW()),
-(4005, 102, '更新菜单', 'admin:menu:update', 'PUT', '/admin/menus/:id', 'menu', 1, 1, NOW(), 1, NOW()),
-(4006, 102, '删除菜单', 'admin:menu:delete', 'DELETE', '/admin/menus/:id', 'menu', 1, 1, NOW(), 1, NOW()),
-(4007, 102, '获取菜单按钮', 'admin:menu:getButtons', 'GET', '/admin/menus/:id/buttons', 'menu', 1, 1, NOW(), 1, NOW()),
-(4008, 102, '创建菜单按钮', 'admin:menu:createButton', 'POST', '/admin/menus/:id/buttons', 'menu', 1, 1, NOW(), 1, NOW()),
-(4009, 102, '更新菜单按钮', 'admin:menu:updateButton', 'PUT', '/admin/menus/:id/buttons/:buttonId', 'menu', 1, 1, NOW(), 1, NOW()),
-(4010, 102, '删除菜单按钮', 'admin:menu:deleteButton', 'DELETE', '/admin/menus/:id/buttons/:buttonId', 'menu', 1, 1, NOW(), 1, NOW()),
-
--- 部门管理接口
-(5001, 103, '部门列表', 'admin:dept:list', 'GET', '/admin/depts', 'dept', 1, 1, NOW(), 1, NOW()),
-(5002, 103, '部门树形', 'admin:dept:tree', 'GET', '/admin/depts/tree', 'dept', 1, 1, NOW(), 1, NOW()),
-(5003, 103, '部门详情', 'admin:dept:detail', 'GET', '/admin/depts/:id', 'dept', 1, 1, NOW(), 1, NOW()),
-(5004, 103, '创建部门', 'admin:dept:create', 'POST', '/admin/depts', 'dept', 1, 1, NOW(), 1, NOW()),
-(5005, 103, '更新部门', 'admin:dept:update', 'PUT', '/admin/depts/:id', 'dept', 1, 1, NOW(), 1, NOW()),
-(5006, 103, '删除部门', 'admin:dept:delete', 'DELETE', '/admin/depts/:id', 'dept', 1, 1, NOW(), 1, NOW()),
-(5007, 103, '修改部门状态', 'admin:dept:setStatus', 'PUT', '/admin/depts/:id/status', 'dept', 1, 1, NOW(), 1, NOW()),
-(5008, 103, '部门排序', 'admin:dept:setSort', 'PUT', '/admin/depts/:id/sort', 'dept', 1, 1, NOW(), 1, NOW()),
-(5009, 103, '部门用户列表', 'admin:dept:getUsers', 'GET', '/admin/depts/:id/users', 'dept', 1, 1, NOW(), 1, NOW()),
-
--- 接口管理接口
-(6001, 104, '接口列表', 'admin:api:list', 'GET', '/admin/apis', 'api', 1, 1, NOW(), 1, NOW()),
-(6002, 104, '接口详情', 'admin:api:detail', 'GET', '/admin/apis/:id', 'api', 1, 1, NOW(), 1, NOW()),
-(6003, 104, '创建接口', 'admin:api:create', 'POST', '/admin/apis', 'api', 1, 1, NOW(), 1, NOW()),
-(6004, 104, '更新接口', 'admin:api:update', 'PUT', '/admin/apis/:id', 'api', 1, 1, NOW(), 1, NOW()),
-(6005, 104, '删除接口', 'admin:api:delete', 'DELETE', '/admin/apis/:id', 'api', 1, 1, NOW(), 1, NOW()),
-(6006, 104, '接口分组列表', 'admin:api:getGroups', 'GET', '/admin/apis/groups', 'api', 1, 1, NOW(), 1, NOW()),
-(6007, 104, '按菜单获取接口', 'admin:api:getByMenu', 'GET', '/admin/apis/menu/:menuId', 'api', 1, 1, NOW(), 1, NOW()),
-(6008, 104, '修改接口状态', 'admin:api:setStatus', 'PUT', '/admin/apis/:id/status', 'api', 1, 1, NOW(), 1, NOW()),
-
--- 字典管理接口
-(7001, 105, '字典类型列表', 'admin:dict:typeList', 'GET', '/admin/dict/types', 'dict', 1, 1, NOW(), 1, NOW()),
-(7002, 105, '字典类型详情', 'admin:dict:typeDetail', 'GET', '/admin/dict/types/:id', 'dict', 1, 1, NOW(), 1, NOW()),
-(7003, 105, '创建字典类型', 'admin:dict:typeCreate', 'POST', '/admin/dict/types', 'dict', 1, 1, NOW(), 1, NOW()),
-(7004, 105, '更新字典类型', 'admin:dict:typeUpdate', 'PUT', '/admin/dict/types/:id', 'dict', 1, 1, NOW(), 1, NOW()),
-(7005, 105, '删除字典类型', 'admin:dict:typeDelete', 'DELETE', '/admin/dict/types/:id', 'dict', 1, 1, NOW(), 1, NOW()),
-(7006, 105, '字典数据列表', 'admin:dict:dataList', 'GET', '/admin/dict/data', 'dict', 1, 1, NOW(), 1, NOW()),
-(7007, 105, '字典数据详情', 'admin:dict:dataDetail', 'GET', '/admin/dict/data/:id', 'dict', 1, 1, NOW(), 1, NOW()),
-(7008, 105, '创建字典数据', 'admin:dict:dataCreate', 'POST', '/admin/dict/data', 'dict', 1, 1, NOW(), 1, NOW()),
-(7009, 105, '更新字典数据', 'admin:dict:dataUpdate', 'PUT', '/admin/dict/data/:id', 'dict', 1, 1, NOW(), 1, NOW()),
-(7010, 105, '删除字典数据', 'admin:dict:dataDelete', 'DELETE', '/admin/dict/data/:id', 'dict', 1, 1, NOW(), 1, NOW()),
-(7011, 105, '修改字典类型状态', 'admin:dict:typeChangeStatus', 'PUT', '/admin/dict/types/:id/status', 'dict', 1, 1, NOW(), 1, NOW()),
-(7012, 105, '字典数据排序', 'admin:dict:dataUpdateSort', 'POST', '/admin/dict/data/sort', 'dict', 1, 1, NOW(), 1, NOW()),
-(7013, 105, '修改字典数据状态', 'admin:dict:dataChangeStatus', 'PUT', '/admin/dict/data/:id/status', 'dict', 1, 1, NOW(), 1, NOW()),
-(7014, 105, '按编码获取字典', 'admin:dict:dictByCode', 'GET', '/admin/dict/code/:code', 'dict', 1, 1, NOW(), 1, NOW()),
-
--- 登录日志接口
-(8001, 200, '登录日志列表', 'admin:loginLog:list', 'GET', '/admin/login-logs', 'log', 1, 1, NOW(), 1, NOW()),
-(8002, 200, '登录日志统计', 'admin:loginLog:stats', 'GET', '/admin/login-logs/stats', 'log', 1, 1, NOW(), 1, NOW()),
-(8003, 200, '清理登录日志', 'admin:loginLog:clean', 'POST', '/admin/login-logs/clean', 'log', 1, 1, NOW(), 1, NOW()),
-(8004, 200, '清空登录日志', 'admin:loginLog:clear', 'POST', '/admin/login-logs/clear', 'log', 1, 1, NOW(), 1, NOW()),
-(8005, 200, '删除登录日志', 'admin:loginLog:delete', 'POST', '/admin/login-logs/delete', 'log', 1, 1, NOW(), 1, NOW()),
-
--- 操作日志接口
-(9001, 201, '操作日志列表', 'admin:operationLog:list', 'GET', '/admin/operation-logs', 'log', 1, 1, NOW(), 1, NOW()),
-(9002, 201, '操作日志统计', 'admin:operationLog:stats', 'GET', '/admin/operation-logs/stats', 'log', 1, 1, NOW(), 1, NOW()),
-(9003, 201, '清理操作日志', 'admin:operationLog:clean', 'POST', '/admin/operation-logs/clean', 'log', 1, 1, NOW(), 1, NOW()),
-(9004, 201, '清空操作日志', 'admin:operationLog:clear', 'POST', '/admin/operation-logs/clear', 'log', 1, 1, NOW(), 1, NOW()),
-(9005, 201, '删除操作日志', 'admin:operationLog:delete', 'POST', '/admin/operation-logs/delete', 'log', 1, 1, NOW(), 1, NOW()),
-
--- 仪表盘接口
-(10001, NULL, '仪表盘统计', 'admin:dashboard:statistics', 'GET', '/admin/dashboard/statistics', 'dashboard', 1, 1, NOW(), 1, NOW()),
-
--- 个人信息接口
-(11001, NULL, '获取个人信息', 'admin:profile:show', 'GET', '/admin/profile', 'profile', 1, 1, NOW(), 1, NOW()),
-(11002, NULL, '更新个人信息', 'admin:profile:update', 'PUT', '/admin/profile', 'profile', 1, 1, NOW(), 1, NOW()),
-(11003, NULL, '上传头像', 'admin:profile:avatar', 'POST', '/admin/profile/avatar', 'profile', 1, 1, NOW(), 1, NOW()),
-(11004, NULL, '修改个人密码', 'admin:profile:password', 'PUT', '/admin/profile/password', 'profile', 1, 1, NOW(), 1, NOW());
-
--- =============================================
--- 14. 角色接口关联（超级管理员拥有所有接口）
--- =============================================
-INSERT INTO `sys_role_api` (`role_id`, `api_id`, `create_time`)
-SELECT 1, id, NOW() FROM `sys_api` WHERE `status` = 1;
-
--- =============================================
--- 15. 用户部门关联数据迁移（合并自 006_migrate_user_dept_data.sql）
--- =============================================
--- 将 sys_user.dept_id 迁移到 sys_user_dept，建立多对多关联
--- sys_user.dept_id 保留为冗余字段（主部门），与 sys_user_dept.is_primary=1 同步
-INSERT INTO `sys_user_dept` (`user_id`, `dept_id`, `is_primary`, `sort`, `create_time`)
-SELECT `id`, `dept_id`, 1, 0, NOW()
-FROM `sys_user`
-WHERE `dept_id` IS NOT NULL AND `dept_id` > 0
-AND NOT EXISTS (
-  SELECT 1 FROM `sys_user_dept` WHERE `sys_user_dept`.`user_id` = `sys_user`.`id` AND `sys_user_dept`.`dept_id` = `sys_user`.`dept_id`
-);
-
-SET FOREIGN_KEY_CHECKS = 1;
-
--- =============================================
--- 执行完成
--- =============================================
--- 初始化数据说明:
--- 1. 默认管理员账号: admin / 123456
--- 2. 超级管理员拥有所有菜单、按钮、接口权限
--- 3. 包含完整的菜单树和按钮权限
--- 4. 包含常用字典数据和系统配置
--- 5. 已将 sys_user.dept_id 数据迁移到 sys_user_dept（多对多关联）
--- =============================================

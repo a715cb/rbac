@@ -188,14 +188,14 @@ class AdminAuth
      * @缓存策略:
      *   - 缓存键：user_menu_codes_{userId}（普通用户）
      *   - 缓存键：all_menu_codes（超级管理员）
-     *   - 缓存时间：由 auth.cache_time 配置项控制（默认3600秒）
+     *   - 缓存时间：由 auth.cache_time 配置项控制（默认3600秒），带 ±10% TTL 抖动防雪崩
+     *   - 缓存模式：SimpleCache::remember 互斥锁保护回填，标签 user_menu_cache
      *   - 缓存层级：内存优先，Redis作为后备
      *
      * @业务逻辑:
      *   1. 超级管理员直接返回所有菜单码（走缓存）
      *   2. 优先返回内存缓存的菜单码列表
-     *   3. 查询Redis缓存，命中则更新内存并返回
-     *   4. 缓存未命中，从数据库查询并写入缓存
+     *   3. 缓存未命中时通过 remember 回调从数据库查询并写入缓存
      */
     public function getMenuCodes(): array
     {
@@ -208,18 +208,11 @@ class AdminAuth
         }
 
         $cacheKey = 'user_menu_codes_' . $this->userId;
-        $cacheTime = Config::get('auth.cache_time', 3600);
+        $cacheTime = SimpleCache::getJitteredTtl(Config::get('auth.cache_time', 3600));
 
-        $cached = SimpleCache::get($cacheKey);
-        if ($cached !== null) {
-            $this->menus = $cached;
-            return $this->menus;
-        }
-
-        $menuModel = new Menu();
-        $this->menus = $menuModel->getUserMenuCodes($this->userId);
-
-        SimpleCache::set($cacheKey, $this->menus, $cacheTime);
+        $this->menus = SimpleCache::remember($cacheKey, $cacheTime, function () {
+            return (new Menu())->getUserMenuCodes($this->userId);
+        }, 'user_menu_cache');
 
         return $this->menus;
     }
@@ -235,13 +228,13 @@ class AdminAuth
      * @缓存策略:
      *   - 缓存键：user_api_codes_{userId}（普通用户）
      *   - 缓存键：all_api_codes（超级管理员）
-     *   - 缓存时间：由 auth.cache_time 配置项控制
+     *   - 缓存时间：由 auth.cache_time 配置项控制，带 ±10% TTL 抖动防雪崩
+     *   - 缓存模式：SimpleCache::remember 互斥锁保护回填，标签 user_menu_cache
      *
      * @业务逻辑:
      *   1. 超级管理员直接返回所有API码（走缓存）
      *   2. 优先返回内存缓存的API码列表
-     *   3. 查询数据库获取用户角色关联的API权限
-     *   4. 写入缓存并返回
+     *   3. 缓存未命中时通过 remember 回调从数据库查询并写入缓存
      *
      * @使用场景: ApiPermission中间件验证用户是否有权访问特定API
      */
@@ -256,18 +249,11 @@ class AdminAuth
         }
 
         $cacheKey = 'user_api_codes_' . $this->userId;
-        $cacheTime = Config::get('auth.cache_time', 3600);
+        $cacheTime = SimpleCache::getJitteredTtl(Config::get('auth.cache_time', 3600));
 
-        $cached = SimpleCache::get($cacheKey);
-        if ($cached !== null) {
-            $this->permissions = $cached;
-            return $this->permissions;
-        }
-
-        $menuModel = new Menu();
-        $this->permissions = $menuModel->getUserApiCodes($this->userId);
-
-        SimpleCache::set($cacheKey, $this->permissions, $cacheTime);
+        $this->permissions = SimpleCache::remember($cacheKey, $cacheTime, function () {
+            return (new Menu())->getUserApiCodes($this->userId);
+        }, 'user_menu_cache');
 
         return $this->permissions;
     }
@@ -283,14 +269,13 @@ class AdminAuth
      * @缓存策略:
      *   - 缓存键：user_button_codes_{userId}
      *   - 缓存键：all_button_codes（超级管理员）
-     *   - 缓存时间：由 auth.cache_time 配置项控制
+     *   - 缓存时间：由 auth.cache_time 配置项控制，带 ±10% TTL 抖动防雪崩
+     *   - 缓存模式：SimpleCache::remember 互斥锁保护回填，标签 user_menu_cache
      *
      * @业务逻辑:
      *   1. 超级管理员直接返回所有按钮码
      *   2. 优先返回内存缓存的按钮码列表
-     *   3. 获取用户角色列表，查询角色关联的按钮ID
-     *   4. 根据按钮ID查询按钮详情（状态正常、未删除）
-     *   5. 写入缓存并返回
+     *   3. 缓存未命中时通过 remember 回调查询角色关联按钮并写入缓存
      */
     public function getButtonCodes(): array
     {
@@ -303,31 +288,23 @@ class AdminAuth
         }
 
         $cacheKey = 'user_button_codes_' . $this->userId;
-        $cacheTime = Config::get('auth.cache_time', 3600);
+        $cacheTime = SimpleCache::getJitteredTtl(Config::get('auth.cache_time', 3600));
 
-        $cached = SimpleCache::get($cacheKey);
-        if ($cached !== null) {
-            $this->buttonCodes = $cached;
-            return $this->buttonCodes;
-        }
+        $this->buttonCodes = SimpleCache::remember($cacheKey, $cacheTime, function () {
+            $roleModel = new Role();
+            $roleIds = array_column($this->roles, 'id');
+            $buttonIds = $roleModel->getRoleButtonsByRoleIds($roleIds);
 
-        $roleModel = new Role();
-        $roleIds = array_column($this->roles, 'id');
-        $buttonIds = $roleModel->getRoleButtonsByRoleIds($roleIds);
+            if (empty($buttonIds)) {
+                return [];
+            }
 
-        if (empty($buttonIds)) {
-            $this->buttonCodes = [];
-            SimpleCache::set($cacheKey, $this->buttonCodes, $cacheTime);
-            return $this->buttonCodes;
-        }
-
-        $this->buttonCodes = Db::name('menu_button')
-            ->whereIn('id', $buttonIds)
-            ->where('status', 1)
-            ->whereNull('delete_time')
-            ->column('code');
-
-        SimpleCache::set($cacheKey, $this->buttonCodes, $cacheTime);
+            return Db::name('menu_button')
+                ->whereIn('id', $buttonIds)
+                ->where('status', 1)
+                ->whereNull('delete_time')
+                ->column('code');
+        }, 'user_menu_cache');
 
         return $this->buttonCodes;
     }
@@ -342,14 +319,14 @@ class AdminAuth
      *
      * @缓存策略:
      *   - 缓存键：user_menu_tree_{userId}
-     *   - 缓存时间：由 auth.cache_time 配置项控制
+     *   - 缓存时间：由 auth.cache_time 配置项控制，带 ±10% TTL 抖动防雪崩
+     *   - 缓存模式：SimpleCache::remember 互斥锁保护回填，标签 user_menu_cache
+     *   - 空结果同样缓存，避免缓存穿透
      *
      * @业务逻辑:
-     *   1. 查询Redis缓存，命中则直接返回
-     *   2. 超级管理员获取完整菜单树（status=1）
-     *   3. 普通用户根据角色权限获取个性化菜单树
-     *   4. 自动补全父级菜单（确保菜单树完整性）
-     *   5. 写入缓存并返回
+     *   1. 超级管理员获取完整菜单树（status=1）
+     *   2. 普通用户根据角色权限获取个性化菜单树
+     *   3. 自动补全父级菜单（确保菜单树完整性）
      *
      * @使用场景:
      *   - 用户登录后前端动态菜单渲染
@@ -358,24 +335,17 @@ class AdminAuth
     public function getMenuTree(): array
     {
         $cacheKey = 'user_menu_tree_' . $this->userId;
-        $cacheTime = Config::get('auth.cache_time', 3600);
+        $cacheTime = SimpleCache::getJitteredTtl(Config::get('auth.cache_time', 3600));
 
-        $cached = SimpleCache::get($cacheKey);
-        if ($cached !== null) {
-            return $cached;
-        }
+        return SimpleCache::remember($cacheKey, $cacheTime, function () {
+            $menuModel = new Menu();
 
-        $menuModel = new Menu();
+            if ($this->isSuperAdmin()) {
+                return $menuModel->getMenuTreeList(1);
+            }
 
-        if ($this->isSuperAdmin()) {
-            $tree = $menuModel->getMenuTreeList(1);
-        } else {
-            $tree = $menuModel->getUserMenuTree($this->userId);
-        }
-
-        SimpleCache::set($cacheKey, $tree, $cacheTime);
-
-        return $tree;
+            return $menuModel->getUserMenuTree($this->userId);
+        }, 'user_menu_cache');
     }
 
     /**
@@ -685,23 +655,15 @@ class AdminAuth
      *
      * @返回: array 所有菜单权限码数组
      *
-     * @缓存策略: 使用全局缓存键 all_menu_codes
+     * @缓存策略: 使用全局缓存键 all_menu_codes，标签 global_menu_cache，带 TTL 抖动防雪崩
      */
     private function getAllMenuCodes(): array
     {
-        $cacheKey = 'all_menu_codes';
-        $cacheTime = Config::get('auth.cache_time', 3600);
+        $cacheTime = SimpleCache::getJitteredTtl(Config::get('auth.cache_time', 3600));
 
-        $cached = SimpleCache::get($cacheKey);
-        if ($cached !== null) {
-            return $cached;
-        }
-
-        $codes = (new Menu())->where('status', 1)->column('code');
-
-        SimpleCache::set($cacheKey, $codes, $cacheTime);
-
-        return $codes;
+        return SimpleCache::remember('all_menu_codes', $cacheTime, function () {
+            return (new Menu())->where('status', 1)->column('code');
+        }, 'global_menu_cache');
     }
 
     /**
@@ -711,26 +673,18 @@ class AdminAuth
      *
      * @返回: array 所有API权限码数组
      *
-     * @缓存策略: 使用全局缓存键 all_api_codes
+     * @缓存策略: 使用全局缓存键 all_api_codes，标签 global_menu_cache，带 TTL 抖动防雪崩
      */
     private function getAllApiCodes(): array
     {
-        $cacheKey = 'all_api_codes';
-        $cacheTime = Config::get('auth.cache_time', 3600);
+        $cacheTime = SimpleCache::getJitteredTtl(Config::get('auth.cache_time', 3600));
 
-        $cached = SimpleCache::get($cacheKey);
-        if ($cached !== null) {
-            return $cached;
-        }
-
-        $codes = Db::name('api')
-            ->where('status', 1)
-            ->whereNull('delete_time')
-            ->column('code');
-
-        SimpleCache::set($cacheKey, $codes, $cacheTime);
-
-        return $codes;
+        return SimpleCache::remember('all_api_codes', $cacheTime, function () {
+            return Db::name('api')
+                ->where('status', 1)
+                ->whereNull('delete_time')
+                ->column('code');
+        }, 'global_menu_cache');
     }
 
     /**
@@ -740,26 +694,18 @@ class AdminAuth
      *
      * @返回: array 所有按钮权限码数组
      *
-     * @缓存策略: 使用全局缓存键 all_button_codes
+     * @缓存策略: 使用全局缓存键 all_button_codes，标签 global_menu_cache，带 TTL 抖动防雪崩
      */
     private function getAllButtonCodes(): array
     {
-        $cacheKey = 'all_button_codes';
-        $cacheTime = Config::get('auth.cache_time', 3600);
+        $cacheTime = SimpleCache::getJitteredTtl(Config::get('auth.cache_time', 3600));
 
-        $cached = SimpleCache::get($cacheKey);
-        if ($cached !== null) {
-            return $cached;
-        }
-
-        $codes = Db::name('menu_button')
-            ->where('status', 1)
-            ->whereNull('delete_time')
-            ->column('code');
-
-        SimpleCache::set($cacheKey, $codes, $cacheTime);
-
-        return $codes;
+        return SimpleCache::remember('all_button_codes', $cacheTime, function () {
+            return Db::name('menu_button')
+                ->where('status', 1)
+                ->whereNull('delete_time')
+                ->column('code');
+        }, 'global_menu_cache');
     }
 
     /**
@@ -773,9 +719,6 @@ class AdminAuth
      *   - user_api_codes_{userId}
      *   - user_button_codes_{userId}
      *   - user_menu_tree_{userId}
-     *   - all_menu_codes
-     *   - all_api_codes
-     *   - all_button_codes
      *
      * @调用场景:
      *   - 用户角色变更后
@@ -790,10 +733,28 @@ class AdminAuth
             SimpleCache::delete('user_button_codes_' . $this->userId);
             SimpleCache::delete('user_menu_tree_' . $this->userId);
         }
+    }
 
+    /**
+     * 清除全局权限缓存
+     * @description 清除超级管理员的全局权限缓存，在菜单/角色等全局数据变更时调用
+     */
+    public static function clearGlobalCache(): void
+    {
         SimpleCache::delete('all_menu_codes');
         SimpleCache::delete('all_api_codes');
         SimpleCache::delete('all_button_codes');
+        SimpleCache::clearTag('global_menu_cache');
+    }
+
+    /**
+     * 批量清除所有用户权限缓存
+     * @description 通过缓存标签一次性清除所有用户的菜单/API/按钮/菜单树缓存，
+     *              替代逐用户遍历删除模式
+     */
+    public static function clearAllUserCache(): void
+    {
+        SimpleCache::clearTag('user_menu_cache');
     }
 
     /**

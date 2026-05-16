@@ -4,6 +4,7 @@ namespace app\admin\controller;
 use app\common\BaseController;
 use app\model\Role as RoleModel;
 use app\common\AdminAuth;
+use app\common\SimpleCache;
 use app\admin\validate\RoleValidate;
 use think\Request;
 use think\facade\Db;
@@ -375,9 +376,12 @@ class RoleController extends BaseController
         $userIds = Db::name('user_role')->where('role_id', $roleId)->column('user_id');
 
         foreach ($userIds as $userId) {
-            $auth = AdminAuth::instance();
-            $auth->setUser($userId);
-            $auth->clearCache();
+            SimpleCache::delete('user_menu_codes_' . $userId);
+            SimpleCache::delete('user_api_codes_' . $userId);
+            SimpleCache::delete('user_button_codes_' . $userId);
+            SimpleCache::delete('user_menu_tree_' . $userId);
         }
+
+        AdminAuth::clearGlobalCache();
     }
 }

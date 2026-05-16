@@ -42,7 +42,7 @@ return [
             // 缓存有效期 0 为永久
             'expire' => 0,
             // 缓存标签
-            'tag_prefix' => '',
+            'tag_prefix' => 'rbac_tag:',
             // 缓存数据长度
             'length' => 0,
         ],

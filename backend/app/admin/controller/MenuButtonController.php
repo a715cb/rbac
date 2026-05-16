@@ -5,7 +5,7 @@ use app\common\BaseController;
 use app\model\MenuButton as MenuButtonModel;
 use app\model\Menu as MenuModel;
 use app\admin\validate\MenuButtonValidate;
-use app\common\SimpleCache;
+use app\common\AdminAuth;
 use think\Request;
 use think\facade\Db;
 
@@ -159,11 +159,7 @@ class MenuButtonController extends BaseController
 
     private function clearAllMenuCache(): void
     {
-        $userIds = Db::name('user')->where('status', 1)->column('id');
-        foreach ($userIds as $userId) {
-            SimpleCache::delete('user_menu_tree_' . $userId);
-            SimpleCache::delete('user_menu_codes_' . $userId);
-            SimpleCache::delete('user_api_codes_' . $userId);
-        }
+        AdminAuth::clearAllUserCache();
+        AdminAuth::clearGlobalCache();
     }
 }

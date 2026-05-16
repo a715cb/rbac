@@ -1,0 +1,17 @@
+- [x] SimpleCache.remember 方法实现互斥锁保护的缓存重建，缓存命中时直接返回，未命中时加锁重建
+- [x] SimpleCache.lock/unlock 方法基于 Redis SET NX EX 实现分布式互斥锁，锁超时自动释放
+- [x] SimpleCache.getJitteredTtl 方法计算带 ±10% 随机抖动的 TTL
+- [x] SimpleCache.clearTag 方法封装 ThinkPHP Cache 标签清除功能
+- [x] SimpleCache.setIfNotExists 在 Predis 驱动下使用 SET key value EX ttl NX 原子命令
+- [x] AdminAuth 所有权限查询方法（getMenuCodes/getApiCodes/getButtonCodes/getMenuTree/getAll*）使用 remember 模式
+- [x] AdminAuth 所有权限缓存写入时使用带抖动的 TTL
+- [x] AdminAuth 所有权限缓存写入时携带缓存标签（user_menu_cache 或 global_menu_cache）
+- [x] AdminAuth.getMenuTree 空结果也被缓存，防止缓存穿透
+- [x] AdminAuth.clearCache 仅清除当前用户维度缓存，不清除全局缓存
+- [x] AdminAuth 新增 clearGlobalCache 方法清除全局缓存（all_menu_codes/all_api_codes/all_button_codes）
+- [x] AdminAuth 新增 clearAllUserCache 方法通过缓存标签批量清除所有用户权限缓存
+- [x] MenuController.clearAllMenuCache 使用标签批量清除，不再查询用户表遍历删除
+- [x] MenuButtonController.clearAllMenuCache 使用标签批量清除，不再查询用户表遍历删除
+- [x] RoleController.clearRoleCache 使用标签批量清除，不再逐用户实例化 AdminAuth
+- [x] config/cache.php 中 Redis 驱动的 tag_prefix 配置为有效值
+- [x] 现有缓存相关测试（AdminAuthServiceTest、LoginSecurityServiceTest）全部通过

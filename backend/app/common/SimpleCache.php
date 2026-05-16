@@ -4,12 +4,15 @@
  * @用途: 统一缓存操作入口，委托 ThinkPHP 缓存系统执行实际存储
  * @描述: 通过 ThinkPHP 的 Cache 门面统一调度缓存驱动，确保 CACHE_DRIVER 配置生效。
  *        当驱动为 Redis 时，利用 Redis 原生命令（INCRBY、SET NX EX）实现原子递增和
- *        SetIfNotExists 语义；非 Redis 驱动下回退为读-改-写模式
+ *        SetIfNotExists 语义；非 Redis 驱动下回退为读-改-写模式。
+ *        提供 remember 方法实现带互斥锁的缓存回填，支持标签分组和 TTL 抖动防雪崩
  * @核心逻辑:
  *   1. 所有缓存操作委托 ThinkPHP Cache 门面，遵循 CACHE_DRIVER 配置
  *   2. increment 操作：Redis 驱动使用 INCRBY 原子递增，其他驱动使用读-改-写
  *   3. setIfNotExists 操作：Redis 驱动使用 SET NX EX 原子命令，其他驱动使用 has+set
- *   4. TTL 为 0 表示永不过期，传递给 Cache 时使用 0 而非 null
+ *   4. remember 操作：互斥锁保护缓存回填，锁失败时等待重试，超时降级直接执行回调
+ *   5. 标签缓存：tagSet 写入带标签缓存，clearTag 按标签批量清除
+ *   6. TTL 为 0 表示永不过期，传递给 Cache 时使用 0 而非 null
  */
 namespace app\common;
 
@@ -114,11 +117,9 @@ class SimpleCache
                     // phpredis：SET NX EX 原子命令
                     $result = $redis->set($cacheKey, $serialized, ['EX' => $ttl, 'NX']);
                 } else {
-                    // Predis：SETNX + EXPIRE（SETNX 与 EXPIRE 间存在极小窗口）
-                    $result = $redis->setnx($cacheKey, $serialized);
-                    if ($result) {
-                        $redis->expire($cacheKey, $ttl);
-                    }
+                    // Predis：SET key value EX ttl NX 原子命令
+                    $result = $redis->set($cacheKey, $serialized, 'EX', $ttl, 'NX');
+                    $result = $result !== null;
                 }
             } else {
                 $result = $redis->setnx($cacheKey, $serialized);
@@ -132,5 +133,121 @@ class SimpleCache
             return false;
         }
         return Cache::set($key, $value, $ttl > 0 ? $ttl : 0);
+    }
+
+    /**
+     * 带互斥锁的缓存读取，未命中时执行回调写入缓存
+     * @param string $key 缓存键名
+     * @param int $ttl 存活时间（秒）
+     * @param callable $callback 缓存未命中时的数据获取回调
+     * @param string|null $tag 缓存标签，用于批量清除
+     * @return mixed 缓存值或回调返回值
+     * @description 先尝试缓存命中；未命中时获取互斥锁后执行回调写入缓存；
+     *              获取锁失败则等待重试读取，超时后降级直接执行回调（不写缓存）
+     */
+    public static function remember(string $key, int $ttl, callable $callback, ?string $tag = null): mixed
+    {
+        try {
+            $value = Cache::get($key);
+            if ($value !== null) {
+                return $value;
+            }
+        } catch (\Throwable $e) {
+            return $callback();
+        }
+
+        try {
+            $locked = self::lock($key, 10);
+        } catch (\Throwable $e) {
+            $locked = false;
+        }
+
+        if ($locked) {
+            try {
+                $value = Cache::get($key);
+                if ($value !== null) {
+                    return $value;
+                }
+
+                $value = $callback();
+
+                self::tagSet($key, $value, $ttl, $tag);
+
+                return $value;
+            } finally {
+                self::unlock($key);
+            }
+        }
+
+        for ($i = 0; $i < 20; $i++) {
+            usleep(50000);
+            try {
+                $value = Cache::get($key);
+                if ($value !== null) {
+                    return $value;
+                }
+            } catch (\Throwable $e) {
+                break;
+            }
+        }
+
+        return $callback();
+    }
+
+    /**
+     * 获取互斥锁
+     * @param string $key 锁键名
+     * @param int $ttl 锁的存活时间（秒）
+     * @return bool 是否获取成功
+     */
+    private static function lock(string $key, int $ttl): bool
+    {
+        return self::setIfNotExists("lock:" . $key, 1, $ttl);
+    }
+
+    /**
+     * 释放互斥锁
+     * @param string $key 锁键名
+     */
+    private static function unlock(string $key): void
+    {
+        self::delete("lock:" . $key);
+    }
+
+    /**
+     * 计算带 ±10% 随机抖动的 TTL，防止缓存雪崩
+     * @param int $baseTtl 基础 TTL（秒）
+     * @return int 抖动后的 TTL，最小为 1
+     */
+    public static function getJitteredTtl(int $baseTtl): int
+    {
+        $jitter = (int) ($baseTtl * 0.1 * (mt_rand(-10, 10) / 10));
+        return max(1, $baseTtl + $jitter);
+    }
+
+    /**
+     * 按标签清除缓存
+     * @param string $tag 缓存标签名
+     * @return bool 清除是否成功
+     */
+    public static function clearTag(string $tag): bool
+    {
+        return Cache::tag($tag)->clear();
+    }
+
+    /**
+     * 带标签的缓存写入
+     * @param string $key 缓存键名
+     * @param mixed $value 缓存值
+     * @param int $ttl 存活时间（秒）
+     * @param string|null $tag 缓存标签，为 null 时不使用标签
+     * @return bool 写入是否成功
+     */
+    private static function tagSet(string $key, $value, int $ttl, ?string $tag = null): bool
+    {
+        if ($tag !== null) {
+            return Cache::tag($tag)->set($key, $value, $ttl);
+        }
+        return Cache::set($key, $value, $ttl);
     }
 }
