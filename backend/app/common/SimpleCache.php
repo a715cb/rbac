@@ -18,6 +18,7 @@
 namespace app\common;
 
 use think\facade\Cache;
+use think\facade\Log;
 use think\cache\driver\Redis as RedisDriver;
 
 class SimpleCache
@@ -214,7 +215,9 @@ class SimpleCache
 
                 $value = self::executeCallbackSafely($callback);
 
-                self::tagSet($key, $value, $ttl, $tag);
+                if ($value !== null) {
+                    self::tagSet($key, $value, $ttl, $tag);
+                }
 
                 return $value;
             } finally {
@@ -234,7 +237,11 @@ class SimpleCache
         }
 
         $value = self::executeCallbackSafely($callback);
-        self::tagSet($key, $value, $ttl, $tag);
+
+        if ($value !== null) {
+            self::tagSet($key, $value, $ttl, $tag);
+        }
+
         return $value;
     }
 
@@ -242,13 +249,18 @@ class SimpleCache
      * 安全执行回调函数
      * @param callable $callback 数据获取回调
      * @return mixed 回调返回值，回调抛出异常时返回 null
-     * @description 捕获回调执行中的所有异常，防止异常导致缓存回填失败，保证服务可用性
+     * @description 捕获回调执行中的所有异常并记录日志，防止异常导致缓存回填失败，保证服务可用性
      */
     private static function executeCallbackSafely(callable $callback): mixed
     {
         try {
             return $callback();
-        } catch (\Throwable) {
+        } catch (\Throwable $e) {
+            Log::error('SimpleCache 回调执行异常', [
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+            ]);
             return null;
         }
     }

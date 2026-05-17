@@ -114,7 +114,9 @@ async function loadAndApplyDynamicRoutes(
   next: NavigationGuardNext
 ): Promise<void> {
   const storedMenus = StorageManager.getItem('session', AppConfig.menusKey)
-  if (storedMenus) {
+  const storedPermissions = StorageManager.getObject<string[]>('session', AppConfig.permissionsKey)
+
+  if (storedMenus && storedPermissions && storedPermissions.length > 0) {
     const menuData = JSON.parse(storedMenus) as MenuRoute[]
 
     if (menuData.length === 0) {

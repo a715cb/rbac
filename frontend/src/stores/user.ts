@@ -63,16 +63,20 @@ export const useUserStore = defineStore('user', () => {
 
   function setPermissions(perms: string[]): void {
     permissions.value = perms
+    StorageManager.setObject('session', AppConfig.permissionsKey, perms)
   }
 
   function setRoles(rolesData: RoleInfo[]): void {
     roleList.value = rolesData
+    StorageManager.setObject('session', AppConfig.roleListKey, rolesData)
   }
 
   function loadFromStorage(): void {
     const storedToken = StorageManager.getItem('session', AppConfig.tokenKey)
     const storedUserInfo = StorageManager.getObject<UserInfo>('session', AppConfig.userInfoKey)
     const storedMenus = StorageManager.getObject<MenuRoute[]>('session', AppConfig.menusKey)
+    const storedPermissions = StorageManager.getObject<string[]>('session', AppConfig.permissionsKey)
+    const storedRoleList = StorageManager.getObject<RoleInfo[]>('session', AppConfig.roleListKey)
 
     if (storedToken) {
       token.value = storedToken
@@ -84,6 +88,14 @@ export const useUserStore = defineStore('user', () => {
 
     if (storedMenus) {
       menus.value = storedMenus
+    }
+
+    if (storedPermissions) {
+      permissions.value = storedPermissions
+    }
+
+    if (storedRoleList) {
+      roleList.value = storedRoleList
     }
   }
 
@@ -155,6 +167,8 @@ export const useUserStore = defineStore('user', () => {
     TokenManager.clearToken()
     StorageManager.removeItem('session', AppConfig.userInfoKey)
     StorageManager.removeItem('session', AppConfig.menusKey)
+    StorageManager.removeItem('session', AppConfig.permissionsKey)
+    StorageManager.removeItem('session', AppConfig.roleListKey)
     clearTabsStorage()
     removeDynamicRoutes()
   }

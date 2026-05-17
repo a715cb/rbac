@@ -32,6 +32,12 @@ export const AppConfig = {
   // 菜单数据存储键名
   menusKey: 'menus',
 
+  // 权限码列表存储键名（含 button_codes 合并后的完整权限）
+  permissionsKey: 'permissions',
+
+  // 角色列表存储键名
+  roleListKey: 'role_list',
+
   // NProgress 开关存储键名
   nprogressKey: 'open_nprogress',
 

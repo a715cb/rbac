@@ -619,15 +619,7 @@ class RoleController extends BaseController
      */
     protected function clearRoleCache(int $roleId): void
     {
-        $userIds = Db::name('user_role')->where('role_id', $roleId)->column('user_id');
-
-        foreach ($userIds as $userId) {
-            SimpleCache::delete('user_menu_codes_' . $userId);
-            SimpleCache::delete('user_api_codes_' . $userId);
-            SimpleCache::delete('user_button_codes_' . $userId);
-            SimpleCache::delete('user_menu_tree_' . $userId);
-        }
-
+        AdminAuth::clearAllUserCache();
         AdminAuth::clearGlobalCache();
     }
 }

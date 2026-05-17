@@ -106,6 +106,7 @@ class Api extends BaseModel
             ->where('role_api.role_id', $roleId)
             ->where('api.status', 1)
             ->whereNull('api.delete_time')
+            ->field('api.*')
             ->select()
             ->toArray();
     }

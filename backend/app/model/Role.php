@@ -37,6 +37,7 @@ class Role extends BaseModel
             ->where('user_role.user_id', $userId)
             ->where('role.status', 1)
             ->whereNull('role.delete_time')
+            ->field('role.*')
             ->select()
             ->toArray();
     }

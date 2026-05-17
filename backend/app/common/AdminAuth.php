@@ -214,7 +214,7 @@ class AdminAuth
             return (new Menu())->getUserMenuCodes($this->userId);
         }, 'user_menu_cache');
 
-        return $this->menus;
+        return $this->menus ?? [];
     }
 
     /**
@@ -255,7 +255,7 @@ class AdminAuth
             return (new Menu())->getUserApiCodes($this->userId);
         }, 'user_menu_cache');
 
-        return $this->permissions;
+        return $this->permissions ?? [];
     }
 
     /**
@@ -306,7 +306,7 @@ class AdminAuth
                 ->column('code');
         }, 'user_menu_cache');
 
-        return $this->buttonCodes;
+        return $this->buttonCodes ?? [];
     }
 
     /**
@@ -337,7 +337,7 @@ class AdminAuth
         $cacheKey = 'user_menu_tree_' . $this->userId;
         $cacheTime = SimpleCache::getJitteredTtl(Config::get('auth.cache_time', 3600));
 
-        return SimpleCache::remember($cacheKey, $cacheTime, function () {
+        $result = SimpleCache::remember($cacheKey, $cacheTime, function () {
             $menuModel = new Menu();
 
             if ($this->isSuperAdmin()) {
@@ -346,6 +346,8 @@ class AdminAuth
 
             return $menuModel->getUserMenuTree($this->userId);
         }, 'user_menu_cache');
+
+        return $result ?? [];
     }
 
     /**
@@ -661,9 +663,11 @@ class AdminAuth
     {
         $cacheTime = SimpleCache::getJitteredTtl(Config::get('auth.cache_time', 3600));
 
-        return SimpleCache::remember('all_menu_codes', $cacheTime, function () {
+        $result = SimpleCache::remember('all_menu_codes', $cacheTime, function () {
             return (new Menu())->where('status', 1)->column('code');
         }, 'global_menu_cache');
+
+        return $result ?? [];
     }
 
     /**
@@ -679,12 +683,14 @@ class AdminAuth
     {
         $cacheTime = SimpleCache::getJitteredTtl(Config::get('auth.cache_time', 3600));
 
-        return SimpleCache::remember('all_api_codes', $cacheTime, function () {
+        $result = SimpleCache::remember('all_api_codes', $cacheTime, function () {
             return Db::name('api')
                 ->where('status', 1)
                 ->whereNull('delete_time')
                 ->column('code');
         }, 'global_menu_cache');
+
+        return $result ?? [];
     }
 
     /**
@@ -700,12 +706,14 @@ class AdminAuth
     {
         $cacheTime = SimpleCache::getJitteredTtl(Config::get('auth.cache_time', 3600));
 
-        return SimpleCache::remember('all_button_codes', $cacheTime, function () {
+        $result = SimpleCache::remember('all_button_codes', $cacheTime, function () {
             return Db::name('menu_button')
                 ->where('status', 1)
                 ->whereNull('delete_time')
                 ->column('code');
         }, 'global_menu_cache');
+
+        return $result ?? [];
     }
 
     /**
